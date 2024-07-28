@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var sensorData:SensorData
 
-    val configJSON = ConfigJSON (7001, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNjIyOTc0MCwianRpIjoiN2ZhMzRhN2UtNWFlYi00Y2QyLWE4ZjAtNWNmNDViMWU0NGNhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6NzAwMSwibmJmIjoxNzE2MjI5NzQwLCJleHAiOjE3MTYyMzA2NDB9.VW1Om0dNadi341-T0XZS3exOfG1WRnGGQtZjMd6uPVA")
+    //val configJSON = ConfigJSON (7001, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNjIyOTc0MCwianRpIjoiN2ZhMzRhN2UtNWFlYi00Y2QyLWE4ZjAtNWNmNDViMWU0NGNhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6NzAwMSwibmJmIjoxNzE2MjI5NzQwLCJleHAiOjE3MTYyMzA2NDB9.VW1Om0dNadi341-T0XZS3exOfG1WRnGGQtZjMd6uPVA")
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,13 +128,13 @@ class MainActivity : AppCompatActivity() {
     fun addData(fielData: Float) : SensorData{
 
         val sensorData = SensorData(
-            id_sensor = configJSON.id_sensor,
-            token = configJSON.token,
+            id_sensor = 7001,
+            token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNjIyOTc0MCwianRpIjoiN2ZhMzRhN2UtNWFlYi00Y2QyLWE4ZjAtNWNmNDViMWU0NGNhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6NzAwMSwibmJmIjoxNzE2MjI5NzQwLCJleHAiOjE3MTYyMzA2NDB9.VW1Om0dNadi341-T0XZS3exOfG1WRnGGQtZjMd6uPVA",
             timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
-            latitud = 2.000001,
-            longitud = 3.000001,
+            latitud = 39.936940,
+            longitud = -5.562020,
             orientacion = 0,
-            inclinacion = 30,
+            inclinacion = 0,
             tipo_medida = "irradiancia",
             valor_medida = fielData.toDouble()
         )
@@ -213,7 +213,7 @@ class MainActivity : AppCompatActivity() {
                 monitoringButton.text = "Stop Monitoring"
 
             } else {
-                val token = configJSON.token
+               // val token = configJSON.token
                 createPostApp(sensorData)
                 beaconManager.stopMonitoring(beaconReferenceApplication.region)
                 dialogTitle = "Beacon monitoring stopped."
@@ -257,7 +257,7 @@ class MainActivity : AppCompatActivity() {
     private fun createPostApp(
         sensorData: SensorData
     ) {
-        val retrofit = createRetrofit("http://vps247.cesvima.upm.es/")
+        val retrofit = createRetrofit("https://vps247.cesvima.upm.es/")
         val apiService = retrofit.create(APIService::class.java)
 
         val call = apiService.createPost(sensorData)
