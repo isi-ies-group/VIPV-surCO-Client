@@ -1,33 +1,42 @@
 package com.example.beaconble
 
 
+import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import android.app.AlertDialog
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import com.google.gson.Gson
+import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
+import okhttp3.logging.HttpLoggingInterceptor
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.MonitorNotifier
 import org.altbeacon.beacon.utils.UrlBeaconUrlCompressor
-import okhttp3.OkHttpClient
-import okhttp3.ResponseBody
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.Long.toHexString
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +50,8 @@ class MainActivity : AppCompatActivity() {
 
 
     lateinit var sensorData:SensorData
+
+
 
     //val configJSON = ConfigJSON (7001, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNjIyOTc0MCwianRpIjoiN2ZhMzRhN2UtNWFlYi00Y2QyLWE4ZjAtNWNmNDViMWU0NGNhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6NzAwMSwibmJmIjoxNzE2MjI5NzQwLCJleHAiOjE3MTYyMzA2NDB9.VW1Om0dNadi341-T0XZS3exOfG1WRnGGQtZjMd6uPVA")
 
@@ -125,21 +136,35 @@ class MainActivity : AppCompatActivity() {
         alertDialog?.show()
     }
 
-    fun addData(fielData: Float) : SensorData{
+    @SuppressLint("MissingPermission")
+    suspend fun addData(context: Context, fielData: String) : SensorData{
+
+        val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+
+        // Solicita la última ubicación conocida
+        val location: Location? = fusedLocationClient.lastLocation.await()
+        val latitud = location?.latitude?.toString() ?: "0.0"
+        val longitud = location?.longitude?.toString() ?: "0.0"
+
 
         val sensorData = SensorData(
-            id_sensor = 7001,
+            id_sensor = "7001",
             token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNjIyOTc0MCwianRpIjoiN2ZhMzRhN2UtNWFlYi00Y2QyLWE4ZjAtNWNmNDViMWU0NGNhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6NzAwMSwibmJmIjoxNzE2MjI5NzQwLCJleHAiOjE3MTYyMzA2NDB9.VW1Om0dNadi341-T0XZS3exOfG1WRnGGQtZjMd6uPVA",
-            timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
-            latitud = 39.936940,
-            longitud = -5.562020,
-            orientacion = 0,
-            inclinacion = 0,
+            timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME).toString(),
+            latitud = latitud,
+            longitud = longitud,
+            orientacion = "1",
+            inclinacion = "1",
             tipo_medida = "irradiancia",
-            valor_medida = fielData.toDouble()
+            valor_medida = fielData,
+            id = "1"
         )
+
         return sensorData
+
+
     }
+
 
     //si esta en el rango hace listado las balizas que hay
     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
@@ -159,20 +184,16 @@ class MainActivity : AppCompatActivity() {
                         beacons.beaconTypeCode== 0x0505 -> {
 
                             val packet = beacons.lastPacketRawBytes
-                            val hexData4= toHexString(packet[4].toLong())
-                            val byteData4 = packet[4]
-                            val intData4 = packet[4].toInt()
+                            val intData1 = packet[10].toInt()
+                            val intData2 = packet[11].toInt()
 
-                            val hexData5= toHexString(packet[5].toLong())
-                            val byteData5 = packet[5]
-                            val intData5 = packet[5].toInt()
+                            val combinedValue = (intData1 shl 8) or (intData2)
+                            val value = combinedValue.toDouble().toString()
 
-                            val combinedValue = (intData4 shl 8) or (intData5)
-                            val value = combinedValue.toFloat()
-
-                            sensorData = addData(value)
-                            "Byte4: $byteData4 Byte5: $byteData5\nValor: $combinedValue \nHex4: 0x$hexData4   Hex5: 0x$hexData5"
-
+                            lifecycleScope.launch{
+                                sensorData = addData(this@MainActivity, value)
+                            }
+                            "ID: ${beacons.bluetoothName}\nIRRADIANCIA: ${value}"
                         }
                         else -> {
                             "id1: ${beacons.id1}\nid2: ${beacons.id2} id3:  rssi: ${beacons.rssi}\nest. distance: ${beacons.distance} m"
@@ -183,6 +204,7 @@ class MainActivity : AppCompatActivity() {
                 ArrayAdapter(this, android.R.layout.simple_list_item_1, beaconInfoList)
         }
     }
+
 
         //boton para activar/desactivar el ranging
         fun rangingButtonTapped(view: View) {
@@ -269,7 +291,7 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     println("Created Post: ${response.body()}")
                     runOnUiThread {
-                        textView.text = response.body().toString()// Suponiendo que UserInfo tiene un método toString adecuado
+                        textView.text = "Post Created ${response.message()}"// Suponiendo que UserInfo tiene un método toString adecuado
                     }
                 } else {
                     val error = response.errorBody()
