@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -32,11 +33,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
+import java.lang.Thread.sleep
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 
 class MainActivity : AppCompatActivity() {
@@ -45,15 +44,13 @@ class MainActivity : AppCompatActivity() {
     lateinit var beaconCountTextView: TextView
     lateinit var monitoringButton: Button
     lateinit var rangingButton: Button
+    lateinit var postButton: Button
     lateinit var beaconReferenceApplication: BeaconReferenceApplication
     var alertDialog: AlertDialog? = null
 
 
     lateinit var sensorData:SensorData
-
-
-
-    //val configJSON = ConfigJSON (7001, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNjIyOTc0MCwianRpIjoiN2ZhMzRhN2UtNWFlYi00Y2QyLWE4ZjAtNWNmNDViMWU0NGNhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6NzAwMSwibmJmIjoxNzE2MjI5NzQwLCJleHAiOjE3MTYyMzA2NDB9.VW1Om0dNadi341-T0XZS3exOfG1WRnGGQtZjMd6uPVA")
+    var sensorDataList:MutableList<SensorData> = mutableListOf()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,11 +69,11 @@ class MainActivity : AppCompatActivity() {
         regionViewModel.rangedBeacons.observe(this, rangingObserver)
         rangingButton = findViewById<Button>(R.id.rangingButton)
         monitoringButton = findViewById<Button>(R.id.monitoringButton)
+        postButton = findViewById<Button>(R.id.postButton)
         beaconListView = findViewById<ListView>(R.id.beaconList)
         beaconCountTextView = findViewById<TextView>(R.id.beaconCount)
         beaconCountTextView.text = "No beacons detected"
         beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayOf("--"))
-
     }
 
 
@@ -161,8 +158,6 @@ class MainActivity : AppCompatActivity() {
         )
 
         return sensorData
-
-
     }
 
 
@@ -192,6 +187,8 @@ class MainActivity : AppCompatActivity() {
 
                             lifecycleScope.launch{
                                 sensorData = addData(this@MainActivity, value)
+                                val aux = sensorData
+                                sensorDataList.add(aux)
                             }
                             "ID: ${beacons.bluetoothName}\nIRRADIANCIA: ${value}"
                         }
@@ -204,6 +201,19 @@ class MainActivity : AppCompatActivity() {
                 ArrayAdapter(this, android.R.layout.simple_list_item_1, beaconInfoList)
         }
     }
+
+        //boton para subir los datos
+        fun postButtonTapped(view: View){
+            if(sensorDataList.isNotEmpty()){
+                createPosts(sensorDataList)
+            } else{
+                Toast.makeText(this, "No data to post.", Toast.LENGTH_SHORT).show()
+            }
+
+            sleep(1000)
+            sensorDataList.clear()
+
+        }
 
 
         //boton para activar/desactivar el ranging
@@ -235,8 +245,6 @@ class MainActivity : AppCompatActivity() {
                 monitoringButton.text = "Stop Monitoring"
 
             } else {
-               // val token = configJSON.token
-                createPostApp(sensorData)
                 beaconManager.stopMonitoring(beaconReferenceApplication.region)
                 dialogTitle = "Beacon monitoring stopped."
                 dialogMessage =
@@ -275,6 +283,11 @@ class MainActivity : AppCompatActivity() {
         return client
     }
 
+    private fun createPosts(sensorDataList: List<SensorData>){
+        sensorDataList.forEach{ sensorData ->
+            createPostApp(sensorData)
+        }
+    }
 
     private fun createPostApp(
         sensorData: SensorData
