@@ -15,8 +15,3 @@ data class SensorData(
     @SerializedName("valor_medida")val valor_medida: String,
     @SerializedName("id")val id: String
 )
-
-data class ConfigJSON(
-    val id_sensor : Int,
-    val token: String
-)

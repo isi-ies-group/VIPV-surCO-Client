@@ -38,11 +38,10 @@ class BeaconReferenceApplication: Application() {
         beaconManager.getBeaconParsers().add(eddyStoneURLParser)
 
         //añadir beacon Custom
-        val customParser = BeaconParser().setBeaconLayout("m:0-1=0505,d:4-5")
+        val customParser = BeaconParser().setBeaconLayout("m:0-1=0505")
         beaconManager.getBeaconParsers().add(customParser)
 
         BeaconManager.setDebug(true)
-
 
         //configurar escaneo
         setupBeaconScanning()
@@ -52,58 +51,18 @@ class BeaconReferenceApplication: Application() {
 
     fun setupBeaconScanning() {
         val beaconManager = BeaconManager.getInstanceForApplication(this)
-        // Por defecto, escanea cada 5/15 minutos dependiendo de la Version de Android
-        // se puede configurar un servicio para escaneo continuo
-/*
-        //Escaneo primer plano
-        try {
-            setupForegroundService()
-        }
-        catch (e: SecurityException) {
-            Log.d(TAG, "Not setting up foreground service scanning until location permission granted by user")
-            return
-        }
-*/
+
         // Empieza a escanear en la region definida
         beaconManager.startMonitoring(region)
         beaconManager.startRangingBeacons(region)
 
         // Establecen dos observadores Live Data para cambios en el estado de la región y la lista de beacons detectado
         val regionViewModel = BeaconManager.getInstanceForApplication(this).getRegionViewModel(region)
-        // observer will be called each time the monitored regionState changes (inside vs. outside region)
+        // Se llamara al observador cuando la region cambie de estado dentro/fuera
         regionViewModel.regionState.observeForever( centralMonitoringObserver)
-        // observer will be called each time a new list of beacons is ranged (typically ~1 second in the foreground)
+        // Se llamara al observador cuando se actualice la lista de de beacons (normalmente se actualiza cada 1 seg)
         regionViewModel.rangedBeacons.observeForever( centralRangingObserver)
 
-    }
-
-
-    fun setupForegroundService() {
-        //se crea la notificacion del Servicio en foreground
-        val builder = Notification.Builder(this, "BeaconReferenceApp")
-        builder.setSmallIcon(R.drawable.ic_launcher_background)
-        builder.setContentTitle("Scanning for Beacons")
-        val intent = Intent(this, MainActivity::class.java)
-        //pending Intent es un Intent que se pued ejecutar hasta cuando la app no está ejecutandose
-        //las flags son para actualizar el intent en caso de que exista y que se inmutable por seguridad
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
-        )
-        builder.setContentIntent(pendingIntent);
-        //se crea canal de notificacion
-        val channel =  NotificationChannel("beacon-ref-notification-id",
-            "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT)
-        //importance_dafault es importancia media, aparece pero no interrumpe visualmente
-        channel.setDescription("My Notification Channel Description")
-        //se obtiene el servicio de norificaciones del sistema y se crea el canal
-        val notificationManager =  getSystemService(
-            Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel);
-        builder.setChannelId(channel.getId());
-        Log.d(TAG, "Calling enableForegroundServiceScanning")
-        //se creal el builder de la notificacion
-        BeaconManager.getInstanceForApplication(this).enableForegroundServiceScanning(builder.build(), 456);
-        Log.d(TAG, "Back from  enableForegroundServiceScanning")
     }
 
     //registra los cambios de si estas dentro o fuera de la region con la interfaz MonitorNotifier de la biblioteca
@@ -117,6 +76,7 @@ class BeaconReferenceApplication: Application() {
             sendNotification()
         }
     }
+
     //recibe actualizaciones de la lista de beacon detectados y su info
     // hace un calculo del tiempo en millis que ha pasado desde la ultima actualizacion
     val centralRangingObserver = Observer<Collection<Beacon>> { beacons ->
@@ -162,6 +122,3 @@ class BeaconReferenceApplication: Application() {
     }
 
 }
-
-
-

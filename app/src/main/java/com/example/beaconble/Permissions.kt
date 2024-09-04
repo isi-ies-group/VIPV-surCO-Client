@@ -74,7 +74,7 @@ class PermissionsHelper(val context: Context) {
     }
     fun setFirstTimeAskingPermission(permissionString: String, isFirstTime: Boolean) {
         //Se almacena en XML dentro de Android un dato clave-valor (Shared Preferences), en este caso si es la primera vez que se pide un permiso
-        val sharedPreference = context.getSharedPreferences("org.altbeacon.permisisons",
+        val sharedPreference = context.getSharedPreferences("org.altbeacon.permissions",
             AppCompatActivity.MODE_PRIVATE
         )
         sharedPreference.edit().putBoolean(permissionString,isFirstTime).apply()
@@ -83,7 +83,7 @@ class PermissionsHelper(val context: Context) {
 
     fun isFirstTimeAskingPermission(permissionString: String): Boolean {
         val sharedPreference = context.getSharedPreferences(
-            "org.altbeacon.permisisons",
+            "org.altbeacon.permissions",
             AppCompatActivity.MODE_PRIVATE
         )
         return sharedPreference.getBoolean(

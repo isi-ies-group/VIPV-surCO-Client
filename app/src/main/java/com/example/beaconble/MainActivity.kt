@@ -40,6 +40,7 @@ import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
+    //inicializacion de variables
     lateinit var beaconListView: ListView
     lateinit var beaconCountTextView: TextView
     lateinit var monitoringButton: Button
@@ -47,8 +48,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var postButton: Button
     lateinit var beaconReferenceApplication: BeaconReferenceApplication
     var alertDialog: AlertDialog? = null
-
-
     lateinit var sensorData:SensorData
     var sensorDataList:MutableList<SensorData> = mutableListOf()
 
@@ -58,14 +57,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         //define la Main Screen con los botones de ranging y monitoring
-
         beaconReferenceApplication = application as BeaconReferenceApplication
 
         // Set up a Live Data observer for beacon data
         val regionViewModel = BeaconManager.getInstanceForApplication(this).getRegionViewModel(beaconReferenceApplication.region)
-        // observer will be called each time the monitored regionState changes (inside vs. outside region)
+        // Se llama al observador cada vez que la baliza entra/sale de la region
         regionViewModel.regionState.observe(this, monitoringObserver)
-        // observer will be called each time a new 'list of beacons is ranged (typically ~1 second in the foreground)
+        // Se llama al observador cada vez que se actualiza la lista de balizas (normalmetne cada 1 seg en segundo plano)
         regionViewModel.rangedBeacons.observe(this, rangingObserver)
         rangingButton = findViewById<Button>(R.id.rangingButton)
         monitoringButton = findViewById<Button>(R.id.monitoringButton)
@@ -85,16 +83,13 @@ class MainActivity : AppCompatActivity() {
     override fun onResume(){
         super.onResume()
         //al iniciar la actividad se comprueba que los permisos estan aceptados
-
         if(!BeaconScanPermissionsActivity.allPermissionsGranted(this,true)){
             val intent = Intent (this, BeaconScanPermissionsActivity::class.java)
             intent.putExtra("backgroundAccessRequested", true)
             startActivity(intent)
         }
         else {
-            // All permissions are granted now.  In the case where we are configured
-            // to use a foreground service, we will not have been able to start scanning until
-            // after permissions are granted.  So we will do so here.
+            // Todos los permisos se han aceptado
             if (BeaconManager.getInstanceForApplication(this).monitoredRegions.size == 0) {
                 beaconReferenceApplication = application as BeaconReferenceApplication
                 (application as BeaconReferenceApplication).setupBeaconScanning()
@@ -104,7 +99,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     //monitoring detectar balizas en la region, ranging listar dichas balizas
-    //monitoring requiere menos recursos
 
     //observador de si se encuentra en la region de la baliza
     val monitoringObserver = Observer<Int> { state ->
@@ -143,7 +137,6 @@ class MainActivity : AppCompatActivity() {
         val latitud = location?.latitude?.toString() ?: "0.0"
         val longitud = location?.longitude?.toString() ?: "0.0"
 
-
         val sensorData = SensorData(
             id_sensor = "7001",
             token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNjIyOTc0MCwianRpIjoiN2ZhMzRhN2UtNWFlYi00Y2QyLWE4ZjAtNWNmNDViMWU0NGNhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6NzAwMSwibmJmIjoxNzE2MjI5NzQwLCJleHAiOjE3MTYyMzA2NDB9.VW1Om0dNadi341-T0XZS3exOfG1WRnGGQtZjMd6uPVA",
@@ -156,7 +149,6 @@ class MainActivity : AppCompatActivity() {
             valor_medida = fielData,
             id = "1"
         )
-
         return sensorData
     }
 
@@ -176,6 +168,7 @@ class MainActivity : AppCompatActivity() {
                             val url = UrlBeaconUrlCompressor.uncompress(beacons.id1.toByteArray())
                             "URL: ${url}\nrssi: ${beacons.rssi}\nest. distance: ${beacons.distance} m"
                         }
+                        //custom
                         beacons.beaconTypeCode== 0x0505 -> {
 
                             val packet = beacons.lastPacketRawBytes
@@ -192,6 +185,7 @@ class MainActivity : AppCompatActivity() {
                             }
                             "ID: ${beacons.bluetoothName}\nIRRADIANCIA: ${value}"
                         }
+                        //iBeacon
                         else -> {
                             "id1: ${beacons.id1}\nid2: ${beacons.id2} id3:  rssi: ${beacons.rssi}\nest. distance: ${beacons.distance} m"
                         }
@@ -212,7 +206,6 @@ class MainActivity : AppCompatActivity() {
 
             sleep(1000)
             sensorDataList.clear()
-
         }
 
 
@@ -232,7 +225,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        //boton para activar desactivar el monitoring
+        //boton para activar/desactivar el monitoring
         fun monitoringButtonTapped(view: View) {
             var dialogTitle = ""
             var dialogMessage = ""
@@ -262,6 +255,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+    //crear instancia de retrofit
     private fun createRetrofit( baseURL: String): Retrofit {
 
         return Retrofit.Builder()
@@ -271,6 +265,7 @@ class MainActivity : AppCompatActivity() {
             .build()
     }
 
+    //crear cliente para usar el interceptor
     private fun getClient(): OkHttpClient{
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -283,12 +278,14 @@ class MainActivity : AppCompatActivity() {
         return client
     }
 
+    //bucle de llamada a Retrofit para cada valor de la lista de datos
     private fun createPosts(sensorDataList: List<SensorData>){
         sensorDataList.forEach{ sensorData ->
             createPostApp(sensorData)
         }
     }
 
+    //peticion POST a la URL a traves de Retrofit
     private fun createPostApp(
         sensorData: SensorData
     ) {
@@ -326,10 +323,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         val TAG = "MainActivity"
-        val PERMISSION_REQUEST_BACKGROUND_LOCATION = 0
-        val PERMISSION_REQUEST_BLUETOOTH_SCAN = 1
-        val PERMISSION_REQUEST_BLUETOOTH_CONNECT = 2
-        val PERMISSION_REQUEST_FINE_LOCATION = 3
     }
 
 }
