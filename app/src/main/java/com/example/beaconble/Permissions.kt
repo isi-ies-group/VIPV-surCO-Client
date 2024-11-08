@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Switch
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -32,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.google.android.material.switchmaterial.SwitchMaterial
 
 
 open class PermissionsActivity: AppCompatActivity() {
@@ -124,19 +126,25 @@ open class BeaconScanPermissionsActivity: PermissionsActivity()  {
     lateinit var permissionGroups: List<Array<String>>
     lateinit var continueButton: Button
 
+    lateinit var sw_permission_Localization: SwitchMaterial
+    lateinit var sw_permission_Localization_Background: SwitchMaterial
+    lateinit var sw_permission_Bluetooth: SwitchMaterial
+    lateinit var sw_permission_Notifications: SwitchMaterial
+
     override fun onCreate(savedInstanceState: Bundle?) {
         //hay que ejecutar el codigo de la AppCompatActivity padre antes que el de esta clase
         super.onCreate(savedInstanceState)
         permissionGroups = PermissionsHelper(this).beaconScanPermissionGroupsNeeded(intent.getBooleanExtra("backgroundAccessRequested",true))
-        setContent{
-            PermissionsScreen(permissionsHelper = PermissionsHelper(this))
-        }
+        setContentView(R.layout.view_permissions)
+
+        sw_permission_Localization = findViewById<SwitchMaterial>(R.id.sw_permission_localization)
+        sw_permission_Localization_Background = findViewById<SwitchMaterial>(R.id.sw_permission_localization_background)
+        sw_permission_Bluetooth = findViewById<SwitchMaterial>(R.id.sw_permission_bluetooth)
+        sw_permission_Notifications = findViewById<SwitchMaterial>(R.id.sw_permission_notifications)
     }
 
     @Composable
     fun PermissionsScreen(permissionsHelper: PermissionsHelper){
-        val context = LocalContext.current
-        val permissionsHelper = PermissionsHelper(context)
         val backgroundAccessRequested= intent.getBooleanExtra("backgroundAccessRequested", true)
         val title = intent.getStringExtra("title") ?: "Permissions Needed"
         val message = intent.getStringExtra("message") ?: "In order to scan for beacons, this app requrires the following permissions from the operating system.  Please tap each button to grant each required permission."

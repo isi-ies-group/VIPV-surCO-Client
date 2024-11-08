@@ -1,3 +1,21 @@
 <resources>
-    <string name="app_name">BeaconBLE</string>
+    // Generic
+    <string name="app_name">Photovolta</string>
+    <string name="icon_help">Help icon</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    // Login view
+    <string name="login">Log In</string>
+    <string name="login_description">Log In to start sharing your solar resource data!</string>
+    <string name="login_no_account_question">Don\'t have an account? Request one <a href="TODO">here.</a></string>  // TODO: add link
+    // Welcome view
+    <string name="welcome_continue">Start sharing measurements</string>
+    <string name="welcome_message">Welcome to \nPhotovolta!</string>
+    // Permissions view
+    <string name="permissions_needed">The following permissions are required to use Photovolta. You will have access to the app once all permissions are granted:</string>
+    <string name="permissions_show_in_settings">View permissions in system settings</string>
+    <string name="permission_localization">Localization</string>
+    <string name="permission_localization_background">Localization in background</string>
+    <string name="permission_bluetooth">Bluetooth access</string>
+    <string name="permission_notification">Push notifications</string>
 </resources>

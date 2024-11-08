@@ -294,7 +294,7 @@ class MainActivity : AppCompatActivity() {
 
         val call = apiService.createPost(sensorData)
 
-        val textView = findViewById<TextView>(R.id.textView)
+        val textView = findViewById<TextView>(R.id.text_central_message)
 
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

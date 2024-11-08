@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    // Generic
+    <string name="app_name">Photovolta</string>
+    <string name="icon_help">Icono de ayuda</string>
+    <string name="username">Usuario</string>
+    <string name="password">Contraseña</string>
+    // Login view
+    <string name="login">Iniciar sesión</string>
+    <string name="login_description">Inicia sesión para compartir tus datos de ciencia ciudadana!</string>
+    <string name="login_no_account_question">¿No tienes cuenta? Solicita una <a href="TODO">aquí.</a></string>  // TODO: add link
+    // Welcome view
+    <string name="welcome_continue">Empezar a compartir medidas</string>
+    <string name="welcome_message">Bienvenid@ a \nPhotovolta!</string>
+    // Permissions view
+    <string name="permissions_needed">Photovolta requiere utilizar los siguientes permisos. Podrás acceder a la app cuando se hayan otorgado los permisos necesarios:</string>
+    <string name="permissions_show_in_settings">Ver permisos en la configuración del sistema</string>
+    <string name="permission_localization">Ubicación</string>
+    <string name="permission_localization_background">Ubicación en segundo plano</string>
+    <string name="permission_bluetooth">Sensor Bluetooth</string>
+    <string name="permission_notification">Mostrar Notificaciones</string>
+</resources>
