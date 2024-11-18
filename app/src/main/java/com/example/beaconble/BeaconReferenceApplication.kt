@@ -6,8 +6,11 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Observer
-import org.altbeacon.beacon.*
-import org.altbeacon.bluetooth.BluetoothMedic
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.BeaconParser
+import org.altbeacon.beacon.Region
+import org.altbeacon.beacon.Beacon
+import org.altbeacon.beacon.MonitorNotifier
 
 class BeaconReferenceApplication: Application() {
 

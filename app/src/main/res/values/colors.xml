@@ -8,4 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#273EBD</color>
+    <color name="IES_blue_main">#1867b7</color>
+    <color name="IES_blue_dark">#2a6496</color>
+    <color name="IES_yellow_logo">#f0b450</color>
 </resources>

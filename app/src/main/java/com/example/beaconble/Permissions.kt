@@ -2,38 +2,54 @@ package com.example.beaconble
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Button
-import android.widget.Switch
-import androidx.activity.compose.setContent
+import android.widget.CompoundButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.google.android.material.switchmaterial.SwitchMaterial
+import android.widget.TableRow
+
+
+class PermissionsRowAtomicHandler(
+    val show: Boolean,
+    val rowUI: TableRow,
+    val switchUI: SwitchMaterial,
+    // val clikedPermissionsCallback: (permissions: Array<String>) -> Unit,
+) {
+    // Group of permissions that are related to a single UI element
+    // Ease access, management and UI interaction
+    // manifestPermissions: Array of permissions that are related to the UI element (will depend on the target version)
+    // rowUI: TableRow that contains the UI element
+    // switchUI: SwitchMaterial that is the UI element
+
+    init {
+        if (show == false) {
+            // Hide the UI element if there are no permissions, as it is not needed
+            hide()
+        }
+    }
+    fun hide() {
+        // Hide the UI element
+        rowUI.visibility = TableRow.GONE
+    }
+    fun disable() {
+        // Disable the switch element
+        switchUI.isEnabled = false
+    }
+    fun setOnCheckedChangeListener(clickedCallback: CompoundButton.OnCheckedChangeListener) {
+        // Set the callback for the switch
+        switchUI.setOnCheckedChangeListener(clickedCallback)
+    }
+}
 
 
 open class PermissionsActivity: AppCompatActivity() {
@@ -47,7 +63,7 @@ open class PermissionsActivity: AppCompatActivity() {
             permissions.entries.forEach {
                 val permissionName = it.key
                 val isGranted = it.value
-                if (isGranted) {
+                if (isGranted == true) {
                     Log.d(TAG, "$permissionName permission granted: $isGranted")
 
                 } else {
@@ -62,209 +78,157 @@ open class PermissionsActivity: AppCompatActivity() {
     }
 }
 
-class PermissionsHelper(val context: Context) {
-    // se obtiene info de si un permiso concreto está aceptado, si es la primera vez que se pide un permiso y los permisos que hay que pedir segun SDK
-    // Estas son las permissionString:
-    // Manifest.permission.ACCESS_BACKGROUND_LOCATION
-    // Manifest.permission.ACCESS_FINE_LOCATION
-    // Manifest.permission.BLUETOOTH_CONNECT
-    // Manifest.permission.BLUETOOTH_SCAN
-
-    fun isPermissionGranted(permissionString: String): Boolean {
-        //se comprueba con el Context un permiso específico
-        return (ContextCompat.checkSelfPermission(context, permissionString) == PackageManager.PERMISSION_GRANTED)
-    }
-    fun setFirstTimeAskingPermission(permissionString: String, isFirstTime: Boolean) {
-        //Se almacena en XML dentro de Android un dato clave-valor (Shared Preferences), en este caso si es la primera vez que se pide un permiso
-        val sharedPreference = context.getSharedPreferences("org.altbeacon.permissions",
-            AppCompatActivity.MODE_PRIVATE
-        )
-        sharedPreference.edit().putBoolean(permissionString,isFirstTime).apply()
-        //se guarda el valor en el XML
-    }
-
-    fun isFirstTimeAskingPermission(permissionString: String): Boolean {
-        val sharedPreference = context.getSharedPreferences(
-            "org.altbeacon.permissions",
-            AppCompatActivity.MODE_PRIVATE
-        )
-        return sharedPreference.getBoolean(
-            permissionString,
-            true
-        )
-        //getBoolen (string permiso, valor que se devuelve si no existe valor para la string)
-    }
-    fun beaconScanPermissionGroupsNeeded(backgroundAccessRequested: Boolean = false): List<Array<String>> {
-        val permissions = ArrayList<Array<String>>()
-        //Lista de Arrays cada uno tiene un grupo de permisos
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Version Android M (Marshmallow, Android 6.0). Se necesita ACCES_FINE_LOCATION
-            permissions.add(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Version Android 10. El permiso anterior + ACCESS_BACKGROUND_LOCATION si es necesario
-            if (backgroundAccessRequested) {
-                permissions.add(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION))
-            }
-           // permissions.add(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Version Android 12. Los anteriores + BLUETOOTH_SCAN
-            // BLUETOOTH_CONNECT si se quiere informacion adicional
-            permissions.add(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT))
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Version 13. POST_NOTIFICATIONS si utiliza un servicio en primer plano
-            permissions.add(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
-           // permissions.add(arrayOf(Manifest.permission.MANAGE_EXTERNAL_STORAGE))
-        }
-        return permissions
-    }
-}
 
 open class BeaconScanPermissionsActivity: PermissionsActivity()  {
-    lateinit var permissionGroups: List<Array<String>>
-    lateinit var continueButton: Button
+    lateinit var sysSettingsButton: Button
 
-    lateinit var sw_permission_Localization: SwitchMaterial
-    lateinit var sw_permission_Localization_Background: SwitchMaterial
-    lateinit var sw_permission_Bluetooth: SwitchMaterial
-    lateinit var sw_permission_Notifications: SwitchMaterial
+    lateinit var rowPermissionsLocalization: PermissionsRowAtomicHandler
+    lateinit var rowPermissionsLocalizationInBackground: PermissionsRowAtomicHandler
+    lateinit var rowPermissionsBluetooth: PermissionsRowAtomicHandler
+    lateinit var rowPermissionsNotifications: PermissionsRowAtomicHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //hay que ejecutar el codigo de la AppCompatActivity padre antes que el de esta clase
         super.onCreate(savedInstanceState)
-        permissionGroups = PermissionsHelper(this).beaconScanPermissionGroupsNeeded(intent.getBooleanExtra("backgroundAccessRequested",true))
         setContentView(R.layout.view_permissions)
 
-        sw_permission_Localization = findViewById<SwitchMaterial>(R.id.sw_permission_localization)
-        sw_permission_Localization_Background = findViewById<SwitchMaterial>(R.id.sw_permission_localization_background)
-        sw_permission_Bluetooth = findViewById<SwitchMaterial>(R.id.sw_permission_bluetooth)
-        sw_permission_Notifications = findViewById<SwitchMaterial>(R.id.sw_permission_notifications)
-    }
-
-    @Composable
-    fun PermissionsScreen(permissionsHelper: PermissionsHelper){
-        val backgroundAccessRequested= intent.getBooleanExtra("backgroundAccessRequested", true)
-        val title = intent.getStringExtra("title") ?: "Permissions Needed"
-        val message = intent.getStringExtra("message") ?: "In order to scan for beacons, this app requrires the following permissions from the operating system.  Please tap each button to grant each required permission."
-        val permissionButtonTitles = intent.getBundleExtra("permissionBundleTitles") ?: getDefaultPermissionTitlesBundle()
-
-        val permissionGroups = remember {permissionsHelper.beaconScanPermissionGroupsNeeded(backgroundAccessRequested)}
-        val permissionStates = remember { mutableStateListOf<Boolean>() }
-
-        LaunchedEffect(key1 = permissionGroups) {
-            permissionStates.clear()
-            permissionStates.addAll(List(permissionGroups.size) { false })
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(androidx.compose.ui.graphics.Color.White),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ){
-            Text(text = title, fontSize = 18.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = message, fontSize = 18.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
-            Spacer(modifier = Modifier.height(16.dp))
-            permissionGroups.forEach {permissionGroup ->
-                val buttonText = permissionButtonTitles.getString(permissionGroup.first())?:"Unknown Permission"
-                Button(
-                    onClick = {
-                        promptForPermissions(permissionGroup)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ){
-                    Text(text = buttonText)
+        rowPermissionsLocalization = PermissionsRowAtomicHandler(
+            show = permissionsByGroupMap["Location"]!=null,
+            rowUI = findViewById<TableRow>(R.id.row_permission_localization),
+            switchUI = findViewById<SwitchMaterial>(R.id.sw_permission_localization),
+        )
+        rowPermissionsLocalization.setOnCheckedChangeListener(
+            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                promptForPermissions("Location")
+                val successful = groupPermissionsGranted(this, "Location")
+                if (successful) {
+                    rowPermissionsLocalization.disable()
+                    callbackToContinueIfAllPermissionsAreGranted()
                 }
             }
-        }
-
-    }
-
-//establece una relacion entre el permiso de cada boton y el titulo del boton
-    @SuppressLint("InlinedApi")
-    fun getDefaultPermissionTitlesBundle(): Bundle {
-        //Define la palabra de los botones que aparecera en la Activity de Permisos
-        val bundle = Bundle()
-        bundle.putString(Manifest.permission.ACCESS_FINE_LOCATION, "Location")
-        bundle.putString(Manifest.permission.ACCESS_BACKGROUND_LOCATION, "Background Location")
-        bundle.putString(Manifest.permission.BLUETOOTH_SCAN, "Bluetooth")
-        bundle.putString(Manifest.permission.POST_NOTIFICATIONS, "Notifications")
-
-        return bundle
-    }
-
-    fun allPermissionGroupsGranted(): Boolean {
-        //pregunta si todos los permisos de todos los grupos han sido aceptados
-        for (permissionsGroup in permissionGroups) {
-            if (!allPermissionsGranted(permissionsGroup)) {
-                return false
-            }
-        }
-        return true
-    }
-
-    override fun onResume() {
-        super.onResume()
-        //llama a la Activity padre
-        if(::permissionGroups.isInitialized) {
-            if (allPermissionGroupsGranted()) {
-                // si se han aceptado todos los permisos de todos los grupos deja continuar
-                continueButton.isEnabled = true
-            }
-        }
-    }
-
-    fun promptForPermissions(permissionsGroup: Array<String>) {
-        // si hay algun grupo de permisos no concedido se ejecuta
-        if (!allPermissionsGranted(permissionsGroup)) {
-            val firstPermission = permissionsGroup.first()
-
-            var showRationale = true
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                showRationale = shouldShowRequestPermissionRationale(firstPermission)
-            }
-            if (showRationale ||  PermissionsHelper(this).isFirstTimeAskingPermission(firstPermission)) {
-                PermissionsHelper(this).setFirstTimeAskingPermission(firstPermission, false)
-                requestPermissionsLauncher.launch(permissionsGroup)
-            }
-            else {
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("Can't request permission")
-                builder.setMessage("This permission has been previously denied to this app.  In order to grant it now, you must go to Android Settings to enable this permission.")
-                builder.setPositiveButton("OK", null)
-                builder.show()
-            }
-        }
-    }
-    fun allPermissionsGranted(permissionsGroup: Array<String>): Boolean {
-        val permissionsHelper = PermissionsHelper(this)
-        for (permission in permissionsGroup) {
-            if (!permissionsHelper.isPermissionGranted(permission)) {
-                return false
-            }
-        }
-        return true
-    }
-
-    companion object {
-        // es la función principial que se llama desde la MainActivity
-        fun allPermissionsGranted(context: Context, backgroundAccessRequested: Boolean): Boolean {
-            val permissionsHelper = PermissionsHelper(context)
-            val permissionsGroups = permissionsHelper.beaconScanPermissionGroupsNeeded(backgroundAccessRequested)
-            for (permissionsGroup in permissionsGroups) {
-                for (permission in permissionsGroup) {
-                    if (!permissionsHelper.isPermissionGranted(permission)) {
-                        return false
+        })
+        rowPermissionsLocalizationInBackground = PermissionsRowAtomicHandler(
+            show = permissionsByGroupMap["Location in Background"]!=null,
+            rowUI = findViewById<TableRow>(R.id.row_permission_localization_background),
+            switchUI = findViewById<SwitchMaterial>(R.id.sw_permission_localization_background),
+        )
+        rowPermissionsLocalizationInBackground.setOnCheckedChangeListener(
+            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    promptForPermissions("Location in Background")
+                    val successful = groupPermissionsGranted(this, "Location in Background")
+                    if (successful) {
+                        rowPermissionsLocalizationInBackground.disable()
+                        callbackToContinueIfAllPermissionsAreGranted()
                     }
                 }
             }
-            return true
+        )
+        rowPermissionsBluetooth = PermissionsRowAtomicHandler(
+            show = permissionsByGroupMap["Bluetooth"]!=null,
+            rowUI = findViewById<TableRow>(R.id.row_permission_bluetooth),
+            switchUI = findViewById<SwitchMaterial>(R.id.sw_permission_bluetooth),
+        )
+        rowPermissionsBluetooth.setOnCheckedChangeListener(
+            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    promptForPermissions("Bluetooth")
+                    val successful = groupPermissionsGranted(this, "Bluetooth")
+                    if (successful) {
+                        rowPermissionsBluetooth.disable()
+                        callbackToContinueIfAllPermissionsAreGranted()
+                    }
+                }
+            }
+        )
+        rowPermissionsNotifications = PermissionsRowAtomicHandler(
+            show = permissionsByGroupMap["Notifications"]!=null,
+            rowUI = findViewById<TableRow>(R.id.row_permission_notifications),
+            switchUI = findViewById<SwitchMaterial>(R.id.sw_permission_notifications),
+        )
+        rowPermissionsNotifications.setOnCheckedChangeListener(
+            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    promptForPermissions("Notifications")
+                    val successful = groupPermissionsGranted(this, "Notifications")
+                    if (successful) {
+                        rowPermissionsNotifications.disable()
+                        callbackToContinueIfAllPermissionsAreGranted()
+                    }
+                }
+            }
+        )
+
+        sysSettingsButton = findViewById<Button>(R.id.btn_permissions_show_in_settings)
+        sysSettingsButton.setOnClickListener {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            val uri: Uri = Uri.fromParts("package", packageName, null)
+            intent.data = uri
+            startActivity(intent)
         }
     }
-}
+
+    fun callbackToContinueIfAllPermissionsAreGranted() {
+        // Check if all permissions are granted
+        if (allPermissionsGranted(this)) {
+            Log.d(TAG, "All granted")
+            setResult(RESULT_OK)
+        }
+    }
+
+    @SuppressLint("ObsoleteSdkInt")
+    fun promptForPermissions(permissionsGroup: String) {
+        if (!groupPermissionsGranted(this, permissionsGroup)) {
+            val permissions = permissionsByGroupMap[permissionsGroup]
+
+            if (permissions == null) {
+                return
+            }
+
+//            val showRationale = permissions.any {
+//                shouldShowRequestPermissionRationale(it)
+//            }
+
+            requestPermissionsLauncher.launch(permissions)
+        }
+    }
+
+    companion object {
+        // Main entry point for checking if all permissions are granted
+        fun allPermissionsGranted(context: Context): Boolean {
+            return permissionsByGroupMap.keys.none { permissionGroup ->
+                groupPermissionsGranted(context, permissionGroup) == false
+            }
+        }
+
+        fun groupPermissionsGranted(context: Context, groupKey: String): Boolean {
+            // Check if all permissions are granted
+            val group = permissionsByGroupMap[groupKey]
+            if (group == null) {
+                return true
+            }
+            else {
+                for (permission in group) {
+                    if (ContextCompat.checkSelfPermission(
+                            context,
+                            permission
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        return false
+                    }
+                }
+                return true
+            }
+        }
+
+        @SuppressLint("ObsoleteSdkInt")
+        val permissionsByGroupMap: Map<String, Array<String>?> = mapOf(
+                "Location" to (if (Build.VERSION.SDK_INT >= 1) arrayOf(Manifest.permission.ACCESS_FINE_LOCATION) else null),
+                "Location in Background" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION) else null),
+                // BLUETOOTH_CONNECT to obtain additional information
+                "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT) else null),
+                "Notifications" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(Manifest.permission.POST_NOTIFICATIONS) else null),
+            )
+        }
+    }

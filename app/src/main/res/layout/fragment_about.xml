@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AboutFragment"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="100sp"
+        android:layout_height="wrap_content"
+        android:layout_margin="32sp"
+        android:layout_gravity="center_horizontal"
+        android:src="@mipmap/logo_ies"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/logo"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16sp"
+        android:id="@+id/version_textview"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16sp"
+        android:id="@+id/about_textview"
+        android:text="@string/credits"
+        />
+
+    <!-- Add GitHub / Server main pages -->
+
+</LinearLayout>
