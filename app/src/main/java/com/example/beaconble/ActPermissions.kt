@@ -10,26 +10,28 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.View.OnClickListener
 import android.widget.Button
-import android.widget.CompoundButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.button.MaterialButton
 import android.widget.TableRow
+import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
 
 
 class PermissionsRowAtomicHandler(
     val show: Boolean,
     val rowUI: TableRow,
-    val switchUI: SwitchMaterial,
+    val buttonUI: MaterialButton,
     // val clikedPermissionsCallback: (permissions: Array<String>) -> Unit,
 ) {
     // Group of permissions that are related to a single UI element
     // Ease access, management and UI interaction
     // manifestPermissions: Array of permissions that are related to the UI element (will depend on the target version)
     // rowUI: TableRow that contains the UI element
-    // switchUI: SwitchMaterial that is the UI element
+    // buttonUI: MaterialButton that is the UI element
 
     init {
         if (show == false) {
@@ -42,18 +44,26 @@ class PermissionsRowAtomicHandler(
         rowUI.visibility = TableRow.GONE
     }
     fun disable() {
-        // Disable the switch element
-        switchUI.isEnabled = false
+        // Disable the button element
+        buttonUI.isEnabled = false
     }
-    fun setOnCheckedChangeListener(clickedCallback: CompoundButton.OnCheckedChangeListener) {
-        // Set the callback for the switch
-        switchUI.setOnCheckedChangeListener(clickedCallback)
+    fun setOnCheckedChangeListener(clickedCallback: OnClickListener) {
+        // Set the callback for the button
+        buttonUI.setOnClickListener(clickedCallback)
     }
 }
 
 
-open class PermissionsActivity: AppCompatActivity() {
-    //comprueba el resultado de todos los permisos mediante una Actividad y un Contract
+open class BeaconScanPermissionsActivity: AppCompatActivity() {
+    lateinit var sysSettingsButton: Button
+
+    lateinit var rowPermissionsLocalization: PermissionsRowAtomicHandler
+    lateinit var rowPermissionsLocalizationInBackground: PermissionsRowAtomicHandler
+    lateinit var rowPermissionsBluetooth: PermissionsRowAtomicHandler
+    lateinit var rowPermissionsNotifications: PermissionsRowAtomicHandler
+
+    lateinit var mapOfRowHandlers: Map<String, PermissionsRowAtomicHandler>
+    lateinit var toolbar: Toolbar
 
     val requestPermissionsLauncher =
         registerForActivityResult(
@@ -63,102 +73,59 @@ open class PermissionsActivity: AppCompatActivity() {
             permissions.entries.forEach {
                 val permissionName = it.key
                 val isGranted = it.value
-                if (isGranted == true) {
-                    Log.d(TAG, "$permissionName permission granted: $isGranted")
-
-                } else {
-                    Log.d(TAG, "$permissionName permission granted: $isGranted")
+                Log.d(TAG, "$permissionName permission granted: $isGranted")
+                if (!isGranted) {
                     // Mostrar mensaje que se ha rechazado el permiso
+                    Toast.makeText(
+                        this,
+                        "Permission $permissionName is required to continue",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
-    companion object {
-        //Al ser Log.d no afectan al usuario solo informativo del Debug
-        const val TAG = "PermissionsActivity"
-    }
-}
-
-
-open class BeaconScanPermissionsActivity: PermissionsActivity()  {
-    lateinit var sysSettingsButton: Button
-
-    lateinit var rowPermissionsLocalization: PermissionsRowAtomicHandler
-    lateinit var rowPermissionsLocalizationInBackground: PermissionsRowAtomicHandler
-    lateinit var rowPermissionsBluetooth: PermissionsRowAtomicHandler
-    lateinit var rowPermissionsNotifications: PermissionsRowAtomicHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //hay que ejecutar el codigo de la AppCompatActivity padre antes que el de esta clase
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.view_permissions)
+        setContentView(R.layout.activity_permissions)
 
         rowPermissionsLocalization = PermissionsRowAtomicHandler(
             show = permissionsByGroupMap["Location"]!=null,
             rowUI = findViewById<TableRow>(R.id.row_permission_localization),
-            switchUI = findViewById<SwitchMaterial>(R.id.sw_permission_localization),
+            buttonUI = findViewById<MaterialButton>(R.id.sw_permission_localization),
         )
-        rowPermissionsLocalization.setOnCheckedChangeListener(
-            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked) {
-                promptForPermissions("Location")
-                val successful = groupPermissionsGranted(this, "Location")
-                if (successful) {
-                    rowPermissionsLocalization.disable()
-                    callbackToContinueIfAllPermissionsAreGranted()
-                }
-            }
-        })
         rowPermissionsLocalizationInBackground = PermissionsRowAtomicHandler(
             show = permissionsByGroupMap["Location in Background"]!=null,
             rowUI = findViewById<TableRow>(R.id.row_permission_localization_background),
-            switchUI = findViewById<SwitchMaterial>(R.id.sw_permission_localization_background),
-        )
-        rowPermissionsLocalizationInBackground.setOnCheckedChangeListener(
-            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-                if (isChecked) {
-                    promptForPermissions("Location in Background")
-                    val successful = groupPermissionsGranted(this, "Location in Background")
-                    if (successful) {
-                        rowPermissionsLocalizationInBackground.disable()
-                        callbackToContinueIfAllPermissionsAreGranted()
-                    }
-                }
-            }
+            buttonUI = findViewById<MaterialButton>(R.id.sw_permission_localization_background),
         )
         rowPermissionsBluetooth = PermissionsRowAtomicHandler(
             show = permissionsByGroupMap["Bluetooth"]!=null,
             rowUI = findViewById<TableRow>(R.id.row_permission_bluetooth),
-            switchUI = findViewById<SwitchMaterial>(R.id.sw_permission_bluetooth),
-        )
-        rowPermissionsBluetooth.setOnCheckedChangeListener(
-            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-                if (isChecked) {
-                    promptForPermissions("Bluetooth")
-                    val successful = groupPermissionsGranted(this, "Bluetooth")
-                    if (successful) {
-                        rowPermissionsBluetooth.disable()
-                        callbackToContinueIfAllPermissionsAreGranted()
-                    }
-                }
-            }
+            buttonUI = findViewById<MaterialButton>(R.id.sw_permission_bluetooth),
         )
         rowPermissionsNotifications = PermissionsRowAtomicHandler(
             show = permissionsByGroupMap["Notifications"]!=null,
             rowUI = findViewById<TableRow>(R.id.row_permission_notifications),
-            switchUI = findViewById<SwitchMaterial>(R.id.sw_permission_notifications),
+            buttonUI = findViewById<MaterialButton>(R.id.sw_permission_notifications),
         )
-        rowPermissionsNotifications.setOnCheckedChangeListener(
-            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-                if (isChecked) {
-                    promptForPermissions("Notifications")
-                    val successful = groupPermissionsGranted(this, "Notifications")
-                    if (successful) {
-                        rowPermissionsNotifications.disable()
-                        callbackToContinueIfAllPermissionsAreGranted()
-                    }
+
+        mapOfRowHandlers = mapOf(
+            "Location" to rowPermissionsLocalization,
+            "Location in Background" to rowPermissionsLocalizationInBackground,
+            "Bluetooth" to rowPermissionsBluetooth,
+            "Notifications" to rowPermissionsNotifications,
+        )
+
+        for (key in mapOfRowHandlers.keys) {
+            val rowHandler = mapOfRowHandlers[key]
+            rowHandler?.setOnCheckedChangeListener(
+                OnClickListener {
+                    promptForPermissions(key)
                 }
-            }
-        )
+            )
+        }
 
         sysSettingsButton = findViewById<Button>(R.id.btn_permissions_show_in_settings)
         sysSettingsButton.setOnClickListener {
@@ -167,13 +134,31 @@ open class BeaconScanPermissionsActivity: PermissionsActivity()  {
             intent.data = uri
             startActivity(intent)
         }
+
+        toolbar = findViewById<Toolbar>(R.id.permissions_toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.title = getString(R.string.permissions_title)
     }
 
-    fun callbackToContinueIfAllPermissionsAreGranted() {
+    override fun onResume() {
+        super.onResume()
+        // Check if all permissions are granted, and exit if so
+        exitIfAllPermissionsAreGranted()
+        // Iterate over permission rows and disable those that are already granted
+        for (key in mapOfRowHandlers.keys) {
+            val rowHandler = mapOfRowHandlers[key]
+            if (groupPermissionsGranted(this, key)) {
+                rowHandler?.disable()
+            }
+        }
+    }
+
+    fun exitIfAllPermissionsAreGranted() {
         // Check if all permissions are granted
         if (allPermissionsGranted(this)) {
             Log.d(TAG, "All granted")
             setResult(RESULT_OK)
+            finish()
         }
     }
 
@@ -197,6 +182,10 @@ open class BeaconScanPermissionsActivity: PermissionsActivity()  {
     companion object {
         // Main entry point for checking if all permissions are granted
         fun allPermissionsGranted(context: Context): Boolean {
+            /** Check if all permissions are granted
+             * @param context: Context
+             * @return Boolean: True if all permissions are granted, False otherwise
+             */
             return permissionsByGroupMap.keys.none { permissionGroup ->
                 groupPermissionsGranted(context, permissionGroup) == false
             }
@@ -230,5 +219,7 @@ open class BeaconScanPermissionsActivity: PermissionsActivity()  {
                 "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT) else null),
                 "Notifications" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(Manifest.permission.POST_NOTIFICATIONS) else null),
             )
-        }
+
+        const val TAG = "PermissionsActivity"
+        }  // companion object
     }

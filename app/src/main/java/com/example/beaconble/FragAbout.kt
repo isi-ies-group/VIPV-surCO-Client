@@ -18,11 +18,17 @@ class AboutFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_about, container, false)
     }
 
+    @Suppress("DEPRECATION")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // Get the version name from the manifest
-        val versionName = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName
+        val versionInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
         versionTextView = requireView().findViewById<TextView>(R.id.version_textview)
-        versionTextView.text = getString(R.string.version, versionName)
+        // Set the version name and version code in the text view as: "Version: 1.0-1"
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {  // versionInfo.versionCode was deprecated in API level 28. Use versionCodeLong instead.
+            versionTextView.text = getString(R.string.version, versionInfo.versionName, versionInfo.longVersionCode)
+        } else {
+            versionTextView.text = getString(R.string.version, versionInfo.versionName, versionInfo.versionCode)
+        }
     }
 }

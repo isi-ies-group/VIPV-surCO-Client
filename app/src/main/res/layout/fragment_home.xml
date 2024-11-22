@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".HomeFragment">
+    tools:context=".FragHome">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/uploadButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/baseline_backup_24"
+        android:tint="@color/black"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="24sp"
@@ -26,31 +28,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            app:layout_constraintBottom_toBottomOf="@+id/beaconList"
+            app:layout_constraintBottom_toBottomOf="@+id/beaconListView"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/beaconList"
-            app:layout_constraintTop_toBottomOf="@+id/beaconCount" />
+            app:layout_constraintStart_toStartOf="@+id/beaconListView"
+            app:layout_constraintTop_toBottomOf="@+id/beaconCountTextView" />
 
         <TextView
-            android:id="@+id/beaconCount"
+            android:id="@+id/beaconCountTextView"
             android:layout_width="match_parent"
             android:layout_height="20dp"
-            android:text="0 visible beacons:"
+            android:text=""
             android:textAlignment="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ListView
-            android:id="@+id/beaconList"
+            android:id="@+id/beaconListView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/beaconCount">
-
-        </ListView>
+            app:layout_constraintTop_toBottomOf="@+id/beaconCountTextView"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

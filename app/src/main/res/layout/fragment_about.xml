@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,9 +17,18 @@
         android:contentDescription="@string/logo"
         />
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16sp"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/app_name"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="10sp"
         android:id="@+id/version_textview"
         />
     <TextView
@@ -29,6 +39,6 @@
         android:text="@string/credits"
         />
 
-    <!-- Add GitHub / Server main pages -->
+    <!-- TODO(Add GitHub / Server main pages) -->
 
 </LinearLayout>

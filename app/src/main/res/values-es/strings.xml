@@ -10,7 +10,9 @@
     <string name="logout">Cerrar sesión</string>
     <string name="toolbar_close">Cerrar menú</string>
     <string name="upload">Subir datos</string>
-    <string name="version">Versión: %1$s</string>
+    <string name="settings_user_token_message">Token para publicar datos en el servidor</string>
+    <string name="settings_only_wifi_upload_off">Los datos no se subirán automáticamente. Se requiere intervención del Usuario mediante el botón de Publicar.</string>
+    <string name="version">Versión: %1$s-%2$d</string>
     <string name="login">Iniciar sesión</string>
     <string name="login_description">Inicia sesión para compartir tus datos de ciencia ciudadana!</string>
     <string name="login_no_account_question">¿No tienes cuenta? Solicita una <a href="TODO">aquí.</a></string>  // TODO: add link
@@ -26,7 +28,7 @@
     <string name="permission_notification">Mostrar Notificaciones</string>
     <string name="settings">Configuración</string>
     <string name="settings_app_behaviour">Comportamiento de la app</string>
-    <string name="settings_only_wifi_upload">Subir datos automáticamente al conectar a red WiFi</string>
+    <string name="settings_only_wifi_upload">Subir datos solo con WiFi</string>
     <string name="settings_api_endpoint">Sección para servidores propios</string>
     <string name="settings_api_address">IP</string>
     <string name="settings_api_port">Puerto</string>
@@ -34,4 +36,10 @@
     <string name="toolbar_open">Abrir menú</string>
     <string name="logo">Logo</string>
     <string name="credits">Aplicación desarrollada por el grupo ISI-IES de la Universidad Politécnica de Madrid.</string>
+    <string name="permissions_title">Permisos necesarios</string>
+    <string name="permission_grant">Dar permiso</string>
+    <string name="settings_user_token">Clave del usuario</string>
+    <string name="settings_only_wifi_upload_on">Los datos se subirán automáticamente cuando se conecte a una red WiFi.</string>
+    <string name="beacons_detected_zero">No se detectan balizas</string>
+    <string name="beacons_detected_nonzero">Balizas detectadas: %1$d</string>
 </resources>
