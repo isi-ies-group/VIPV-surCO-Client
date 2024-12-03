@@ -1,4 +1,4 @@
-package com.example.beaconble
+package com.example.beaconble.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -13,12 +13,13 @@ import android.util.Log
 import android.view.View.OnClickListener
 import android.widget.Button
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import android.widget.TableRow
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import com.example.beaconble.R
 
 
 class PermissionsRowAtomicHandler(
@@ -54,7 +55,7 @@ class PermissionsRowAtomicHandler(
 }
 
 
-open class BeaconScanPermissionsActivity: AppCompatActivity() {
+class ActPermissions: AppCompatActivity() {
     lateinit var sysSettingsButton: Button
 
     lateinit var rowPermissionsLocalization: PermissionsRowAtomicHandler

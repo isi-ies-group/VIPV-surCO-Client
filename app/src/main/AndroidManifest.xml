@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -25,7 +26,7 @@
         android:theme="@style/Theme.BeaconBLE"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.ActMain"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,9 +34,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.beaconble.BeaconScanPermissionsActivity"
+            android:name="com.example.beaconble.ui.ActPermissions"
             android:exported="false">
         </activity>
+        <service
+            android:name=".service.ForegroundBeaconScanService"
+            android:exported="false"
+            android:foregroundServiceType="location"
+            android:permission="android.permission.FOREGROUND_SERVICE">
+        </service>
 
     </application>
 

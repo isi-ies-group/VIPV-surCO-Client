@@ -1,4 +1,4 @@
-package com.example.beaconble
+package com.example.beaconble.ui
 
 
 import android.content.Intent
@@ -18,10 +18,11 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import com.example.beaconble.R
 import com.google.android.material.navigation.NavigationView
 
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
     lateinit var toolbar: Toolbar
     lateinit var drawerLayout: DrawerLayout
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun checkPermissionsAndTransferToViewIfNeeded() {
-        val arePermissionsOk = BeaconScanPermissionsActivity.allPermissionsGranted(this)
+        val arePermissionsOk = ActPermissions.Companion.allPermissionsGranted(this)
         if (!arePermissionsOk) {  // If any permission is not granted, go to permissions activity and wait for user to grant permissions
             val getAllPermissionsGranted = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
                 if (result.resultCode != RESULT_OK) {
@@ -50,7 +51,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     finish()
                 }
             }
-            getAllPermissionsGranted.launch(Intent(this, BeaconScanPermissionsActivity::class.java))
+            getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
 
         }
     }

@@ -1,11 +1,13 @@
-package com.example.beaconble
+package com.example.beaconble.ui
 
+import android.os.Build
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.Fragment
+import com.example.beaconble.R
 
 class AboutFragment : Fragment() {
     private lateinit var versionTextView: TextView
@@ -25,7 +27,7 @@ class AboutFragment : Fragment() {
         val versionInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
         versionTextView = requireView().findViewById<TextView>(R.id.version_textview)
         // Set the version name and version code in the text view as: "Version: 1.0-1"
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {  // versionInfo.versionCode was deprecated in API level 28. Use versionCodeLong instead.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {  // versionInfo.versionCode was deprecated in API level 28. Use versionCodeLong instead.
             versionTextView.text = getString(R.string.version, versionInfo.versionName, versionInfo.longVersionCode)
         } else {
             versionTextView.text = getString(R.string.version, versionInfo.versionName, versionInfo.versionCode)

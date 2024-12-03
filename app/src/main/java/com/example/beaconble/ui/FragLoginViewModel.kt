@@ -1,4 +1,4 @@
-package com.example.beaconble
+package com.example.beaconble.ui
 
 import androidx.lifecycle.ViewModel
 

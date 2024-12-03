@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
         android:title="@string/settings_app_behaviour"
@@ -26,11 +26,8 @@
 
     <EditTextPreference
         android:key="api_uri"
+        android:summary="@string/settings_api_address_hint"
         android:title="@string/settings_api_address" />
-
-    <EditTextPreference
-        android:key="api_port"
-        android:title="@string/settings_api_port" />
 
     </PreferenceCategory>
 

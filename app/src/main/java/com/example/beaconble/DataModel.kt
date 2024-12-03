@@ -10,7 +10,6 @@ data class SensorData(
     @SerializedName("longitud") val longitud: String,
     @SerializedName("orientacion") val orientacion: String,
     @SerializedName("inclinacion") val inclinacion: String,
-    @SerializedName("tipo_medida") val tipo_medida: String,
     @SerializedName("valor_medida") val valor_medida: String,
     @SerializedName("id") val id: String
 )
