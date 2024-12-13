@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_homeFragment_to_fragBeaconDetails"
             app:destination="@id/fragBeaconDetails" />
+        <action
+            android:id="@+id/action_homeFragment_to_fragLogin"
+            app:destination="@id/fragLogin" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -44,5 +47,33 @@
         <action
             android:id="@+id/action_fragBeaconDetails_to_homeFragment"
             app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragLogin"
+        android:name="com.example.beaconble.ui.FragLogin"
+        android:label="@string/login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_fragLogin_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@+id/main_nav"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_fragLogin_to_fragRegister"
+            app:destination="@id/fragRegister" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragRegister"
+        android:name="com.example.beaconble.ui.FragRegister"
+        android:label="@string/register" >
+        <action
+            android:id="@+id/action_fragRegister_to_fragLogin"
+            app:destination="@id/fragLogin" />
+        <action
+            android:id="@+id/action_fragRegister_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_nav"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>

@@ -1,9 +1,11 @@
 <resources>
     // Generic
-    <string name="app_name">Photovolta</string>
+    <string name="app_name">VIPV Acquisition Program</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
+    <string name="login">Log In</string>
     <string name="logout">Log out</string>
+    <string name="register">Register</string>
     <string name="about">About</string>
     <string name="help">Help</string>
     <string name="icon_help">Help icon</string>
@@ -19,13 +21,11 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     // Login view
-    <string name="login">Log In</string>
     <string name="login_description">Log In to start sharing your solar resource data!</string>
-    <string name="login_no_account_question">Don\'t have an account? Request one <a href="TODO">here.</a></string>
-    // TODO: add link
+    <string name="login_no_account_question">Don\'t have an account?</string>
     // Welcome view
     <string name="welcome_continue">Start sharing measurements</string>
-    <string name="welcome_message">Welcome to \nPhotovolta!</string>
+    <string name="welcome_message">Welcome to \nVIPV Acquisition Program!</string>
     // Permissions view
     <string name="permissions_title">Required permissions</string>
     <string name="permissions_needed">The following permissions are required to use Photovolta. You will have access to the app once all permissions are granted:</string>
@@ -66,13 +66,29 @@
     <string name="beacon_detail_description_hint">Optional beacon description</string>
     <string name="beacon_detail_tilt">Tilt [degrees]</string>
     <string name="beacon_detail_direction">Direction [degrees]</string>
-    <!-- Strings related to login -->
+    // Login view
+    <string name="bad_email">This email is not registered</string>
+    <string name="bad_password">Incorrect password</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in">Log in</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="welcome">"Welcome!"</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="invalid_username">Only alphanumeric and underscores are allowed</string>
+    <string name="invalid_password">Should be at least 8 characters long</string>
+    <string name="invalid_email">Invalid email address</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="connection_error">Connection Error</string>
+    <string name="connection_error_message">"Could not connect to the server. Check your Internet connection or try later."</string>
+    <string name="ok">OK</string>
+    <string name="prompt_username">Username</string>
+    <string name="prompt_password_again">Repeat password</string>
+    <string name="bad_email_already_registered">This email is already registered</string>
+    <string name="register_here">Register here</string>
+    <string name="logged_out">User logged out</string>
+    <string name="stop_notification_button">Stop</string>
+    <string name="notification_ongoing_channel_name">Ongoing Acquisition Sessions</string>
+    <string name="notification_ongoing_title">Acquisition session underway</string>
+    <string name="notification_ongoing_text">Beacon monitoring is active.</string>
+    <string name="invalid_password_equals">Passwords don\'t match</string>
 </resources>

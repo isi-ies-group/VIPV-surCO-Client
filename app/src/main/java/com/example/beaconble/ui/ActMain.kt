@@ -1,6 +1,5 @@
 package com.example.beaconble.ui
 
-
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -16,10 +15,14 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import com.example.beaconble.ApiUserSessionState
+import com.example.beaconble.AppMain
 import com.example.beaconble.R
 import com.google.android.material.navigation.NavigationView
+import java.lang.Thread.sleep
 
 
 class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -28,6 +31,9 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
     lateinit var drawerLayout: DrawerLayout
 
     lateinit var navController : NavController
+    lateinit var navView: NavigationView
+
+    val app = AppMain.instance
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,10 +41,31 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
 
         setContentView(R.layout.activity_main)
 
-        configureToolbar()  // setups .toolbar, .drawerLayout, .actionBarDrawerToggle, .navController
-        configureNavigationDrawer()
+        configureToolbar()  // setups .toolbar, .drawerLayout, .actionBarDrawerToggle, .navController, .navView
+        configureNavigationDrawer()  // setups .navView, .menuBtnLogin, .menuBtnLogout
 
         checkPermissionsAndTransferToViewIfNeeded()
+        checkNeedFirstLogin()
+
+        app.apiUserSession.lastKnownState.observeForever(
+            { state ->
+                Log.d(TAG, "User session state changed to $state")
+                updateDrawerOptionsMenu()
+            }
+        )
+    }
+
+    /**
+     * Check if this is the first time the user opens the app and transfer to login in that case
+     */
+    private fun checkNeedFirstLogin() {
+        // loading of the user session from shared preferences may change the state of the user session
+        // NEVER_LOGGED_IN is the default state
+        val userMayWantToLogin = app.apiUserSession.lastKnownState.value == ApiUserSessionState.NEVER_LOGGED_IN
+        if (userMayWantToLogin) {
+            // Navigate to login fragment
+            supportFragmentManager.findFragmentById(R.id.fragment_main)?.findNavController()?.navigate(R.id.fragLogin)
+        }
     }
 
     private fun checkPermissionsAndTransferToViewIfNeeded() {
@@ -52,7 +79,6 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
                 }
             }
             getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
-
         }
     }
 
@@ -63,26 +89,32 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         /** Handle navigation view item clicks here. */
-        Log.d(TAG, "onNavigationItemSelected")
-        Log.d(TAG, supportActionBar.toString())
         return when (item.itemId) {
             R.id.homeFragment -> {
                 // Close the drawer
                 drawerLayout.closeDrawers()
                 findNavController(R.id.fragment_main).navigate(R.id.homeFragment)
-                Log.d(TAG, "Home from drawer")
                 true
             }
             R.id.nav_settings -> {  // Settings
                 // Close the drawer
                 drawerLayout.closeDrawers()
                 findNavController(R.id.fragment_main).navigate(R.id.settingsFragment)
-                Log.d(TAG, "Settings from drawer")
                 true
             }
             R.id.nav_logout -> {  // Logout
-                // TODO()
-                // findNavController(R.id.homeFragment).navigateUp()
+                // Close the drawer
+                drawerLayout.closeDrawers()
+                // Logout
+                app.apiUserSession.logout()
+                // Show a toast
+                Toast.makeText(this, getString(R.string.logged_out), Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.nav_login -> {  // Login
+                // Close the drawer
+                drawerLayout.closeDrawers()
+                findNavController(R.id.fragment_main).navigate(R.id.fragLogin)
                 true
             }
             R.id.nav_about -> {  // About
@@ -120,9 +152,23 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     private fun configureNavigationDrawer() {
-        drawerLayout = findViewById<DrawerLayout>(R.id.main_drawer_layout)
-        val navView = findViewById<NavigationView>(R.id.nav_view_host)
+        navView = findViewById<NavigationView>(R.id.nav_view_host)
         navView.setNavigationItemSelectedListener(this)
+
+        // Only show login or logout (hides the other one)
+        updateDrawerOptionsMenu()
+    }
+
+    private fun updateDrawerOptionsMenu() {
+        // Login and logout buttons in the drawer
+        val menuBtnLogin = navView.menu.findItem(R.id.nav_login)
+        val menuBtnLogout = navView.menu.findItem(R.id.nav_logout)
+        val isUserLoggedIn = app.apiUserSession.lastKnownState.value == ApiUserSessionState.LOGGED_IN
+        Log.i(TAG, "User is logged in: $isUserLoggedIn")
+        menuBtnLogin.setVisible(isUserLoggedIn != true)
+        sleep(100)
+        menuBtnLogout.setVisible(isUserLoggedIn == true)
+        Log.i(TAG, "Menu items updated to: login=${menuBtnLogin.isVisible}, logout=${menuBtnLogout.isVisible}")
     }
 
     fun openURL(url: String) {
@@ -136,6 +182,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     companion object {
-        const val TAG = "MainActivity"
+        var bool4toggle = false
+        const val TAG = "ActMain"
     }  // companion object
 }

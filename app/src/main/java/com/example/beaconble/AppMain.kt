@@ -1,20 +1,28 @@
 package com.example.beaconble
 
 import android.app.*
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.location.Location
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import com.example.beaconble.io_files.SessionWriter
+import com.example.beaconble.service.StopBroadcastReceiver
 import com.example.beaconble.ui.ActMain
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import okhttp3.ResponseBody
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.Region
@@ -23,12 +31,18 @@ import org.altbeacon.beacon.Identifier
 import org.altbeacon.beacon.MonitorNotifier
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
 import java.time.Instant
+import kotlin.concurrent.thread
+import kotlin.coroutines.coroutineContext
+import kotlin.io.path.createTempFile
+import kotlin.io.path.outputStream
 
 
-class BeaconReferenceApplication : Application() {
-    // API service
-    private lateinit var ApiService: APIService
+class AppMain : Application() {
+    // API & user services
+    private lateinit var apiService: APIService
+    lateinit var apiUserSession: ApiUserSession
 
     // Bluetooth scanning
     var region = Region(
@@ -39,7 +53,7 @@ class BeaconReferenceApplication : Application() {
     )  // representa el criterio que se usa para busacar las balizas, como no se quiere buscar una UUID especifica los 3 útlimos campos son null
 
     // Beacons abstractions
-    var beaconManagementCollection = BeaconsCollection()
+    var loggingSession = LoggingSession
 
     // LiveData observers for monitoring and ranging
     lateinit var regionState: MutableLiveData<Int>
@@ -52,6 +66,8 @@ class BeaconReferenceApplication : Application() {
 
     // BeaconManager instance
     private lateinit var beaconManager: BeaconManager
+
+    val stopBroadcastReceiver = StopBroadcastReceiver()
 
     override fun onCreate() {
         super.onCreate()
@@ -76,6 +92,10 @@ class BeaconReferenceApplication : Application() {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val apiEndpoint = sharedPreferences.getString("api_uri", BuildConfig.SERVER_URL)!!
         setService(apiEndpoint)
+
+        // Load user session from shared preferences
+        apiUserSession = ApiUserSession(sharedPreferences, apiService)
+
 
         // Save instance for singleton access
         instance = this
@@ -140,7 +160,7 @@ class BeaconReferenceApplication : Application() {
             }
 
             // iterate over beacons and log their data
-            val currentInstant = java.time.Instant.now()
+            val currentInstant = Instant.now()
             for (beacon: Beacon in beacons) {
                 val id = beacon.id1
                 Log.i(TAG, "ID: $id")
@@ -167,7 +187,7 @@ class BeaconReferenceApplication : Application() {
         longitude: Float,
         timestamp: Instant
     ) {
-        beaconManagementCollection.addSensorEntry(
+        loggingSession.addSensorEntry(
             id,
             data,
             latitude,
@@ -176,32 +196,48 @@ class BeaconReferenceApplication : Application() {
         )
     }
 
-    //envia notificacion cuando se detecta un beacon en la region
     private fun sendNotification() {
-        val builder = NotificationCompat.Builder(this, "beacon-nearby-notifications-id")
-            .setContentTitle("Beacon Reference Application")
-            .setContentText("A beacon is nearby.")
-            .setSmallIcon(R.mipmap.logo_ies_foreground)
-        // TODO: UPDATE i18n strings, double check icon (make one that is a silhouette of a beacon)
+        // intents for stopping the session
+        val stopIntent = Intent(this, StopBroadcastReceiver::class.java).apply {
+            action = ACTION_STOP_SESSION
+        }
+        val stopPendingIntent = PendingIntent.getBroadcast(
+            this,
+            1,
+            stopIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
-        // Explicit intent to open the app when notification is clicked
-        val stackBuilder = TaskStackBuilder.create(this)
-        stackBuilder.addNextIntent(Intent(this, ActMain::class.java))
-        val resultPendingIntent = stackBuilder.getPendingIntent(
-            0,
-            PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
-        )
-        builder.setContentIntent(resultPendingIntent)
+        // configure notification
+        val builder = NotificationCompat.Builder(this, "vipv-app-session-ongoing")
+            .setContentTitle(getString(R.string.notification_ongoing_title))
+            .setContentText(getString(R.string.notification_ongoing_text))
+            .setSmallIcon(R.mipmap.logo_ies_foreground)
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .addAction(  // Stop action
+                R.drawable.square_stop,
+                getString(R.string.stop_notification_button),
+                stopPendingIntent
+            )
+            .setContentIntent(  // Explicit intent to open the app when notification is clicked
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, ActMain::class.java),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+
         val channel = NotificationChannel(
-            "beacon-nearby-notifications-id",
-            "Beacons Nearby",
-            NotificationManager.IMPORTANCE_DEFAULT
+            "vipv-app-session-ongoing",  // id
+            getString(R.string.notification_ongoing_channel_name),  // name
+            NotificationManager.IMPORTANCE_HIGH,  // importance
         )
-        channel.description = "Notifies when a beacon is nearby"
+        channel.description = "Notifies when a measurement session is active."
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
-        builder.setChannelId(channel.id)
-        notificationManager.notify(1, builder.build())
+        notificationManager.notify(NOTIFICATION_ONGOING_SESSION_ID, builder.build())
     }
 
     /**
@@ -219,7 +255,7 @@ class BeaconReferenceApplication : Application() {
             .baseUrl(endpoint)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        this.ApiService = retrofit.create(APIService::class.java)
+        this.apiService = retrofit.create(APIService::class.java)
     }
 
     /**
@@ -227,9 +263,28 @@ class BeaconReferenceApplication : Application() {
      * @return void
      */
     fun stopBeaconScanning() {
+        Log.i(TAG, "Stopping beacon scanning")
+        loggingSession.stopInstant = Instant.now()
         beaconManager.stopMonitoring(region)
         beaconManager.stopRangingBeacons(region)
         sessionRunning.value = false
+
+        // Remove notification
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(NOTIFICATION_ONGOING_SESSION_ID)
+
+        // Create a coroutine to write the session data to a file
+        thread {
+            val outFile = File(applicationContext.cacheDir, "VIPV_${Instant.now()}.txt")
+            SessionWriter.V1.dump2file(outFile.outputStream(), loggingSession = loggingSession)
+            Log.i(TAG, "Session data written to file: $outFile")
+            // upload the file to the server from a coroutine
+            runBlocking {
+                val response = apiUserSession.upload(outFile)
+                Log.i(TAG, "Upload response: $response")
+            }
+            outFile.delete()
+        }
     }
 
     /**
@@ -237,35 +292,13 @@ class BeaconReferenceApplication : Application() {
      * @return void
      */
     fun startBeaconScanning() {
+        loggingSession.startInstant = Instant.now()
         beaconManager.startMonitoring(region)
         beaconManager.startRangingBeacons(region)
         sessionRunning.value = true
-    }
 
-    /**
-     * Iterate over SensorData objects and send them to the server asynchronously
-     * @param data List of SensorData objects to send
-     * @return Boolean indicating success or failure
-     */
-    fun sendSensorData(data: List<SensorData>): Boolean {
-        for (sensorData in data) {
-            ApiService.sendSensorData(
-                PreferenceManager.getDefaultSharedPreferences(this).getString("user_token", "")!!,
-                sensorData,
-            ).enqueue(object : retrofit2.Callback<ResponseBody> {
-                override fun onResponse(
-                    call: retrofit2.Call<ResponseBody>,
-                    response: retrofit2.Response<ResponseBody>
-                ) {
-                    //Log.d(TAG, "Data sent to server")
-                }
-
-                override fun onFailure(call: retrofit2.Call<ResponseBody>, t: Throwable) {
-                    Log.e(TAG, "Failed to send data to server")
-                }
-            })
-        }
-        return true
+        // Configure the notification channel and send the notification
+        sendNotification()
     }
 
     /**
@@ -283,23 +316,30 @@ class BeaconReferenceApplication : Application() {
     }
 
     fun emptyAll() {
-        beaconManagementCollection.emptyAll()
+        loggingSession.emptyAll()
     }
 
     fun exportAll(outFile: Uri) {
-        // Create the output file, with filename VIPV_${TIMESTAMP}.vipv_session
+        // Create the output file, with filename VIPV_${TIMESTAMP}.txt
         val outStream = contentResolver.openOutputStream(outFile)
         if (outFile.path.isNullOrBlank()) {
             Log.e(TAG, "Output directory is null or blank")
             return
         }
-        SessionWriter.dump2file(outStream!!, beaconManagementCollection.getBeacons())
+        SessionWriter.V1.dump2file(outStream!!, loggingSession = loggingSession)
         outStream.close()
     }
 
+    fun concludeSession() {
+        stopBeaconScanning()
+        emptyAll()
+    }
+
     companion object {
-        lateinit var instance: BeaconReferenceApplication
+        lateinit var instance: AppMain
             private set  // This is a singleton, setter is private but access is public
-        const val TAG = "BeaconReferenceApplication"
+        const val TAG = "AppMain"
+        const val NOTIFICATION_ONGOING_SESSION_ID = 1
+        const val ACTION_STOP_SESSION = "com.example.beaconble.STOP_SESSION"
     }  // companion object
 }

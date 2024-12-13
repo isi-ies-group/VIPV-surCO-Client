@@ -40,14 +40,17 @@ class PermissionsRowAtomicHandler(
             hide()
         }
     }
+
     fun hide() {
         // Hide the UI element
         rowUI.visibility = TableRow.GONE
     }
+
     fun disable() {
         // Disable the button element
         buttonUI.isEnabled = false
     }
+
     fun setOnCheckedChangeListener(clickedCallback: OnClickListener) {
         // Set the callback for the button
         buttonUI.setOnClickListener(clickedCallback)
@@ -55,7 +58,7 @@ class PermissionsRowAtomicHandler(
 }
 
 
-class ActPermissions: AppCompatActivity() {
+class ActPermissions : AppCompatActivity() {
     lateinit var sysSettingsButton: Button
 
     lateinit var rowPermissionsLocalization: PermissionsRowAtomicHandler
@@ -92,22 +95,22 @@ class ActPermissions: AppCompatActivity() {
         setContentView(R.layout.activity_permissions)
 
         rowPermissionsLocalization = PermissionsRowAtomicHandler(
-            show = permissionsByGroupMap["Location"]!=null,
+            show = permissionsByGroupMap["Location"] != null,
             rowUI = findViewById<TableRow>(R.id.row_permission_localization),
             buttonUI = findViewById<MaterialButton>(R.id.sw_permission_localization),
         )
         rowPermissionsLocalizationInBackground = PermissionsRowAtomicHandler(
-            show = permissionsByGroupMap["Location in Background"]!=null,
+            show = permissionsByGroupMap["Location in Background"] != null,
             rowUI = findViewById<TableRow>(R.id.row_permission_localization_background),
             buttonUI = findViewById<MaterialButton>(R.id.sw_permission_localization_background),
         )
         rowPermissionsBluetooth = PermissionsRowAtomicHandler(
-            show = permissionsByGroupMap["Bluetooth"]!=null,
+            show = permissionsByGroupMap["Bluetooth"] != null,
             rowUI = findViewById<TableRow>(R.id.row_permission_bluetooth),
             buttonUI = findViewById<MaterialButton>(R.id.sw_permission_bluetooth),
         )
         rowPermissionsNotifications = PermissionsRowAtomicHandler(
-            show = permissionsByGroupMap["Notifications"]!=null,
+            show = permissionsByGroupMap["Notifications"] != null,
             rowUI = findViewById<TableRow>(R.id.row_permission_notifications),
             buttonUI = findViewById<MaterialButton>(R.id.sw_permission_notifications),
         )
@@ -197,8 +200,7 @@ class ActPermissions: AppCompatActivity() {
             val group = permissionsByGroupMap[groupKey]
             if (group == null) {
                 return true
-            }
-            else {
+            } else {
                 for (permission in group) {
                     if (ContextCompat.checkSelfPermission(
                             context,
@@ -214,13 +216,20 @@ class ActPermissions: AppCompatActivity() {
 
         @SuppressLint("ObsoleteSdkInt")
         val permissionsByGroupMap: Map<String, Array<String>?> = mapOf(
-                "Location" to (if (Build.VERSION.SDK_INT >= 1) arrayOf(Manifest.permission.ACCESS_FINE_LOCATION) else null),
-                "Location in Background" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION) else null),
-                // BLUETOOTH_CONNECT to obtain additional information
-                "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT) else null),
-                "Notifications" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(Manifest.permission.POST_NOTIFICATIONS) else null),
-            )
+            "Location" to (if (Build.VERSION.SDK_INT >= 1) arrayOf(Manifest.permission.ACCESS_FINE_LOCATION) else null),
+            "Location in Background" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) arrayOf(
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) else null),
+            // BLUETOOTH_CONNECT to obtain additional information
+            "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) arrayOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) else null),
+            "Notifications" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS
+            ) else null),
+        )
 
         const val TAG = "PermissionsActivity"
-        }  // companion object
-    }
+    }  // companion object
+}

@@ -1,8 +1,6 @@
 package com.example.beaconble.ui
 
-import android.app.Activity
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,7 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.beaconble.BeaconReferenceApplication
+import com.example.beaconble.AppMain
 import com.example.beaconble.BeaconSimplified
 import com.example.beaconble.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -37,17 +35,18 @@ class FragHome : Fragment() {
     lateinit var adapter: ListAdapterBeacons
 
     // Application instance
-    lateinit var beaconReferenceApplication: BeaconReferenceApplication
+    lateinit var appMain: AppMain
 
     // Activity result contract for the file picker
-    private val activityResultContract = registerForActivityResult(ActivityResultContracts.CreateDocument(mimeType = "text/plain")) { result ->
-        if (result != null) {
-            // Then call the exportAll method from the ViewModel with the file as parameter
-            Log.d("FragHome", "Exporting all data to $result")
-            val sanitizedUri = result.toString().replace("content://", "")
-            viewModel.value.exportAll(result)
+    private val activityResultContract =
+        registerForActivityResult(ActivityResultContracts.CreateDocument(mimeType = "text/plain")) { result ->
+            if (result != null) {
+                // Then call the exportAll method from the ViewModel with the file as parameter
+                Log.d("FragHome", "Exporting all data to $result")
+                val sanitizedUri = result.toString().replace("content://", "")
+                viewModel.value.exportAll(result)
+            }
         }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,13 +57,14 @@ class FragHome : Fragment() {
         viewModel = viewModels<FragHomeViewModel>()
 
         // Get the application instance
-        beaconReferenceApplication = BeaconReferenceApplication.Companion.instance
+        appMain = AppMain.Companion.instance
 
         // Inflate the layout for this fragment and find the IDs of the UI elements.
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         beaconListView = view.findViewById<ListView>(R.id.beaconListView)
         beaconCountTextView = view.findViewById<TextView>(R.id.beaconCountTextView)
-        startStopSessionButton = view.findViewById<FloatingActionButton>(R.id.startStopSessionButton)
+        startStopSessionButton =
+            view.findViewById<FloatingActionButton>(R.id.startStopSessionButton)
         emptyAllButton = view.findViewById<ImageButton>(R.id.imageButtonActionEmptyAll)
         exportAllButton = view.findViewById<ImageButton>(R.id.imageButtonActionExportAll)
 
@@ -73,7 +73,7 @@ class FragHome : Fragment() {
         beaconListView.adapter = adapter
 
         // Set the start stop button text and icon according to the session state
-        updateStartStopButton(beaconReferenceApplication.isSessionActive.value!!)
+        updateStartStopButton(appMain.isSessionActive.value!!)
 
         // Assign observers and callbacks to the ViewModel's LiveData objects.
         viewModel.value.rangedBeacons.observe(viewLifecycleOwner) { beacons ->
@@ -86,13 +86,15 @@ class FragHome : Fragment() {
                 val beaconId = beacon.id
                 Log.d("FragHome", "Beacon clicked: $beaconId")
                 // navigate to the details fragment, passing the beacon ID
-                findNavController().navigate(R.id.action_homeFragment_to_fragBeaconDetails, Bundle().apply {
-                    putString("beaconId", beaconId.toString())
-                })
+                findNavController().navigate(
+                    R.id.action_homeFragment_to_fragBeaconDetails,
+                    Bundle().apply {
+                        putString("beaconId", beaconId.toString())
+                    })
             }
 
         viewModel.value.nRangedBeacons.observe(viewLifecycleOwner) { n ->
-            updateBeaconCountTextView(n, beaconReferenceApplication.isSessionActive.value!!)
+            updateBeaconCountTextView(n, appMain.isSessionActive.value!!)
         }
 
         viewModel.value.isSessionActive.observe(viewLifecycleOwner) { isSessionActive ->
@@ -100,9 +102,17 @@ class FragHome : Fragment() {
             updateBeaconCountTextView(viewModel.value.nRangedBeacons.value!!, isSessionActive)
             // Show a toast message to indicate whether the session has started or stopped
             if (isSessionActive) {
-                Toast.makeText(requireContext(), getString(R.string.session_started), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.session_started),
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
-                Toast.makeText(requireContext(), getString(R.string.session_stopped), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.session_stopped),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -110,13 +120,8 @@ class FragHome : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         // Set click listeners for the buttons
-        /*postButton.setOnClickListener {
-            // findNavController().navigate(R.id.action_homeFragment_to_settingsFragment)
-            // TODO("Implement post button")
-            viewModel.value.sendTestData()
-        }*/
-
         startStopSessionButton.setOnClickListener {
             viewModel.value.toggleSession()
         }
@@ -124,7 +129,11 @@ class FragHome : Fragment() {
         emptyAllButton.setOnClickListener {
             if (viewModel.value.rangedBeacons.value!!.isEmpty()) {
                 // If there are no beacons, show a toast message and return
-                Toast.makeText(requireContext(), getString(R.string.no_data_to_empty), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.no_data_to_empty),
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
             // Create alertDialog to confirm the action
@@ -143,11 +152,15 @@ class FragHome : Fragment() {
             // Check if there is data to export
             if (viewModel.value.rangedBeacons.value!!.isEmpty()) {
                 // If there are no beacons, show a toast message and return
-                Toast.makeText(requireContext(), getString(R.string.no_data_to_export), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.no_data_to_export),
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
             // Open the file picker intention for document files
-            val filename = "VIPV_${Instant.now()}.vipv_session"
+            val filename = "VIPV_${Instant.now()}.txt"
             activityResultContract.launch(filename)
         }
 
@@ -181,7 +194,8 @@ class FragHome : Fragment() {
             if (nRangedBeacons == 0) {
                 beaconCountTextView.text = getString(R.string.beacons_detected_zero)
             } else {
-                beaconCountTextView.text = getString(R.string.beacons_detected_nonzero, nRangedBeacons)
+                beaconCountTextView.text =
+                    getString(R.string.beacons_detected_nonzero, nRangedBeacons)
             }
         } else {
             beaconCountTextView.text = getString(R.string.beacons_detected_paused)

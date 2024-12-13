@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
@@ -41,13 +40,8 @@ android {
     }
 
     buildFeatures{
-        compose = true
         buildConfig = true
         viewBinding true
-    }
-
-    composeOptions{
-        kotlinCompilerExtensionVersion = "1.4.3"
     }
 
     kotlin{
@@ -83,19 +77,14 @@ dependencies {
     //JSON
     implementation 'com.google.code.gson:gson:2.11.0'
 
-    //Compose
-    implementation (platform("androidx.compose:compose-bom:2024.11.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.material:material")
-    implementation("androidx.compose.runtime:runtime")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-
     //Corrutinas
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
 
-    implementation("androidx.preference:preference-ktx:1.2.1")
-    implementation("androidx.fragment:fragment-ktx:1.8.5")
+    //Misc (TODO: tidy up)
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation 'androidx.fragment:fragment-ktx:1.8.5'
+
+    //Security
+    implementation 'com.lambdapioneer.argon2kt:argon2kt:1.6.0'
 }

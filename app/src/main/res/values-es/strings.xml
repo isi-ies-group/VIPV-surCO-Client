@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     // Generic
-    <string name="app_name">Photovolta</string>
+    <string name="app_name">Programa adquisición VIPV</string>
     <string name="help">Ayuda</string>
     <string name="icon_help">Icono de ayuda</string>
     <string name="username">Usuario</string>
@@ -20,10 +20,10 @@
     <string name="no">No</string>
     <string name="login">Iniciar sesión</string>
     <string name="login_description">Inicia sesión para compartir tus datos de ciencia ciudadana!</string>
-    <string name="login_no_account_question">¿No tienes cuenta? Solicita una <a href="TODO">aquí.</a></string>  // TODO: add link
+    <string name="login_no_account_question">¿No tienes cuenta?</string>
     // Welcome view
     <string name="welcome_continue">Empezar a compartir medidas</string>
-    <string name="welcome_message">Bienvenid@ a \nPhotovolta!</string>
+    <string name="welcome_message">Bienvenid@ al  Programa de Adquisición VIPV!</string>
     // Permissions view
     <string name="permissions_needed">Photovolta requiere utilizar los siguientes permisos. Podrás acceder a la app cuando se hayan otorgado los permisos necesarios:</string>
     <string name="permissions_show_in_settings">Ver permisos en la configuración del sistema</string>
@@ -37,6 +37,7 @@
     <string name="settings_api_endpoint">Sección para servidores propios</string>
     <string name="settings_api_address">IP</string>
     <string name="settings_api_port">Puerto</string>
+    <string name="register">Regístrate</string>
     <string name="about">Sobre la app</string>
     <string name="toolbar_open">Abrir menú</string>
     <string name="logo">Logo</string>
@@ -61,4 +62,28 @@
     <string name="empty_all_data">¿Eliminar todo?</string>
     <string name="settings_api_address_hint">http:// o https://</string>
     <string name="session_started">Sesión de medida iniciada</string>
+    <string name="bad_email">Este correo no está registrado</string>
+    <string name="bad_password">Contraseña incorrecta</string>
+    <string name="prompt_email">Correo electrónico</string>
+    <string name="prompt_password">Contraseña</string>
+    <string name="action_sign_in">Iniciar sesión</string>
+    <string name="action_sign_in_short">Registrase</string>
+    <string name="welcome">¡Bienvenid@!</string>
+    <string name="invalid_username">Solo se admiten caracteres alfanuméricos y barra baja</string>
+    <string name="invalid_password">Al menos debe tener 8 caracteres</string>
+    <string name="invalid_email">Correo electrónico inválido</string>
+    <string name="login_failed">Inicio de sesión fallido</string>
+    <string name="connection_error">Problema en la conexión</string>
+    <string name="connection_error_message">No se pudo conectar al servidor. Compruebe su conectividad a Internet o pruebe más tarde.</string>
+    <string name="ok">OK</string>
+    <string name="prompt_username">Nombre de usuario</string>
+    <string name="prompt_password_again">Repetir la contraseña</string>
+    <string name="bad_email_already_registered">Este correo ya está registrado</string>
+    <string name="register_here">Regístrate aquí</string>
+    <string name="logged_out">Cuenta de usuario cerrada</string>
+    <string name="stop_notification_button">Detener</string>
+    <string name="notification_ongoing_title">Sessión de adquisición en curso</string>
+    <string name="notification_ongoing_text">Monitoreo de balizas activo.</string>
+    <string name="notification_ongoing_channel_name">Sesiones de adquisición de datos en curso</string>
+    <string name="invalid_password_equals">Las contraseñas no coinciden</string>
 </resources>

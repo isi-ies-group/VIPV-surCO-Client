@@ -6,9 +6,7 @@ import android.location.Location
 import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.Observer
-import androidx.preference.PreferenceManager
-import com.example.beaconble.BeaconReferenceApplication.Companion.TAG
-import com.example.beaconble.BeaconReferenceApplication.Companion.instance
+import com.example.beaconble.AppMain.Companion.TAG
 import com.example.beaconble.BuildConfig
 import com.example.beaconble.LoggingSession
 import com.google.android.gms.location.FusedLocationProviderClient

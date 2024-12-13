@@ -3,7 +3,7 @@ package com.example.beaconble.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.beaconble.BeaconReferenceApplication
+import com.example.beaconble.AppMain
 import com.example.beaconble.BeaconSimplified
 import com.example.beaconble.SensorEntry
 import org.altbeacon.beacon.Identifier
@@ -12,7 +12,7 @@ import java.util.ArrayList
 class FragBeaconDetailsViewModel : ViewModel() {
     private var beaconId: Identifier? = null
 
-    private val beaconReferenceApplication = BeaconReferenceApplication.instance
+    private val appMain = AppMain.instance
 
     private var _beacon = MutableLiveData<BeaconSimplified?>()
     val beacon: LiveData<BeaconSimplified?> get() = _beacon
@@ -31,7 +31,7 @@ class FragBeaconDetailsViewModel : ViewModel() {
     fun setBeaconId(id: Identifier) {
         if (id != beaconId) {
             beaconId = id
-            _beacon.value = beaconReferenceApplication.beaconManagementCollection.getBeacon(id)
+            _beacon.value = appMain.loggingSession.getBeacon(id)
             sensorEntries = _beacon.value?.sensorData!!
         }
     }
@@ -61,7 +61,7 @@ class FragBeaconDetailsViewModel : ViewModel() {
      */
     fun deleteBeacon() {
         if (_beacon.value != null) {
-            beaconReferenceApplication.beaconManagementCollection.removeBeacon(_beacon.value!!.id)
+            appMain.loggingSession.removeBeacon(_beacon.value!!.id)
             _beacon.value = null
         }
     }

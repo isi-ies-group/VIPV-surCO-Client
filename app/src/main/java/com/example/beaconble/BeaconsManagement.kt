@@ -43,9 +43,9 @@ class BeaconSimplified(val id: Identifier) {
  * identifier is not found in the list.
  */
 open class BeaconsCollection {
-    protected val _beacons: MutableLiveData<ArrayList<BeaconSimplified>> =
+    protected val beaconsInternal: MutableLiveData<ArrayList<BeaconSimplified>> =
         MutableLiveData<ArrayList<BeaconSimplified>>(ArrayList<BeaconSimplified>())
-    val beacons: LiveData<ArrayList<BeaconSimplified>> = _beacons
+    val beacons: LiveData<ArrayList<BeaconSimplified>> = beaconsInternal
 
     /**
      * Adds a SensorEntry to the beacon with the given identifier. If the beacon is not found, it
@@ -63,16 +63,16 @@ open class BeaconsCollection {
         longitude: Float,
         timestamp: Instant
     ) {
-        val beacon = _beacons.value?.find { it.id == id }
+        val beacon = beaconsInternal.value?.find { it.id == id }
         if (beacon != null) {
             beacon.sensorData.value?.add(SensorEntry(data, latitude, longitude, timestamp))
             beacon.sensorData.notifyObservers()
-            _beacons.notifyObservers()
+            beaconsInternal.notifyObservers()
         } else {
             val newBeacon = BeaconSimplified(id)
             newBeacon.sensorData.value?.add(SensorEntry(data, latitude, longitude, timestamp))
-            _beacons.value!!.add(newBeacon)
-            _beacons.notifyObservers()
+            beaconsInternal.value!!.add(newBeacon)
+            beaconsInternal.notifyObservers()
         }
     }
 
@@ -81,7 +81,7 @@ open class BeaconsCollection {
      * @return The list of beacons.
      */
     fun getBeacons(): ArrayList<BeaconSimplified> {
-        return _beacons.value!!
+        return beaconsInternal.value!!
     }
 
     /**
@@ -90,15 +90,15 @@ open class BeaconsCollection {
      * @return The beacon with the given identifier.
      */
     fun getBeacon(id: Identifier): BeaconSimplified? {
-        return _beacons.value?.find { it.id == id }
+        return beaconsInternal.value?.find { it.id == id }
     }
 
     /**
      * Removes all the beacons from the list.
      */
     fun emptyAll() {
-        _beacons.value?.clear()
-        _beacons.notifyObservers()
+        beaconsInternal.value?.clear()
+        beaconsInternal.notifyObservers()
     }
 
     /**
@@ -106,7 +106,7 @@ open class BeaconsCollection {
      * @param id The identifier of the beacon.
      */
     fun removeBeacon(id: Identifier) {
-        _beacons.value?.removeIf { it.id == id }
-        _beacons.notifyObservers()
+        beaconsInternal.value?.removeIf { it.id == id }
+        beaconsInternal.notifyObservers()
     }
 }

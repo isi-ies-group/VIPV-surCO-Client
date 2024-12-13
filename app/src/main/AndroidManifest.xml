@@ -16,7 +16,7 @@
 
     <application
         android:networkSecurityConfig="@xml/network_security_config"
-        android:name="BeaconReferenceApplication"
+        android:name="AppMain"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -43,6 +43,12 @@
             android:foregroundServiceType="location"
             android:permission="android.permission.FOREGROUND_SERVICE">
         </service>
+        <receiver android:name=".service.StopBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.beaconble.STOP_SESSION" />
+            </intent-filter>
+        </receiver>
 
     </application>
 
