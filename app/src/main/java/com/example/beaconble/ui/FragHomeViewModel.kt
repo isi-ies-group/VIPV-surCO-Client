@@ -1,6 +1,5 @@
 package com.example.beaconble.ui
 
-import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -24,34 +23,6 @@ class FragHomeViewModel() : ViewModel() {
         }
     }
 
-    /*fun sendTestData() {
-        Log.d("FragHomeViewModel", "Sending test data")
-        beaconReferenceApplication.sendSensorData(
-            listOf(
-                SensorData(
-                    id_sensor = "4001",
-                    timestamp = "2021-09-01T12:00:00",
-                    latitud = "40.416775",
-                    longitud = "-3.703790",
-                    orientacion = "0",
-                    inclinacion = "0",
-                    valor_medida = "25",
-                    id = "4"
-                )
-            )
-        )
-        beaconReferenceApplication.addSensorDataEntry(
-            Identifier.parse("0x1234"),
-            25,
-            40.416775f,
-            -3.703790f,
-            Instant.now()
-        )
-        val nUniqueBeacons =
-            beaconReferenceApplication.beaconManagementCollection.beacons.value?.size
-        Log.i("FragHomeViewModel", "Unique beacons: $nUniqueBeacons")
-    }*/
-
     fun toggleSession() {
         appMain.toggleSession()
     }
@@ -60,7 +31,7 @@ class FragHomeViewModel() : ViewModel() {
         appMain.emptyAll()
     }
 
-    fun exportAll(file: Uri) {
-        appMain.exportAll(file)
+    fun uploadAllSessions() {
+        appMain.uploadAll()
     }
 }

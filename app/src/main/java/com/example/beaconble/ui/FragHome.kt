@@ -11,7 +11,6 @@ import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -19,7 +18,6 @@ import com.example.beaconble.AppMain
 import com.example.beaconble.BeaconSimplified
 import com.example.beaconble.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import java.time.Instant
 
 class FragHome : Fragment() {
     lateinit var viewModel: Lazy<FragHomeViewModel>
@@ -29,24 +27,14 @@ class FragHome : Fragment() {
     lateinit var beaconCountTextView: TextView
     lateinit var startStopSessionButton: FloatingActionButton
     lateinit var emptyAllButton: ImageButton
-    lateinit var exportAllButton: ImageButton
+    lateinit var shareSessionButton: ImageButton
+    lateinit var uploadSessionButton: ImageButton
 
     // Adapter for the list view
     lateinit var adapter: ListAdapterBeacons
 
     // Application instance
     lateinit var appMain: AppMain
-
-    // Activity result contract for the file picker
-    private val activityResultContract =
-        registerForActivityResult(ActivityResultContracts.CreateDocument(mimeType = "text/plain")) { result ->
-            if (result != null) {
-                // Then call the exportAll method from the ViewModel with the file as parameter
-                Log.d("FragHome", "Exporting all data to $result")
-                val sanitizedUri = result.toString().replace("content://", "")
-                viewModel.value.exportAll(result)
-            }
-        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -65,8 +53,9 @@ class FragHome : Fragment() {
         beaconCountTextView = view.findViewById<TextView>(R.id.beaconCountTextView)
         startStopSessionButton =
             view.findViewById<FloatingActionButton>(R.id.startStopSessionButton)
-        emptyAllButton = view.findViewById<ImageButton>(R.id.imageButtonActionEmptyAll)
-        exportAllButton = view.findViewById<ImageButton>(R.id.imageButtonActionExportAll)
+        emptyAllButton = view.findViewById<ImageButton>(R.id.imBtnActionEmptyAll)
+        shareSessionButton = view.findViewById<ImageButton>(R.id.imBtnActionShareSession)
+        uploadSessionButton = view.findViewById<ImageButton>(R.id.imBtnActionUploadSession)
 
         // Create the adapter for the list view and assign it to the list view.
         adapter = ListAdapterBeacons(requireContext(), ArrayList())
@@ -131,7 +120,7 @@ class FragHome : Fragment() {
                 // If there are no beacons, show a toast message and return
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.no_data_to_empty),
+                    getString(R.string.empty_session_nothing_to_do),
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
@@ -148,20 +137,34 @@ class FragHome : Fragment() {
             alertDialog.show()
         }
 
-        exportAllButton.setOnClickListener {
+        shareSessionButton.setOnClickListener {
             // Check if there is data to export
             if (viewModel.value.rangedBeacons.value!!.isEmpty()) {
                 // If there are no beacons, show a toast message and return
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.no_data_to_export),
+                    getString(R.string.no_data_to_share),
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
-            // Open the file picker intention for document files
-            val filename = "VIPV_${Instant.now()}.txt"
-            activityResultContract.launch(filename)
+            // Call activity's share method
+            (requireActivity() as ActMain).shareSession()
+        }
+
+        uploadSessionButton.setOnClickListener {
+            // Check if there is data to upload
+            if (AppMain.instance.loggingSession.getSessionFiles().isEmpty()) {
+                // If there are no files, show a toast message and return
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.no_data_to_upload),
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+            // Upload the session data
+            viewModel.value.uploadAllSessions()
         }
 
         beaconCountTextView.text = getString(R.string.beacons_detected_zero)
@@ -175,9 +178,11 @@ class FragHome : Fragment() {
     private fun updateStartStopButton(isSessionActive: Boolean) {
         if (isSessionActive) {
             startStopSessionButton.setImageResource(R.drawable.square_stop)
+            startStopSessionButton.tooltipText = getString(R.string.stop_button)
             startStopSessionButton.contentDescription = getString(R.string.stop_button)
         } else {
             startStopSessionButton.setImageResource(R.drawable.triangle_start)
+            startStopSessionButton.tooltipText = getString(R.string.start_button)
             startStopSessionButton.contentDescription = getString(R.string.start_button)
         }
     }

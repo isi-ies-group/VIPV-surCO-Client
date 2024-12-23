@@ -227,7 +227,7 @@ class ApiUserSession {
             Base64.encodeToString(saltByteArray, Base64.DEFAULT)
         )
         try {
-            val registerResponse = apiService.registerUser(registerRequest)
+            apiService.registerUser(registerRequest)
             knownState = ApiUserSessionState.LOGGED_IN
         } catch (e: HttpException) {
             Log.e("ApiUserSession", "HttpException registering user: ${e.message}")
@@ -294,10 +294,6 @@ class ApiUserSession {
         return ApiUserSessionState.LOGGED_IN
     }
 
-    fun isProbablyValid(): Boolean {
-        return username != null && email != null && passHash != null && passSalt != null
-    }
-
     // sub classes and factories from root class
     class SaltResponse {
         var passSalt: String? = null
@@ -307,9 +303,10 @@ class ApiUserSession {
 
     fun loginRequest() = LoginRequest(this.email!!, this.passHash!!)
 
+    @Suppress("PropertyName")
     class LoginResponse {
         var username: String? = null
-        var access_token: String? = null
+        var access_token: String? = null  // Linter does not like snake_case
         var validity: Int? = null
     }
 
@@ -322,7 +319,7 @@ class ApiUserSession {
 
     object CredentialsValidator {
         // regex validators
-        val emailValidator = Regex("(?:[a-z0-9!#\$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#\$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])")
+        val emailValidator = Regex("(?:[a-zA-Z0-9!#\$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#\$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)])")
         val usernameValidator = Regex("^[a-zA-Z0-9_]{5,20}$")
 
         fun isEmailValid(email: String): Boolean {

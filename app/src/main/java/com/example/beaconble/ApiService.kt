@@ -14,6 +14,9 @@ import retrofit2.http.Part
 const val APIv1_base = "api/v1/"
 
 interface APIService {
+    @GET(APIv1_base + "isUp")
+    suspend fun isUp(): ResponseBody
+
     @GET(APIv1_base + "salt")
     @Headers("Content-type: application/json")
     suspend fun getUserSalt(

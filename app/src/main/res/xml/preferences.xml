@@ -2,32 +2,30 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="@string/settings_app_behaviour"
-        android:icon="@drawable/baseline_settings_24">
+        android:icon="@drawable/settings_gear"
+        android:title="@string/settings_app_behaviour">
 
-    <EditTextPreference
-        android:key="user_token"
-        android:title="@string/settings_user_token"
-        android:inputType="textPassword"
-        android:dialogTitle="@string/settings_user_token"
-        android:dialogMessage="@string/settings_user_token_message" />
-
-    <!-- SwitchPreferenceCompat
-        android:key="only_wifi_upload"
-        android:title="@string/settings_only_wifi_upload"
-        android:summaryOn="@string/settings_only_wifi_upload_on"
-        android:summaryOff="@string/settings_only_wifi_upload_off"/ -->
+        <SwitchPreferenceCompat
+            android:key="auto_upload_on_metered"
+            android:summaryOff="@string/settings_only_wifi_upload_off"
+            android:summaryOn="@string/settings_only_wifi_upload_on"
+            android:defaultValue="true"
+            android:title="@string/settings_only_wifi_upload" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/settings_api_endpoint"
-        android:icon="@drawable/baseline_open_in_browser_24">
+        android:icon="@drawable/upload_cloud"
+        android:title="@string/settings_api_endpoint">
 
-    <EditTextPreference
-        android:key="api_uri"
-        android:summary="@string/settings_api_address_hint"
-        android:title="@string/settings_api_address" />
+        <EditTextPreference
+            android:key="api_uri"
+            android:summary="@string/settings_api_address_hint"
+            android:title="@string/settings_api_address" />
+
+        <Preference
+            android:key="api_test"
+            android:title="@string/settings_api_test" />
 
     </PreferenceCategory>
 

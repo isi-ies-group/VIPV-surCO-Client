@@ -35,7 +35,7 @@
     <string name="settings_app_behaviour">Comportamiento de la app</string>
     <string name="settings_only_wifi_upload">Subir datos solo con WiFi</string>
     <string name="settings_api_endpoint">Sección para servidores propios</string>
-    <string name="settings_api_address">IP</string>
+    <string name="settings_api_address">Dirección IP</string>
     <string name="settings_api_port">Puerto</string>
     <string name="register">Regístrate</string>
     <string name="about">Sobre la app</string>
@@ -51,9 +51,10 @@
     <string name="beacon_last_read">Última lectura:</string>
     <string name="beacons_detected_paused">Detección de balizas en pausa</string>
     <string name="empty_all_data_confirmation">Esta acción no se puede deshacer.</string>
-    <string name="no_data_to_empty">¡No hay balizas que eliminar!</string>
-    <string name="no_data_to_export">¡No hay información para exportar!</string>
+    <string name="empty_session_nothing_to_do">Sesión vacía</string>
+    <string name="no_data_to_share">No se puede compartir una sesión vacía</string>
     <string name="session_stopped">Sesión de medida finalizada</string>
+    <string name="share">Compartir sesión</string>
     <string name="beacon_details">Detalles de la baliza</string>
     <string name="beacon_detail_description_hint">Descripción opcional de la baliza</string>
     <string name="beacon_detail_tilt">Inclinación [grados]</string>
@@ -61,6 +62,7 @@
     <string name="yes">Sí</string>
     <string name="empty_all_data">¿Eliminar todo?</string>
     <string name="settings_api_address_hint">http:// o https://</string>
+    <string name="no_data_to_upload">No se puede subir una sesión vacía</string>
     <string name="session_started">Sesión de medida iniciada</string>
     <string name="bad_email">Este correo no está registrado</string>
     <string name="bad_password">Contraseña incorrecta</string>
@@ -86,4 +88,13 @@
     <string name="notification_ongoing_text">Monitoreo de balizas activo.</string>
     <string name="notification_ongoing_channel_name">Sesiones de adquisición de datos en curso</string>
     <string name="invalid_password_equals">Las contraseñas no coinciden</string>
+    <string name="settings_api_test">Comprobar conexión al servidor</string>
+    <string name="settings_api_valid">"Servicio configurado correctamente "</string>
+    <string name="settings_api_invalid">Servicio no disponible en la dirección especificada</string>
+    <string name="settings_api_testing">Probando la conexión con el servidor…</string>
+    <string name="notification_no_location_bluetooth_channel_name">Bluetooth o Ubicación desactivadas.</string>
+    <string name="notification_no_location_bluetooth_title">Se requiere atención</string>
+    <string name="notification_no_location_bluetooth_text">Bluetooth y Ubicación desactivados, actívelos por favor</string>
+    <string name="notification_no_location_text">Ubicación desactivada, actívala por favor</string>
+    <string name="notification_no_bluetooth_text">Bluetooth desactivado, actívelo por favor</string>
 </resources>

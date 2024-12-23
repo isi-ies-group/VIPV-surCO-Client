@@ -1,6 +1,5 @@
 package com.example.beaconble
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import org.altbeacon.beacon.Identifier
 import java.time.Instant
@@ -35,78 +34,14 @@ class BeaconSimplified(val id: Identifier) {
     var description: String = ""
     var direction: Float? = null
     var tilt: Float? = null
-}
-
-
-/**
- * Handles the addition of SensorEntries to the beacons. Creates new instances of Beacon if the
- * identifier is not found in the list.
- */
-open class BeaconsCollection {
-    protected val beaconsInternal: MutableLiveData<ArrayList<BeaconSimplified>> =
-        MutableLiveData<ArrayList<BeaconSimplified>>(ArrayList<BeaconSimplified>())
-    val beacons: LiveData<ArrayList<BeaconSimplified>> = beaconsInternal
 
     /**
-     * Adds a SensorEntry to the beacon with the given identifier. If the beacon is not found, it
-     * creates a new instance of Beacon and adds it to the list.
-     * @param id The identifier of the beacon.
-     * @param data The data to be added to the beacon.
-     * @param latitude The latitude of the beacon.
-     * @param longitude The longitude of the beacon.
-     * @param timestamp The timestamp of the data.
+     * Returns the data received from the beacon and clears it.
      */
-    fun addSensorEntry(
-        id: Identifier,
-        data: Short,
-        latitude: Float,
-        longitude: Float,
-        timestamp: Instant
-    ) {
-        val beacon = beaconsInternal.value?.find { it.id == id }
-        if (beacon != null) {
-            beacon.sensorData.value?.add(SensorEntry(data, latitude, longitude, timestamp))
-            beacon.sensorData.notifyObservers()
-            beaconsInternal.notifyObservers()
-        } else {
-            val newBeacon = BeaconSimplified(id)
-            newBeacon.sensorData.value?.add(SensorEntry(data, latitude, longitude, timestamp))
-            beaconsInternal.value!!.add(newBeacon)
-            beaconsInternal.notifyObservers()
-        }
-    }
-
-    /**
-     * Returns the list of beacons.
-     * @return The list of beacons.
-     */
-    fun getBeacons(): ArrayList<BeaconSimplified> {
-        return beaconsInternal.value!!
-    }
-
-    /**
-     * Returns the beacon with the given identifier.
-     * @param id The identifier of the beacon.
-     * @return The beacon with the given identifier.
-     */
-    fun getBeacon(id: Identifier): BeaconSimplified? {
-        return beaconsInternal.value?.find { it.id == id }
-    }
-
-    /**
-     * Removes all the beacons from the list.
-     */
-    fun emptyAll() {
-        beaconsInternal.value?.clear()
-        beaconsInternal.notifyObservers()
-    }
-
-    /**
-     * Removes the beacon with the given identifier from the list.
-     * @param id The identifier of the beacon.
-     */
-    fun removeBeacon(id: Identifier) {
-        beaconsInternal.value?.removeIf { it.id == id }
-        beaconsInternal.notifyObservers()
+    fun copyAndClearData(): List<SensorEntry>? {
+        val data = sensorData.value?.toList()
+        sensorData.value?.clear()
+        sensorData.notifyObservers()
+        return data
     }
 }

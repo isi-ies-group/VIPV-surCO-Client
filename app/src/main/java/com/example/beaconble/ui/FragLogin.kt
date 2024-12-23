@@ -11,7 +11,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.text.TextWatcher
-import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
@@ -43,7 +42,6 @@ class FragLogin : Fragment() {
 
         // observe the login status to show the user any errors or return to the main activity
         viewModel.loginStatus.observe(viewLifecycleOwner) { status ->
-            Log.d("FragLogin", "Login status: $status")
             if (status == ApiUserSessionState.LOGGED_IN) {
                 // navigate to the main activity
                 findNavController().navigate(R.id.action_fragLogin_to_homeFragment)

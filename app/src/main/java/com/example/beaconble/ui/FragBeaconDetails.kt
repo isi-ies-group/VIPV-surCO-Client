@@ -67,7 +67,7 @@ class FragBeaconDetails : Fragment() {
         editTextBeaconTilt = view.findViewById<EditText>(R.id.editTextTilt)
         editTextBeaconDirection = view.findViewById<EditText>(R.id.editTextDirection)
         listViewBeaconMeasurements = view.findViewById<ListView>(R.id.listViewSensorEntries)
-        deleteBeaconButton = view.findViewById<ImageButton>(R.id.imageButtonDeleteBeacon)
+        deleteBeaconButton = view.findViewById<ImageButton>(R.id.imBtnDeleteBeacon)
 
         adapter = ListAdapterSensorEntries(requireContext(), ArrayList())
         listViewBeaconMeasurements.adapter = adapter

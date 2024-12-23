@@ -20,10 +20,6 @@ class FragBeaconDetailsViewModel : ViewModel() {
     var sensorEntries: MutableLiveData<ArrayList<SensorEntry>> =
         MutableLiveData<ArrayList<SensorEntry>>()
 
-    fun getBeaconId(): Identifier? {
-        return beaconId
-    }
-
     /**
      * Sets the beacon with the given identifier.
      * @param id The identifier of the beacon.
@@ -64,9 +60,5 @@ class FragBeaconDetailsViewModel : ViewModel() {
             appMain.loggingSession.removeBeacon(_beacon.value!!.id)
             _beacon.value = null
         }
-    }
-
-    companion object {
-        private const val TAG = "FragBeaconDetailsViewModel"
     }
 }

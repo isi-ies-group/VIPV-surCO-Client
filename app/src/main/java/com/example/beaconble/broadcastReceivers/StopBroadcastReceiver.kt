@@ -1,4 +1,4 @@
-package com.example.beaconble.service
+package com.example.beaconble.broadcastReceivers
 
 import android.content.BroadcastReceiver
 import android.content.Context

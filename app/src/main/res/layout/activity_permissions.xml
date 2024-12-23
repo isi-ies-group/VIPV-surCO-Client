@@ -129,7 +129,7 @@
         android:id="@+id/btn_permissions_show_in_settings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableEnd="@drawable/baseline_settings_24"
+        android:drawableEnd="@drawable/settings_gear"
         android:drawableTint="@color/white"
         android:text="@string/permissions_show_in_settings"
         android:layout_marginHorizontal="35sp"
