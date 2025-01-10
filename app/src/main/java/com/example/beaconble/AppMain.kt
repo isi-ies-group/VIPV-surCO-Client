@@ -361,20 +361,6 @@ class AppMain : Application(), ComponentCallbacks2 {
     }
 
     /**
-     * Test the API endpoint by sending a GET request to the server
-     */
-    suspend fun testApiEndpoint(): Boolean {
-        try {
-            val response = apiService.isUp()
-            Log.i(TAG, "API is up: $response")
-            return true
-        } catch (e: Exception) {
-            Log.e(TAG, "API is down: $e")
-            return false
-        }
-    }
-
-    /**
      * Stop monitoring and ranging for beacons
      * @return void
      */
