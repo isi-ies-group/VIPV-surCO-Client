@@ -35,17 +35,16 @@ class FragSettings : PreferenceFragmentCompat() {
         if (editTextPreference == null) {
             Log.w("FragSettings", "API URI setting not found")
         }
+        // set the hint to the current value
+        editTextPreference?.setOnBindEditTextListener{
+            it.hint = BuildConfig.SERVER_URL
+        }
         // set callback to update the application API service when the value changes
-        editTextPreference?.setOnBindEditTextListener { editText ->
-            editText.setOnEditorActionListener { _, _, _ ->
-                // Update the endpoint in the API service
-                val newUri = editText.text.toString()
-                Log.d("FragSettings", "Setting API URI to $newUri")
-                AppMain.Companion.instance.setupApiService()
+        editTextPreference?.onPreferenceChangeListener =
+            Preference.OnPreferenceChangeListener { _, newValue ->
+                AppMain.Companion.instance.setupApiService(newValue as String)
                 true
             }
-        }
-        editTextPreference?.setDefaultValue(BuildConfig.SERVER_URL)
 
         // Get test api endpoint button preference
         val testApiEndpoint = findPreference<Preference>("api_test")

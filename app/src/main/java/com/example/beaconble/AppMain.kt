@@ -119,11 +119,6 @@ class AppMain : Application(), ComponentCallbacks2 {
         // Set API service
         setupApiService()
 
-        // Load user session from shared preferences
-        apiUserSession =
-            ApiUserSession(PreferenceManager.getDefaultSharedPreferences(this), apiService)
-
-
         // Save instance for singleton access
         instance = this
     }
@@ -151,8 +146,6 @@ class AppMain : Application(), ComponentCallbacks2 {
         if (rangeAgeMillis < 10000) {
             nRangedBeacons.value = beacons.count()
             // get location latitude and longitude, common for all beacons detected here
-            val fusedLocationClient: FusedLocationProviderClient =
-                LocationServices.getFusedLocationProviderClient(applicationContext)
             var location: Location? = null
             try {
                 fusedLocationClient.lastLocation
@@ -322,12 +315,22 @@ class AppMain : Application(), ComponentCallbacks2 {
      * Setup the API service endpoint (callback for configuration changes)
      * If the endpoint is not set in PreferenceManager.getDefaultSharedPreferences,
      * the default value is used (from BuildConfig)
+     * @param newUri: String, new URI to set for the API service if known, else it is read from shared preferences
      * @return void
      */
-    fun setupApiService() {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        var endpoint =
-            sharedPreferences.getString("api_uri", BuildConfig.SERVER_URL) ?: BuildConfig.SERVER_URL
+    fun setupApiService(newUri: String? = null) {
+        if (newUri.isNullOrBlank()) {
+            // Get the API URI setting
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+            var endpoint =
+                sharedPreferences.getString("api_uri", BuildConfig.SERVER_URL) ?: BuildConfig.SERVER_URL
+            if (endpoint.isBlank()) {
+                endpoint = BuildConfig.SERVER_URL
+            }
+            setupApiService(endpoint)
+            return
+        }
+        var endpoint = newUri
         if (!endpoint.endsWith("/")) {
             endpoint += "/"
         }
@@ -339,6 +342,22 @@ class AppMain : Application(), ComponentCallbacks2 {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         this.apiService = retrofit.create(APIService::class.java)
+        // Load user session from shared preferences
+        apiUserSession = ApiUserSession(PreferenceManager.getDefaultSharedPreferences(this), apiService)
+    }
+
+    /**
+     * Test the API endpoint by sending a GET request to the server
+     */
+    suspend fun testApiEndpoint(): Boolean {
+        try {
+            val response = apiService.isUp()
+            Log.i(TAG, "API is up: $response")
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "API is down: $e")
+            return false
+        }
     }
 
     /**
@@ -393,6 +412,7 @@ class AppMain : Application(), ComponentCallbacks2 {
 
         // Start location updates
         try {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
             checkAndNotifyLocationAndBluetoothProviders()
             fusedLocationClient.requestLocationUpdates(
                 locationRequest,

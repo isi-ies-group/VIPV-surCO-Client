@@ -68,20 +68,20 @@ object SessionWriter {
          *  "version_scheme": 1,
          *  "start_instant": "2021-10-01T12:00:00Z",
          *  "finish_instant": "2021-10-01T12:30:00Z",
-         *  "beacons": {
-         *    "0": {
+         *  "beacons": [
+         *    {
          *      "id": "id_of_beacon1",
          *      "tilt": 0.0,
          *      "orientation": 0.0,
          *      "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
          *    },
-         *    "1": {
+         *    {
          *      "id": "id_of_beacon2",
          *      "tilt": 0.0,
          *      "orientation": 0.0,
          *      "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
          *    }
-         *   }
+         *   ]
          *  }
          */
         fun createJSONHeader(
@@ -101,7 +101,6 @@ object SessionWriter {
                 if (index > 0) {
                     outputStreamWriter.append(",")
                 }
-                // ID identifier as beacon index in the list.
                 outputStreamWriter.append("{")  // Open the unique beacon object.
 
                 // Encode the description in Base64 to avoid issues with special characters (especially quotes and newlines).
@@ -122,6 +121,9 @@ object SessionWriter {
         /**
          * Create the CSV header of the file.
          * @param outputStreamWriter The output stream to write to.
+         *
+         * Currently, it is:
+         * beacon_id,timestamp,data,latitude,longitude
          */
         fun appendCsvHeader(outputStreamWriter: OutputStreamWriter) {
             outputStreamWriter.write("beacon_id,timestamp,data,latitude,longitude\n")
@@ -131,6 +133,15 @@ object SessionWriter {
          * Create the CSV body of the file.
          * @param outputStreamWriter The output stream to write to.
          * @param beacons The collection of beacons.
+         *
+         * For example:
+         * <header>
+         * 0x010203040506,2021-10-01T12:00:00Z,127,0.0,0.0
+         * 0x010203040506,2021-10-01T12:00:01Z,126,0.0,0.0
+         * 0x010203040506,2021-10-01T12:00:02Z,125,0.0,0.0
+         * 0x010203040507,2021-10-01T12:00:00Z,127,0.0,0.0
+         * 0x010203040507,2021-10-01T12:00:01Z,128,0.0,0.0
+         * 0x010203040507,2021-10-01T12:00:02Z,129,0.0,0.0
          */
         fun appendCsvBody(
             outputStreamWriter: OutputStreamWriter,

@@ -62,7 +62,7 @@
     <string name="yes">Sí</string>
     <string name="empty_all_data">¿Eliminar todo?</string>
     <string name="settings_api_address_hint">http:// o https://</string>
-    <string name="no_data_to_upload">No se puede subir una sesión vacía</string>
+    <string name="no_data_to_upload">No hay sesiones pasadas pendientes de subir</string>
     <string name="session_started">Sesión de medida iniciada</string>
     <string name="bad_email">Este correo no está registrado</string>
     <string name="bad_password">Contraseña incorrecta</string>
