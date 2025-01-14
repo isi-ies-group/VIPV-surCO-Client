@@ -18,7 +18,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.beaconble.broadcastReceivers.StopBroadcastReceiver
 import com.example.beaconble.ui.ActMain
-import com.example.beaconble.works.SessionFilesUploadWorker
+import com.example.beaconble.workers.SessionFilesUploadWorker
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
