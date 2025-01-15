@@ -1,123 +1,254 @@
 package com.example.beaconble.service
 
-import android.app.Service
+import android.app.*
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.content.Intent
 import android.location.Location
+import android.location.LocationManager
+import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
-import androidx.lifecycle.Observer
-import com.example.beaconble.AppMain.Companion.TAG
-import com.example.beaconble.BuildConfig
-import com.example.beaconble.LoggingSession
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import androidx.core.app.NotificationCompat
+import com.example.beaconble.AppMain
+import com.example.beaconble.AppMain.Companion.ACTION_STOP_SESSION
+import com.example.beaconble.R
+import com.example.beaconble.broadcastReceivers.StopBroadcastReceiver
+import com.example.beaconble.ui.ActMain
+import com.google.android.gms.location.*
 import org.altbeacon.beacon.Beacon
-import org.altbeacon.beacon.BeaconManager
-import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.Region
+import org.altbeacon.beacon.service.BeaconService
+import java.time.Instant
 
-class ForegroundBeaconScanService: Service() {
-    val loggingSession: LoggingSession = LoggingSession
+// TODO: implement onLowMemory and onTrimMemory
+class ForegroundBeaconScanService : BeaconService() {
+    private lateinit var appMain: AppMain
 
-    // For AltBeacon to work
-    var region = Region("all-beacons", null, null, null)
-    // BeaconManager instance
-    private lateinit var beaconManager: BeaconManager
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
 
-    val centralRangingObserver = Observer<Collection<Beacon>> { beacons ->
-        val rangeAgeMillis =
-            System.currentTimeMillis() - (beacons.firstOrNull()?.lastCycleDetectionTimestamp ?: 0)
-        if (rangeAgeMillis < 10000) {
-            // get location latitude and longitude, common for all beacons detected here
-            val fusedLocationClient: FusedLocationProviderClient =
-                LocationServices.getFusedLocationProviderClient(applicationContext)
-            var location: Location? = null
-            try {
-                fusedLocationClient.lastLocation
-                    .addOnSuccessListener { loc: Location? ->
+    val region = Region(
+        "all-beacons", null, null, null
+    )  // criteria for identifying beacons
+
+    val rangingCallback: org.altbeacon.beacon.service.Callback =
+        object : org.altbeacon.beacon.service.Callback("com.example.beaconble") {
+            override fun call(context: Context?, dataName: String?, data: Bundle?): Boolean {
+                Log.i(TAG, "Ranging callback called with dataName: $dataName")
+                Log.i(TAG, "Data: $data")
+                // get the beacons from the bundle
+                val beacons = data?.getParcelableArrayList<Beacon>("beacons") ?: return false
+                // get the current location
+                var location: Location? = null
+                try {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { loc: Location? ->
                         // Got last known location. In some rare situations this can be null.
                         location = loc
                     }
-            } catch (e: SecurityException) {
-                Log.e(TAG, "Location permission denied")
-                // TODO handle location permission denied
+                } catch (e: SecurityException) {
+                    Log.e(AppMain.Companion.TAG, "Location permission denied: $e")
+                    // TODO handle location permission denied
+                }
+                // add the beacons to the appMain
+                appMain.addSensorDataEntry(beacons, location, Instant.now())
+                return true
             }
-            // if location is null, set latitude and longitude to NaN
-            var latitude = location?.latitude
-            var longitude = location?.longitude
-            if (location == null) {
-                Log.e(TAG, "Location is null")
-                latitude = Double.NaN
-                longitude = Double.NaN
+        }
+    val monitoringCallback: org.altbeacon.beacon.service.Callback =
+        object : org.altbeacon.beacon.service.Callback("com.example.beaconble") {
+            override fun call(context: Context?, dataName: String?, data: Bundle?): Boolean {
+                Log.i(TAG, "Monitoring callback called with dataName: $dataName")
+                return true
             }
+        }
 
-            // iterate over beacons and log their data
-            val currentInstant = java.time.Instant.now()
-            for (beacon: Beacon in beacons) {
-                val id = beacon.id1
-                Log.i(TAG, "ID: $id")
-                val data = beacon.dataFields
-                // analogReading is the CH1 analog value, as two bytes in little endian
-                val analogReading = data[0].toShort()
-                val hexString = analogReading.toString(16)
-                Log.i(TAG, "Data: $analogReading (0x$hexString)")
-                loggingSession.addSensorEntry(
-                    id,
-                    analogReading,
-                    latitude!!.toFloat(),
-                    longitude!!.toFloat(),
-                    currentInstant
+    override fun onCreate() {
+        super.onCreate()
+
+        // get AppMain singleton
+        appMain = AppMain.instance
+
+        // Initialize the location client
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        // Configure the location request
+        locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY, AppMain.GPS_LOCATION_PERIOD_MILLIS
+        ).setMinUpdateIntervalMillis(AppMain.GPS_LOCATION_PERIOD_MILLIS)
+            .setWaitForAccurateLocation(true).build()
+
+        // Setup location callback
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                Log.d(
+                    TAG,
+                    "Location: ${locationResult.lastLocation?.latitude}, ${locationResult.lastLocation?.longitude}"
                 )
             }
         }
+
+        // Create all notification channels
+        createNotificationChannels()
+
+        // Start monitoring Bluetooth and GPS connectivity
+        startForegroundServiceWithNotification()
+        startLocationUpdates()
+        enabledBluetoothAndGpsWatchdog()
+
+        // Start ranging and monitoring beacons
+        startRangingBeaconsInRegion(region, rangingCallback)
+        startMonitoringBeaconsInRegion(region, monitoringCallback)
     }
 
-    fun onStartCommand() {
-        // Start the service
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
     }
-    override fun onBind(p0: Intent?): IBinder? {
-        // Bind the service
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopLocationUpdates()
+        Log.i(TAG, "Service destroyed")
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
         return null
     }
-    override fun onCreate() {
-        // Create the service
-        super.onCreate()
 
-        beaconManager = BeaconManager.getInstanceForApplication(this)
-        // Beacon Manager configura la interaccion con las beacons y el start/stop de ranging/monitoring
+    /**
+     * Create all notification channels used by the service.
+     */
+    private fun createNotificationChannels() {
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-        // Por defecto la biblioteca solo detecta AltBeacon si se quiere otro tipo de protocolo hay que añadir el layout
-        // m:0-1=0505 stands for InPlay's Company Identifier Code (0x0505), see https://www.bluetooth.com/specifications/assigned-numbers/
-        // i:2-7 stands for the identifier, UUID (MAC) [little endian]
-        // d:8-9 stands for the data, CH1 analog value [little endian]
-        val customParser = BeaconParser().setBeaconLayout("m:0-1=0505,i:2-7,d:8-9")
-        beaconManager.beaconParsers.add(customParser)
+        // Connectivity Service Channel
+        val ongoingSessionChannel = NotificationChannel(
+            "session-ongoing",  // id
+            getString(R.string.notification_ongoing_channel_name),  // name
+            NotificationManager.IMPORTANCE_HIGH,  // importance
+        ).apply {
+            description = getString(R.string.notification_ongoing_channel_description)
+        }
+        notificationManager.createNotificationChannel(ongoingSessionChannel)
 
-        // Activate debug mode only if build variant is debug
-        BeaconManager.setDebug(BuildConfig.DEBUG)
-
-        //configurar escaneo
-        setupBeaconScanning()
-    }
-    override fun onDestroy() {
-        // Destroy the service
-        super.onDestroy()
-    }
-
-    fun setupBeaconScanning() {
-        startBeaconScanning()
-
-        // Establecen dos observadores Live Data para cambios en el estado de la región y la lista de beacons detectado
-        val regionViewModel = beaconManager.getRegionViewModel(region)
-        // Se llamara al observador cuando la region cambie de estado dentro/fuera
-        //regionViewModel.regionState.observeForever(centralMonitoringObserver)
-        // Se llamara al observador cuando se actualice la lista de de beacons (normalmente se actualiza cada 1 seg)
-        regionViewModel.rangedBeacons.observeForever(centralRangingObserver)
+        // Location and Bluetooth Watchdog Channel
+        val watchdogChannel = NotificationChannel(
+            "location-and-bluetooth-watchdog",  // id
+            getString(R.string.notification_watchdog_channel_name),  // name
+            NotificationManager.IMPORTANCE_HIGH  // importance
+        ).apply {
+            description = getString(R.string.notification_watchdog_channel_description)
+        }
+        notificationManager.createNotificationChannel(watchdogChannel)
     }
 
-    fun startBeaconScanning() {
-        // Start ranging for all beacons
-        beaconManager.startMonitoring(region)
-        beaconManager.startRangingBeacons(region)
+    /**
+     * Start the service in the foreground with a notification.
+     */
+    private fun startForegroundServiceWithNotification() {
+        // intents for stopping the session
+        val stopIntent = Intent(this, StopBroadcastReceiver::class.java).apply {
+            action = ACTION_STOP_SESSION
+        }
+        val stopPendingIntent = PendingIntent.getBroadcast(
+            this, 1, stopIntent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Create the notification
+        val notification = NotificationCompat.Builder(this, "session-ongoing")
+            .setContentTitle(getString(R.string.notification_ongoing_title))
+            .setContentText(getString(R.string.notification_ongoing_text))
+            .setSmallIcon(R.mipmap.logo_ies_foreground).setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).addAction(  // Stop action
+                R.drawable.square_stop,
+                getString(R.string.stop_notification_button),
+                stopPendingIntent
+            ).setContentIntent(  // Explicit intent to open the app when notification is clicked
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, ActMain::class.java),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            ).build()
+
+        // Start the service in the foreground
+        startForeground(AppMain.NOTIFICATION_ONGOING_SESSION_ID, notification)
+    }
+
+    /**
+     * Start location updates. Allows to retrieve the user's location periodically.
+     */
+    private fun startLocationUpdates() {
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest, locationCallback, null
+            )
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Location permission denied: $e")
+        }
+    }
+
+    /**
+     * Stop location updates.
+     */
+    private fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+
+    /**
+     * Continuously check if Bluetooth and GPS are enabled.
+     * If not, show a notification to the user.
+     */
+    private fun enabledBluetoothAndGpsWatchdog() {
+        val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+
+        Thread {
+            while (true) {
+                val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                val isBluetoothEnabled = bluetoothManager.adapter.isEnabled
+
+                Log.i(TAG, "GPS enabled: $isGpsEnabled, Bluetooth enabled: $isBluetoothEnabled")
+
+                if (!isGpsEnabled || !isBluetoothEnabled) {
+                    showConnectivityNotification(isGpsEnabled, isBluetoothEnabled)
+                } else {
+                    val notificationManager =
+                        getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                    notificationManager.cancel(AppMain.NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID)
+                }
+
+                Thread.sleep(2500)
+            }
+        }.start()
+    }
+
+    /**
+     * Show a notification to the user if GPS or Bluetooth are disabled.
+     * @param isGpsEnabled True if GPS is enabled, false otherwise.
+     * @param isBluetoothEnabled True if Bluetooth is enabled, false otherwise.
+     * @see enabledBluetoothAndGpsWatchdog
+     */
+    private fun showConnectivityNotification(isGpsEnabled: Boolean, isBluetoothEnabled: Boolean) {
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationText = when {
+            !isGpsEnabled && !isBluetoothEnabled -> getString(R.string.notification_no_location_bluetooth_text)
+            !isGpsEnabled -> getString(R.string.notification_no_location_text)
+            !isBluetoothEnabled -> getString(R.string.notification_no_bluetooth_text)
+            else -> ""
+        }
+
+        val notification = NotificationCompat.Builder(this, "location-and-bluetooth-watchdog")
+            .setContentTitle(getString(R.string.notification_no_location_bluetooth_title))
+            .setContentText(notificationText).setSmallIcon(R.mipmap.logo_ies_foreground)
+            .setOngoing(true).build()
+
+        notificationManager.notify(AppMain.NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID, notification)
+    }
+
+    companion object {
+        private const val TAG = "ForegroundBeaconScanService"
     }
 }

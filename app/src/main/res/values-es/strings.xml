@@ -92,9 +92,11 @@
     <string name="settings_api_valid">"Servicio configurado correctamente "</string>
     <string name="settings_api_invalid">Servicio no disponible en la dirección especificada</string>
     <string name="settings_api_testing">Probando la conexión con el servidor…</string>
-    <string name="notification_no_location_bluetooth_channel_name">Bluetooth o Ubicación desactivadas.</string>
-    <string name="notification_no_location_bluetooth_title">Se requiere atención</string>
-    <string name="notification_no_location_bluetooth_text">Bluetooth y Ubicación desactivados, actívelos por favor</string>
-    <string name="notification_no_location_text">Ubicación desactivada, actívala por favor</string>
-    <string name="notification_no_bluetooth_text">Bluetooth desactivado, actívelo por favor</string>
+    <string name="notification_no_location_bluetooth_title">Problema de Conexión</string>
+    <string name="notification_no_location_bluetooth_text">Bluetooth y Ubicación desactivados.</string>
+    <string name="notification_no_location_text">GPS desactivado.</string>
+    <string name="notification_no_bluetooth_text">Bluetooth desactivado.</string>
+    <string name="notification_ongoing_channel_description">Notifica que una sesión de medidas está en curso.</string>
+    <string name="notification_watchdog_channel_name">Bluetooth o Ubicación desactivadas.</string>
+    <string name="notification_watchdog_channel_description">Notifica que la ubicación o el Bluetooth están desactivados.</string>
 </resources>

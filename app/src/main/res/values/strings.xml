@@ -95,12 +95,14 @@
     <string name="invalid_password_equals">Passwords don\'t match</string>
     // Notification strings
     <string name="notification_ongoing_channel_name">Ongoing Acquisition Sessions</string>
+    <string name="notification_ongoing_channel_description">Notifies when a measurements session is active.</string>
     <string name="notification_ongoing_title">Acquisition session underway</string>
     <string name="notification_ongoing_text">Beacon monitoring is active.</string>
     <string name="stop_notification_button">Stop</string>
-    <string name="notification_no_location_bluetooth_channel_name">Bluetooth or Location disabled.</string>
-    <string name="notification_no_location_bluetooth_title">Attention required</string>
-    <string name="notification_no_location_bluetooth_text">Bluetooth and Location disabled, please enable them</string>
-    <string name="notification_no_location_text">Location disabled, please enable it</string>
-    <string name="notification_no_bluetooth_text">Bluetooth disabled, please enable it</string>
+    <string name="notification_watchdog_channel_name">Bluetooth or Location disabled.</string>
+    <string name="notification_watchdog_channel_description">Notifies Bluetooth or Location should be enabled.</string>
+    <string name="notification_no_location_bluetooth_title">Connectivity Issue</string>
+    <string name="notification_no_location_bluetooth_text">Bluetooth and Location disabled.</string>
+    <string name="notification_no_location_text">Location disabled.</string>
+    <string name="notification_no_bluetooth_text">Bluetooth disabled.</string>
 </resources>
