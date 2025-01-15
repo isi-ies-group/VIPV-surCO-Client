@@ -64,11 +64,7 @@ object LoggingSession {
      * @param timestamp The timestamp of the data.
      */
     fun addSensorEntry(
-        id: Identifier,
-        data: Short,
-        latitude: Float,
-        longitude: Float,
-        timestamp: Instant
+        id: Identifier, data: Short, latitude: Float, longitude: Float, timestamp: Instant
     ) {
         val beacon = beaconsInternal.value?.find { it.id == id }
         if (beacon != null) {
@@ -150,8 +146,17 @@ object LoggingSession {
      * Gets the data from temporary dumps and the current readings.
      * @return The file with the session data.
      */
-    fun saveSession(): File {
+    fun saveSession(): File? {
         stopInstant = Instant.now()
+
+        // exit if there is no data to save
+        if ((beacons.value == null)  // no beacons
+            || (beacons.value?.isEmpty() == true)  // no beacons
+            || (beacons.value?.all { beacon -> beacon.sensorData.value?.isEmpty() != false } == true)  // all beacons are empty
+        ) {
+            return null
+        }
+
         var outFile = File(
             cacheDir,
             "${SESSION_FILE_PREFIX}${startInstant}-${stopInstant}.${SESSION_FILE_EXTENSION}"
@@ -182,13 +187,11 @@ object LoggingSession {
     }
 
     /**
-     * Ends the current session by saving it to the cache dir and clearing the beacons data.
+     * Ends the current session by saving it to the cache dir.
      * @return The file with the session data.
      */
-    fun concludeSession(): File {
-        val file = saveSession()
-        clearBeaconsData()
-        return file
+    fun concludeSession(): File? {
+        return saveSession()
     }
 
     /**

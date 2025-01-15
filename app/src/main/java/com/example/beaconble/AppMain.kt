@@ -273,7 +273,6 @@ class AppMain : Application(), ComponentCallbacks2 {
 
     fun concludeSession() {
         stopBeaconScanning()
-        loggingSession.concludeSession()
         // if the sharedPreference is set to upload files on metered network, schedule the upload
         if (PreferenceManager.getDefaultSharedPreferences(this)
                 .getBoolean("auto_upload_on_metered", true)

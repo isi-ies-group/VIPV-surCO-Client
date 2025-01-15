@@ -204,6 +204,16 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
     fun shareSession() {
         thread {
             val file = app.loggingSession.saveSession()
+            if (file == null) {
+                runOnUiThread {
+                    Toast.makeText(
+                        this,
+                        getString(R.string.no_data_to_share),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                return@thread
+            }
             val uri =
                 FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileProvider", file)
             val intent = Intent(Intent.ACTION_SEND).apply {
