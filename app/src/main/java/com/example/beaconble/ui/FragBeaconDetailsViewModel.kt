@@ -28,7 +28,7 @@ class FragBeaconDetailsViewModel : ViewModel() {
         if (id != beaconId) {
             beaconId = id
             _beacon.value = appMain.loggingSession.getBeacon(id)
-            sensorEntries = _beacon.value?.sensorData!!
+            sensorEntries = _beacon.value?.sensorData ?: MutableLiveData<ArrayList<SensorEntry>>()
         }
     }
 
