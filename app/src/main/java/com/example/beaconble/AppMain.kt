@@ -7,7 +7,6 @@ import android.location.Location
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import androidx.work.Constraints
 import androidx.work.NetworkType
@@ -29,6 +28,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Instant
 import kotlin.concurrent.thread
+import org.apache.commons.collections4.queue.CircularFifoQueue
 
 
 class AppMain : Application(), ComponentCallbacks2 {
@@ -43,6 +43,10 @@ class AppMain : Application(), ComponentCallbacks2 {
         "all-beacons", null, null, null
     )  // criteria for identifying beacons
     private lateinit var regionViewModel: RegionViewModel
+
+    // Ring buffer to store the last 5 numbers of beacons detected,
+    // to avoid reporting a lower number by mis-skipping them in scans
+    private val nRangedBeaconsBuffer = CircularFifoQueue<Int>(5)
 
     // Beacons abstractions
     var loggingSession = LoggingSession
@@ -120,7 +124,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @param location: Location, location of the data
      * @param timestamp: Instant, timestamp of the data
      */
-    fun addSensorDataEntry(
+    fun addBeaconCollectionData(
         beacons: Collection<Beacon>, location: Location?, timestamp: Instant
     ) {
         // if location is null, set latitude and longitude to NaN
@@ -134,6 +138,10 @@ class AppMain : Application(), ComponentCallbacks2 {
             val analogReading = data[0].toShort()
             addSensorDataEntry(id, analogReading, latitude, longitude, timestamp)
         }
+
+        // Update the number of beacons detected
+        nRangedBeaconsBuffer.add(beacons.size)
+        nRangedBeacons.value = nRangedBeaconsBuffer.maxOrNull() ?: 0
     }
 
     /**

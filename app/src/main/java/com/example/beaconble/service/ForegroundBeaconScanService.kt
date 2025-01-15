@@ -52,7 +52,7 @@ class ForegroundBeaconScanService : BeaconService() {
                     // TODO handle location permission denied
                 }
                 // add the beacons to the appMain
-                appMain.addSensorDataEntry(beacons, location, Instant.now())
+                appMain.addBeaconCollectionData(beacons, location, Instant.now())
                 return true
             }
         }

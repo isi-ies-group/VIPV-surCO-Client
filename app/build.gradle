@@ -86,6 +86,7 @@ dependencies {
     //Misc (TODO: tidy up)
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation 'androidx.fragment:fragment-ktx:1.8.5'
+    implementation 'org.apache.commons:commons-collections4:4.4'
 
     //Security
     implementation 'com.lambdapioneer.argon2kt:argon2kt:1.6.0'
