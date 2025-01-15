@@ -20,6 +20,7 @@ import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.Region
 import org.altbeacon.beacon.service.BeaconService
 import java.time.Instant
+import kotlin.concurrent.thread
 
 class ForegroundBeaconScanService : BeaconService() {
     private lateinit var appMain: AppMain
@@ -28,6 +29,9 @@ class ForegroundBeaconScanService : BeaconService() {
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
 
+    private lateinit var bluetoothManager: BluetoothManager
+    private lateinit var locationManager: LocationManager
+
     val region = Region(
         "all-beacons", null, null, null
     )  // criteria for identifying beacons
@@ -35,8 +39,6 @@ class ForegroundBeaconScanService : BeaconService() {
     val rangingCallback: org.altbeacon.beacon.service.Callback =
         object : org.altbeacon.beacon.service.Callback("com.example.beaconble") {
             override fun call(context: Context?, dataName: String?, data: Bundle?): Boolean {
-                Log.i(TAG, "Ranging callback called with dataName: $dataName")
-                Log.i(TAG, "Data: $data")
                 // get the beacons from the bundle
                 val beacons = data?.getParcelableArrayList<Beacon>("beacons") ?: return false
                 // get the current location
@@ -63,11 +65,45 @@ class ForegroundBeaconScanService : BeaconService() {
             }
         }
 
+    /**
+     * Flag to indicate if the watchdog thread is running.
+     */
+    @Volatile
+    private var watchdogMayRun = false
+
+    /**
+     * Watchdog thread that continuously checks if Bluetooth and GPS are enabled.
+     */
+    private val watchdogThread = thread(start = false) {
+        while (watchdogMayRun) {
+            val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            val isBluetoothEnabled = bluetoothManager.adapter.isEnabled
+
+            if (!isGpsEnabled || !isBluetoothEnabled) {
+                showConnectivityNotification(isGpsEnabled, isBluetoothEnabled)
+            } else {
+                val notificationManager =
+                    getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.cancel(AppMain.NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID)
+            }
+
+            try {
+                Thread.sleep(2500)
+            } catch (_: InterruptedException) {
+                break
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
 
         // get AppMain singleton
         appMain = AppMain.instance
+
+        // Get the Bluetooth and Location managers
+        bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
 
         // Initialize the location client
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -81,10 +117,7 @@ class ForegroundBeaconScanService : BeaconService() {
         // Setup location callback
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                Log.d(
-                    TAG,
-                    "Location: ${locationResult.lastLocation?.latitude}, ${locationResult.lastLocation?.longitude}"
-                )
+                // void implementation
             }
         }
 
@@ -94,7 +127,7 @@ class ForegroundBeaconScanService : BeaconService() {
         // Start monitoring Bluetooth and GPS connectivity
         startForegroundServiceWithNotification()
         startLocationUpdates()
-        enabledBluetoothAndGpsWatchdog()
+        startBluetoothAndGpsWatchdog()
 
         // Start ranging and monitoring beacons
         startRangingBeaconsInRegion(region, rangingCallback)
@@ -107,6 +140,7 @@ class ForegroundBeaconScanService : BeaconService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        stopBluetoothAndGpsWatchdog()
         stopLocationUpdates()
         Log.i(TAG, "Service destroyed")
     }
@@ -200,35 +234,26 @@ class ForegroundBeaconScanService : BeaconService() {
      * Continuously check if Bluetooth and GPS are enabled.
      * If not, show a notification to the user.
      */
-    private fun enabledBluetoothAndGpsWatchdog() {
-        val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
-        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+    private fun startBluetoothAndGpsWatchdog() {
+        if (!watchdogMayRun) {
+            watchdogMayRun = true
+            watchdogThread.start()
+        }
+    }
 
-        Thread {
-            while (true) {
-                val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                val isBluetoothEnabled = bluetoothManager.adapter.isEnabled
-
-                Log.i(TAG, "GPS enabled: $isGpsEnabled, Bluetooth enabled: $isBluetoothEnabled")
-
-                if (!isGpsEnabled || !isBluetoothEnabled) {
-                    showConnectivityNotification(isGpsEnabled, isBluetoothEnabled)
-                } else {
-                    val notificationManager =
-                        getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                    notificationManager.cancel(AppMain.NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID)
-                }
-
-                Thread.sleep(2500)
-            }
-        }.start()
+    /**
+     * Stop the watchdog thread.
+     */
+    private fun stopBluetoothAndGpsWatchdog() {
+        watchdogMayRun = false
+        watchdogThread.join() // Ensure the thread stops before continuing
     }
 
     /**
      * Show a notification to the user if GPS or Bluetooth are disabled.
      * @param isGpsEnabled True if GPS is enabled, false otherwise.
      * @param isBluetoothEnabled True if Bluetooth is enabled, false otherwise.
-     * @see enabledBluetoothAndGpsWatchdog
+     * @see startBluetoothAndGpsWatchdog
      */
     private fun showConnectivityNotification(isGpsEnabled: Boolean, isBluetoothEnabled: Boolean) {
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
