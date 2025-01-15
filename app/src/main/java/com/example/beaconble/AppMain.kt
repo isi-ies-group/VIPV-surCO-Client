@@ -106,7 +106,7 @@ class AppMain : Application(), ComponentCallbacks2 {
         instance = this
     }
 
-    @Suppress(names = ["deprecated"])
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onLowMemory() {
         super.onLowMemory()
         loggingSession.freeDataTemporarily()
