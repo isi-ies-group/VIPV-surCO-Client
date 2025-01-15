@@ -261,7 +261,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      */
     fun toggleSession() {
         if (sessionRunning.value == true) {
-            stopBeaconScanning()
+            concludeSession()
         } else {
             startBeaconScanning()
         }
