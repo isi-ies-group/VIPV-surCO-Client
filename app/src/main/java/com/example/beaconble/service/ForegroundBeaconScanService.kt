@@ -21,7 +21,6 @@ import org.altbeacon.beacon.Region
 import org.altbeacon.beacon.service.BeaconService
 import java.time.Instant
 
-// TODO: implement onLowMemory and onTrimMemory
 class ForegroundBeaconScanService : BeaconService() {
     private lateinit var appMain: AppMain
 

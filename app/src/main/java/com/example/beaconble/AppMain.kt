@@ -106,6 +106,12 @@ class AppMain : Application(), ComponentCallbacks2 {
         instance = this
     }
 
+    @Suppress(names = ["deprecated"])
+    override fun onLowMemory() {
+        super.onLowMemory()
+        loggingSession.freeDataTemporarily()
+    }
+
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         if (level == TRIM_MEMORY_BACKGROUND) {
@@ -237,6 +243,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     fun startBeaconScanning() {
+        loggingSession.clear()
         loggingSession.startInstant = Instant.now()
         beaconManager.startMonitoring(region)
         beaconManager.startRangingBeacons(region)
