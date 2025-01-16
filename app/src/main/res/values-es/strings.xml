@@ -9,12 +9,10 @@
     // Login view
     <string name="logout">Cerrar sesión</string>
     <string name="toolbar_close">Cerrar menú</string>
-    <string name="upload">Subir datos</string>
     <string name="settings_user_token_message">Token para publicar datos en el servidor</string>
     <string name="settings_only_wifi_upload_off">Los datos no se subirán automáticamente. Se requiere intervención del Usuario mediante el botón de Publicar.</string>
     <string name="version">Versión: %1$s-%2$d</string>
     <string name="delete">Eliminar</string>
-    <string name="delete_all">Eliminar todo</string>
     <string name="stop_button">Detener sesión medidas</string>
     <string name="start_button">Iniciar sesión medidas</string>
     <string name="no">No</string>
@@ -40,6 +38,7 @@
     <string name="register">Regístrate</string>
     <string name="about">Sobre la app</string>
     <string name="toolbar_open">Abrir menú</string>
+    <string name="all_sessions_upload">Publicar sesiones guardadas</string>
     <string name="logo">Logo</string>
     <string name="credits">Aplicación desarrollada por el grupo ISI-IES de la Universidad Politécnica de Madrid.</string>
     <string name="permissions_title">Permisos necesarios</string>
@@ -54,7 +53,7 @@
     <string name="empty_session_nothing_to_do">Sesión vacía</string>
     <string name="no_data_to_share">No se puede compartir una sesión vacía</string>
     <string name="session_stopped">Sesión de medida finalizada</string>
-    <string name="share">Compartir sesión</string>
+    <string name="current_session_share">Compartir sesión en curso</string>
     <string name="beacon_details">Detalles de la baliza</string>
     <string name="beacon_detail_description_hint">Descripción opcional de la baliza</string>
     <string name="beacon_detail_tilt">Inclinación [grados]</string>
@@ -99,4 +98,5 @@
     <string name="notification_ongoing_channel_description">Notifica que una sesión de medidas está en curso.</string>
     <string name="notification_watchdog_channel_name">Bluetooth o Ubicación desactivadas.</string>
     <string name="notification_watchdog_channel_description">Notifica que la ubicación o el Bluetooth están desactivados.</string>
+    <string name="current_session_empty">Vaciar sesión en curso</string>
 </resources>
