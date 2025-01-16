@@ -23,6 +23,10 @@ class FragHomeViewModel() : ViewModel() {
         }
     }
 
+    fun startSession() {
+        appMain.startSession()
+    }
+
     fun toggleSession() {
         appMain.toggleSession()
     }

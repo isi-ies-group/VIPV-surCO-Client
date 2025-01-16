@@ -24,7 +24,6 @@ import com.example.beaconble.AppMain
 import com.example.beaconble.BuildConfig
 import com.example.beaconble.R
 import com.google.android.material.navigation.NavigationView
-import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 
 
@@ -47,7 +46,30 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         configureToolbar()  // setups .toolbar, .drawerLayout, .actionBarDrawerToggle, .navController, .navView
         configureNavigationDrawer()  // setups .navView, .menuBtnLogin, .menuBtnLogout
 
-        checkPermissionsAndTransferToViewIfNeeded()
+        // Check if all permissions are granted
+        // If not, go to permissions activity and wait for user to grant permissions, so the session can start
+        // Or if all permissions were already granted, start the session
+        val arePermissionsOk = ActPermissions.Companion.allPermissionsGranted(this)
+        if (!arePermissionsOk) {  // If any permission is not granted, go to permissions activity and wait for user to grant permissions
+            val getAllPermissionsGranted =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+                    if (result.resultCode != RESULT_OK) {
+                        // If user did not grant permissions, close the app (this should not happen)
+                        Toast.makeText(
+                            this, "Permissions are required to continue", Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    } else {
+                        // If user granted permissions, start the session
+                        app.startSession()
+                    }
+                }
+            getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
+        } else {
+            // If all permissions were already granted, start the session
+            app.startSession()
+        }
+
         checkNeedFirstLogin()
 
         app.apiUserSession.lastKnownState.observeForever { state ->
@@ -67,25 +89,6 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             // Navigate to login fragment
             supportFragmentManager.findFragmentById(R.id.fragment_main)?.findNavController()
                 ?.navigate(R.id.fragLogin)
-        }
-    }
-
-    private fun checkPermissionsAndTransferToViewIfNeeded() {
-        val arePermissionsOk = ActPermissions.Companion.allPermissionsGranted(this)
-        if (!arePermissionsOk) {  // If any permission is not granted, go to permissions activity and wait for user to grant permissions
-            val getAllPermissionsGranted =
-                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-                    if (result.resultCode != RESULT_OK) {
-                        // If user did not grant permissions, close the app (this should not happen)
-                        Toast.makeText(
-                            this,
-                            "Permissions are required to continue",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        finish()
-                    }
-                }
-            getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
         }
     }
 
@@ -151,11 +154,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         toolbar = findViewById<Toolbar>(R.id.toolbar)
         drawerLayout = findViewById<DrawerLayout>(R.id.main_drawer_layout)
         actionBarDrawerToggle = ActionBarDrawerToggle(
-            this,
-            drawerLayout,
-            toolbar,
-            R.string.toolbar_open,
-            R.string.toolbar_close
+            this, drawerLayout, toolbar, R.string.toolbar_open, R.string.toolbar_close
         )
         drawerLayout.addDrawerListener(actionBarDrawerToggle)
         actionBarDrawerToggle.isDrawerIndicatorEnabled = true
@@ -184,8 +183,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         val isUserLoggedIn =
             app.apiUserSession.lastKnownState.value == ApiUserSessionState.LOGGED_IN
         menuBtnLogin.isVisible = isUserLoggedIn != true
-        sleep(100)
-        menuBtnLogout.isVisible = isUserLoggedIn == true
+        menuBtnLogout.isVisible = !menuBtnLogin.isVisible
     }
 
     fun openURL(url: String) {
@@ -207,9 +205,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             if (file == null) {
                 runOnUiThread {
                     Toast.makeText(
-                        this,
-                        getString(R.string.no_data_to_share),
-                        Toast.LENGTH_SHORT
+                        this, getString(R.string.no_data_to_share), Toast.LENGTH_SHORT
                     ).show()
                 }
                 return@thread

@@ -12,11 +12,14 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.beaconble.AppMain
 import com.example.beaconble.AppMain.Companion.ACTION_STOP_SESSION
+import com.example.beaconble.BuildConfig
 import com.example.beaconble.R
 import com.example.beaconble.broadcastReceivers.StopBroadcastReceiver
 import com.example.beaconble.ui.ActMain
 import com.google.android.gms.location.*
 import org.altbeacon.beacon.Beacon
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.Region
 import org.altbeacon.beacon.service.BeaconService
 import java.time.Instant
@@ -32,6 +35,8 @@ class ForegroundBeaconScanService : BeaconService() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var locationManager: LocationManager
 
+    // BeaconManager instance
+    private lateinit var beaconManager: BeaconManager
     val region = Region(
         "all-beacons", null, null, null
     )  // criteria for identifying beacons
@@ -39,6 +44,7 @@ class ForegroundBeaconScanService : BeaconService() {
     val rangingCallback: org.altbeacon.beacon.service.Callback =
         object : org.altbeacon.beacon.service.Callback("com.example.beaconble") {
             override fun call(context: Context?, dataName: String?, data: Bundle?): Boolean {
+                Log.i(TAG, "Ranging callback called with data: ${data?.describeContents()}")
                 // get the beacons from the bundle
                 val beacons = data?.getParcelableArrayList<Beacon>("beacons") ?: return false
                 // get the current location
@@ -49,7 +55,7 @@ class ForegroundBeaconScanService : BeaconService() {
                         location = loc
                     }
                 } catch (e: SecurityException) {
-                    Log.e(AppMain.Companion.TAG, "Location permission denied: $e")
+                    Log.e(TAG, "Location permission denied: $e")
                     // TODO handle location permission denied
                 }
                 // add the beacons to the appMain
@@ -90,13 +96,15 @@ class ForegroundBeaconScanService : BeaconService() {
             try {
                 Thread.sleep(2500)
             } catch (_: InterruptedException) {
-                break
+                break  // Gracefully exit the thread if interrupted, we already have enough drama in this world
             }
         }
     }
 
     override fun onCreate() {
         super.onCreate()
+
+        Log.i(TAG, "Service created")
 
         // get AppMain singleton
         appMain = AppMain.instance
@@ -142,6 +150,13 @@ class ForegroundBeaconScanService : BeaconService() {
         super.onDestroy()
         stopBluetoothAndGpsWatchdog()
         stopLocationUpdates()
+        // Stop ranging and monitoring beacons
+        stopRangingBeaconsInRegion(region)
+        stopMonitoringBeaconsInRegion(region)
+        // Remove notifications
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(AppMain.NOTIFICATION_ONGOING_SESSION_ID)
+        notificationManager.cancel(AppMain.NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID)
         Log.i(TAG, "Service destroyed")
     }
 
