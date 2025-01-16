@@ -1,7 +1,6 @@
 package com.example.beaconble.ui
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -62,7 +61,6 @@ class ActPermissions : AppCompatActivity() {
     lateinit var sysSettingsButton: Button
 
     lateinit var rowPermissionsLocalization: PermissionsRowAtomicHandler
-    lateinit var rowPermissionsLocalizationInBackground: PermissionsRowAtomicHandler
     lateinit var rowPermissionsBluetooth: PermissionsRowAtomicHandler
     lateinit var rowPermissionsNotifications: PermissionsRowAtomicHandler
 
@@ -73,16 +71,15 @@ class ActPermissions : AppCompatActivity() {
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
-            // Es un mapa Map<String, Boolean> donde String=Key permiso y Boolean=resultado
-            permissions.entries.forEach {
-                val permissionName = it.key
-                val isGranted = it.value
+            // Map<String, Boolean> donde String=Key permiso y Boolean=resultado
+            permissions.entries.forEach { (permissionName, isGranted) ->
                 Log.d(TAG, "$permissionName permission granted: $isGranted")
                 if (!isGranted) {
-                    // Mostrar mensaje que se ha rechazado el permiso
+                    // Get the last part of the permission name
+                    val permissionHumanName = permissionName.split(".").last()
                     Toast.makeText(
                         this,
-                        "Permission $permissionName is required to continue",
+                        "Permission required: $permissionHumanName",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -90,7 +87,6 @@ class ActPermissions : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //hay que ejecutar el codigo de la AppCompatActivity padre antes que el de esta clase
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_permissions)
 
@@ -98,11 +94,6 @@ class ActPermissions : AppCompatActivity() {
             show = permissionsByGroupMap["Location"] != null,
             rowUI = findViewById<TableRow>(R.id.row_permission_localization),
             buttonUI = findViewById<MaterialButton>(R.id.sw_permission_localization),
-        )
-        rowPermissionsLocalizationInBackground = PermissionsRowAtomicHandler(
-            show = permissionsByGroupMap["Location in Background"] != null,
-            rowUI = findViewById<TableRow>(R.id.row_permission_localization_background),
-            buttonUI = findViewById<MaterialButton>(R.id.sw_permission_localization_background),
         )
         rowPermissionsBluetooth = PermissionsRowAtomicHandler(
             show = permissionsByGroupMap["Bluetooth"] != null,
@@ -117,7 +108,6 @@ class ActPermissions : AppCompatActivity() {
 
         mapOfRowHandlers = mapOf(
             "Location" to rowPermissionsLocalization,
-            "Location in Background" to rowPermissionsLocalizationInBackground,
             "Bluetooth" to rowPermissionsBluetooth,
             "Notifications" to rowPermissionsNotifications,
         )
@@ -166,7 +156,6 @@ class ActPermissions : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("ObsoleteSdkInt")
     fun promptForPermissions(permissionsGroup: String) {
         if (!groupPermissionsGranted(this, permissionsGroup)) {
             val permissions = permissionsByGroupMap[permissionsGroup]
@@ -214,12 +203,8 @@ class ActPermissions : AppCompatActivity() {
             }
         }
 
-        @SuppressLint("ObsoleteSdkInt")
         val permissionsByGroupMap: Map<String, Array<String>?> = mapOf(
-            "Location" to (if (Build.VERSION.SDK_INT >= 1) arrayOf(Manifest.permission.ACCESS_FINE_LOCATION) else null),
-            "Location in Background" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) arrayOf(
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) else null),
+            "Location" to arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
             // BLUETOOTH_CONNECT to obtain additional information
             "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) arrayOf(
                 Manifest.permission.BLUETOOTH_SCAN,
