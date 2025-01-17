@@ -70,6 +70,7 @@ class AppMain : Application(), ComponentCallbacks2 {
         beaconManager.beaconParsers.add(customParser)
 
         // Activate debug mode only if build variant is debug
+        @Suppress("KotlinConstantConditions")
         BeaconManager.setDebug(BuildConfig.DEBUG)
 
         // Set API service
@@ -308,6 +309,8 @@ class AppMain : Application(), ComponentCallbacks2 {
      */
     private fun isServiceRunning(serviceClass: Class<*>): Boolean {
         val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+
+        @Suppress("DEPRECATION")
         val runningServices = manager.getRunningServices(Int.MAX_VALUE)
 
         for (service in runningServices) {
