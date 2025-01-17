@@ -12,6 +12,13 @@
             android:defaultValue="true"
             android:title="@string/settings_only_wifi_upload" />
 
+        <ListPreference
+            android:key="color_theme"
+            android:title="@string/settings_color_theme"
+            android:entries="@array/settings_color_theme_entries"
+            android:entryValues="@array/settings_color_theme_keys"
+            android:defaultValue="system-default" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

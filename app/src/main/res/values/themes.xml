@@ -4,17 +4,31 @@
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/IES_blue_main</item>
         <item name="colorPrimaryVariant">@color/IES_blue_dark</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorAccent">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/IES_yellow_logo</item>
         <item name="colorSecondaryVariant">#F57F17</item>
-        <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <!-- Navigation bar color. -->
+        <!-- Preferences style overriding -->
+        <item name="preferenceTheme">@style/Theme.BeaconBLE.Preferences</item>
+    </style>
+
+    <!-- Light mode application theme. -->
+    <style name="Theme.BeaconBLE.Light" parent="Theme.BeaconBLE">
+        <!-- Primary brand color. -->
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorOnSecondary">@color/black</item>
     </style>
     
     <style name="Theme.BeaconBLE.ActionBar" parent="Base.ThemeOverlay.AppCompat.ActionBar">
-        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorPrimary">?attr/colorAccent</item>
+    </style>
+
+    <style name="Theme.BeaconBLE.Preferences" parent="PreferenceThemeOverlay">
+        <item name="preferenceCategoryTitleTextColor">@color/teal_700</item>
+        <item name="android:tint">@color/teal_700</item>
     </style>
 </resources>

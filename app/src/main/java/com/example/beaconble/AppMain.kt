@@ -2,9 +2,11 @@ package com.example.beaconble
 
 import android.app.*
 import android.content.Intent
+import android.content.res.Configuration
 import android.content.ComponentCallbacks2
 import android.location.Location
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
@@ -13,6 +15,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.beaconble.service.ForegroundBeaconScanService
+import com.example.beaconble.ui.ActMain
 import com.example.beaconble.workers.SessionFilesUploadWorker
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
@@ -50,7 +53,12 @@ class AppMain : Application(), ComponentCallbacks2 {
         // Session initialization
         loggingSession.init(cacheDir)
 
-        // Initialize the BLuetooth global scanner state
+        // Set the theme
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val theme = sharedPreferences.getString("color_theme", "system-default") ?: "system-default"
+        setupTheme(theme)
+
+        // Initialize the Bluetooth global scanner state
         val beaconManager = BeaconManager.getInstanceForApplication(this)
         // By default, the library will detect AltBeacon protocol beacons
         beaconManager.beaconParsers.removeAll(beaconManager.beaconParsers)
@@ -191,13 +199,12 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     fun stopBeaconScanning() {
+        loggingSession.stopInstant = Instant.now()
+        val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
+        stopService(serviceIntent)
         // Create a coroutine to write the session data to a file
         thread {
-            loggingSession.stopInstant = Instant.now()
-
             loggingSession.concludeSession()
-            val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
-            stopService(serviceIntent)
 
             sessionRunning.postValue(false)
         }
@@ -309,6 +316,25 @@ class AppMain : Application(), ComponentCallbacks2 {
             }
         }
         return false
+    }
+
+    /**
+     * Setup the application theme (callback for configuration changes)
+     */
+    fun setupTheme(theme: String) {
+        Log.i(TAG, "Setting theme to $theme")
+        when (theme) {
+            "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            else -> {  // default to system theme, may be default key "system-default"
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            }
+        }
+
+        // Restart the activity to apply the new theme
+        val intent = Intent(this, ActMain::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(intent)
     }
 
     companion object {

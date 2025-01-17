@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 //import androidx.preference.SwitchPreferenceCompat
@@ -20,15 +21,17 @@ class FragSettings : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        /*// Ge the upload only on wifi setting
-        val switchPreference = findPreference<SwitchPreferenceCompat>("auto_upload_on_metered")
-        // set callback to update the application service when the value changes
-        switchPreference?.onPreferenceChangeListener =
+        // Get the color theme setting
+        val colorThemePreference = findPreference<ListPreference>("color_theme")
+        if (colorThemePreference == null) {
+            Log.w("FragSettings", "Color theme setting not found")
+        }
+        // set the callback to update the application theme when the value changes
+        colorThemePreference?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _, newValue ->
-                Log.d("FragSettings", "Setting upload only on wifi to $newValue")
-                // TODO AppMain.instance.setUploadOnlyOnWifi(newValue as Boolean)
+                AppMain.Companion.instance.setupTheme(newValue as String)
                 true
-            }*/
+            }
 
         // Get the API URI setting
         val editTextPreference = findPreference<EditTextPreference>("api_uri")

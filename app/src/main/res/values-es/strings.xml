@@ -99,4 +99,10 @@
     <string name="notification_watchdog_channel_name">Bluetooth o Ubicación desactivadas.</string>
     <string name="notification_watchdog_channel_description">Notifica que la ubicación o el Bluetooth están desactivados.</string>
     <string name="current_session_empty">Vaciar sesión en curso</string>
+    <string name="settings_color_theme">Estilo cromático</string>
+    <array name="settings_color_theme_entries">
+        <item>Por defecto del sistema</item>
+        <item>Claro</item>
+        <item>Oscuro</item>
+    </array>
 </resources>
