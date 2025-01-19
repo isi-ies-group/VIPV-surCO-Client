@@ -4,13 +4,11 @@
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/IES_blue_main</item>
         <item name="colorPrimaryVariant">@color/IES_blue_dark</item>
-        <item name="colorAccent">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/IES_yellow_logo</item>
         <item name="colorSecondaryVariant">#F57F17</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Navigation bar color. -->
         <!-- Preferences style overriding -->
         <item name="preferenceTheme">@style/Theme.BeaconBLE.Preferences</item>
     </style>
@@ -24,7 +22,8 @@
     </style>
     
     <style name="Theme.BeaconBLE.ActionBar" parent="Base.ThemeOverlay.AppCompat.ActionBar">
-        <item name="android:textColorPrimary">?attr/colorAccent</item>
+        <!-- Navigation bar color. -->
+        <item name="android:textColorPrimary">@color/white</item>
     </style>
 
     <style name="Theme.BeaconBLE.Preferences" parent="PreferenceThemeOverlay">

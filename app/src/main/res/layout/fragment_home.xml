@@ -57,7 +57,7 @@
             android:padding="14sp"
             android:scaleType="centerInside"
             android:src="@drawable/delete_forever_bin"
-            app:tint="?attr/colorAccent"/>
+            app:tint="@color/white"/>
 
         <ImageButton
             android:id="@+id/imBtnActionUploadSession"
@@ -71,7 +71,7 @@
             android:padding="14sp"
             android:scaleType="centerInside"
             android:src="@drawable/upload_cloud"
-            app:tint="?attr/colorAccent"/>
+            app:tint="@color/white"/>
 
         <ImageButton
             android:id="@+id/imBtnActionShareSession"
@@ -85,7 +85,7 @@
             android:padding="14sp"
             android:scaleType="centerInside"
             android:src="@drawable/share"
-            app:tint="?attr/colorAccent"/>
+            app:tint="@color/white"/>
 
     </com.google.android.material.bottomappbar.BottomAppBar>
 
@@ -95,7 +95,7 @@
         android:layout_height="wrap_content"
         android:contentDescription="@string/start_button"
         android:tooltipText="@string/start_button"
-        android:tint="@color/design_default_color_on_secondary"
+        android:tint="@color/black"
         app:layout_anchor="@id/bottomAppBar"
         app:srcCompat="@drawable/triangle_start" />
 
