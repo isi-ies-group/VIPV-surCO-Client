@@ -49,7 +49,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:fitsSystemWindows="true"
         app:menu="@menu/slide_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
