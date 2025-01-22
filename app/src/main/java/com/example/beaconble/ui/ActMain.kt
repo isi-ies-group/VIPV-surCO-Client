@@ -177,13 +177,17 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     private fun updateDrawerOptionsMenu() {
-        // Login and logout buttons in the drawer
-        val menuBtnLogin = navView.menu.findItem(R.id.nav_login)
-        val menuBtnLogout = navView.menu.findItem(R.id.nav_logout)
-        val isUserLoggedIn =
-            app.apiUserSession.lastKnownState.value == ApiUserSessionState.LOGGED_IN
-        menuBtnLogin.isVisible = isUserLoggedIn != true
-        menuBtnLogout.isVisible = !menuBtnLogin.isVisible
+        navView.post(Runnable {
+            // Login and logout buttons in the drawer
+            val menuBtnLogin = navView.menu.findItem(R.id.nav_login)
+            val menuBtnLogout = navView.menu.findItem(R.id.nav_logout)
+            val isUserLoggedIn =
+                app.apiUserSession.lastKnownState.value == ApiUserSessionState.LOGGED_IN
+            menuBtnLogin.isVisible = isUserLoggedIn != true
+            menuBtnLogout.isVisible = !menuBtnLogin.isVisible
+            navView.invalidate()
+            Log.i(TAG, "Set visibilities: ${menuBtnLogin.isVisible}, ${menuBtnLogout.isVisible}")
+        })
     }
 
     fun openURL(url: String) {
