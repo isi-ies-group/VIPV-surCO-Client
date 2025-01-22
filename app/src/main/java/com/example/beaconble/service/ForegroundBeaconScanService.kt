@@ -4,22 +4,19 @@ import android.app.*
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.beaconble.AppMain
 import com.example.beaconble.AppMain.Companion.ACTION_STOP_SESSION
-import com.example.beaconble.BuildConfig
 import com.example.beaconble.R
 import com.example.beaconble.broadcastReceivers.StopBroadcastReceiver
 import com.example.beaconble.ui.ActMain
 import com.google.android.gms.location.*
 import org.altbeacon.beacon.Beacon
-import org.altbeacon.beacon.BeaconManager
-import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.Region
 import org.altbeacon.beacon.service.BeaconService
 import java.time.Instant
@@ -35,8 +32,6 @@ class ForegroundBeaconScanService : BeaconService() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var locationManager: LocationManager
 
-    // BeaconManager instance
-    private lateinit var beaconManager: BeaconManager
     val region = Region(
         "all-beacons", null, null, null
     )  // criteria for identifying beacons
@@ -46,20 +41,31 @@ class ForegroundBeaconScanService : BeaconService() {
             override fun call(context: Context?, dataName: String?, data: Bundle?): Boolean {
                 Log.i(TAG, "Ranging callback called with data: ${data?.describeContents()}")
                 // get the beacons from the bundle
-                val beacons = data?.getParcelableArrayList<Beacon>("beacons") ?: return false
+                // if the SDK version is 32 or higher, use the new method to get the beacons
+                // as the old method is deprecated as type-unsafe
+                val beacons = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    data?.getParcelableArrayList("beacons", Beacon::class.java) ?: return false
+                } else {
+                    data?.getParcelableArrayList<Beacon>("beacons") ?: return false
+                }
                 // get the current location
-                var location: Location? = null
                 try {
-                    fusedLocationClient.lastLocation.addOnSuccessListener { loc: Location? ->
+                    val now = Instant.now()
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                         // Got last known location. In some rare situations this can be null.
-                        location = loc
+                        // add the beacons to the appMain
+                        appMain.addBeaconCollectionData(beacons, location, now)
                     }
+                    fusedLocationClient.lastLocation.addOnFailureListener { e ->
+                        Log.e(TAG, "Failed to get location: $e")
+                        // Add a null location to the appMain
+                        appMain.addBeaconCollectionData(beacons, null, now)
+                    }
+
                 } catch (e: SecurityException) {
                     Log.e(TAG, "Location permission denied: $e")
                     // TODO handle location permission denied
                 }
-                // add the beacons to the appMain
-                appMain.addBeaconCollectionData(beacons, location, Instant.now())
                 return true
             }
         }
