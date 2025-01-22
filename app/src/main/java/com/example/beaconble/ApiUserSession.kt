@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.LiveData
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
@@ -33,7 +34,8 @@ class ApiUserSession {
     var email: String? = null
     var passHash: String? = null
     var passSalt: String? = null
-    var lastKnownState = MutableLiveData<ApiUserSessionState>(ApiUserSessionState.NOT_LOGGED_IN)
+    private val _knownState = MutableLiveData<ApiUserSessionState>(ApiUserSessionState.NEVER_LOGGED_IN)
+    val lastKnownState: LiveData<ApiUserSessionState> get() = _knownState
     var apiService: APIService
     var sharedPrefs: SharedPreferences
 
@@ -75,18 +77,20 @@ class ApiUserSession {
         this.email = sharedPrefs.getString("email", null)
         this.passHash = sharedPrefs.getString("passHash", null)
         this.apiService = apiService
-        this.lastKnownState.value = sharedPrefs.getString("lastKnownState", "NEVER_LOGGED_IN")
+        this._knownState.value = sharedPrefs.getString("state", "NEVER_LOGGED_IN")
             ?.let { ApiUserSessionState.valueOf(it) } ?: ApiUserSessionState.NEVER_LOGGED_IN
         this.sharedPrefs = sharedPrefs
     }
 
     // methods
-    fun saveToSharedPreferences() {
+    fun saveToSharedPreferences(state: ApiUserSessionState? = null) {
+        val state = state?.toString() ?: _knownState.value.toString()
+        Log.i("ApiUserSession", "Saving state: $state")
         with(this.sharedPrefs.edit()) {
             putString("username", username)
             putString("email", email)
             putString("passHash", passHash)
-            putString("lastKnownState", lastKnownState.value.toString())
+            putString("state", state)
             apply()
         }
     }
@@ -96,11 +100,11 @@ class ApiUserSession {
             remove("username")
             remove("email")
             remove("passHash")
-            remove("lastKnownState")
+            remove("state")
             apply()
         }
         clear()
-        lastKnownState.value = ApiUserSessionState.NOT_LOGGED_IN
+        _knownState.value = ApiUserSessionState.NOT_LOGGED_IN
         saveToSharedPreferences()
     }
 
@@ -146,7 +150,7 @@ class ApiUserSession {
         }
 
         if (this.passSalt == null) {
-            this.lastKnownState.postValue(knownState)
+            this._knownState.value = knownState
             return knownState
         }
 
@@ -181,8 +185,9 @@ class ApiUserSession {
             Log.e("ApiUserSession", "Exception logging in user: ${e.message}")
             knownState = ApiUserSessionState.CONNECTION_ERROR
         }
+        this._knownState.value = knownState
+        // persist state between runs
         saveToSharedPreferences()
-        this.lastKnownState.postValue(knownState)
         return knownState
     }
 
@@ -238,8 +243,9 @@ class ApiUserSession {
             Log.e("ApiUserSession", "Exception registering user: ${e.message}")
             knownState = ApiUserSessionState.CONNECTION_ERROR
         }
+        this._knownState.value = knownState
+        // persist state between runs
         saveToSharedPreferences()
-        this.lastKnownState.postValue(knownState)
         return knownState
     }
 
@@ -254,10 +260,9 @@ class ApiUserSession {
      * If the access token is expired, the function will return ERROR_BAD_TOKEN.
      */
     suspend fun upload(file: File): ApiUserSessionState {
-        if (accessToken == null
-            || accessTokenRx == null
-            || accessTokenValidity == null
-            || accessTokenRx!!.plusSeconds(accessTokenValidity!!.toLong()) < Instant.now()
+        if (accessToken == null || accessTokenRx == null || accessTokenValidity == null || accessTokenRx!!.plusSeconds(
+                accessTokenValidity!!.toLong()
+            ) < Instant.now()
         ) {
             // access token is expired, log in again
             // send login request to server
@@ -268,13 +273,13 @@ class ApiUserSession {
                 this.accessToken = "Bearer ${loginResponse.access_token}"
                 this.accessTokenRx = Instant.now()
                 this.accessTokenValidity = loginResponse.validity
-                this.lastKnownState.postValue(ApiUserSessionState.LOGGED_IN)
+                this._knownState.value = (ApiUserSessionState.LOGGED_IN)
             } catch (e: HttpException) {
                 Log.e("ApiUserSession", "HttpException logging in user: ${e.message}")
-                this.lastKnownState.postValue(ApiUserSessionState.ERROR_BAD_PASSWORD)
+                this._knownState.value = (ApiUserSessionState.ERROR_BAD_PASSWORD)
             } catch (e: Exception) {
                 Log.e("ApiUserSession", "Exception logging in user: ${e.message}")
-                this.lastKnownState.postValue(ApiUserSessionState.CONNECTION_ERROR)
+                this._knownState.value = (ApiUserSessionState.CONNECTION_ERROR)
             }
         }
 
@@ -321,7 +326,8 @@ class ApiUserSession {
 
     object CredentialsValidator {
         // regex validators
-        val emailValidator = Regex("(?:[a-zA-Z0-9!#\$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#\$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)])")
+        val emailValidator =
+            Regex("(?:[a-zA-Z0-9!#\$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#\$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)])")
         val usernameValidator = Regex("^[a-zA-Z0-9_]{5,20}$")
 
         fun isEmailValid(email: String): Boolean {

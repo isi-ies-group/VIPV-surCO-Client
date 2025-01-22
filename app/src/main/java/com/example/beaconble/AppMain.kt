@@ -2,7 +2,6 @@ package com.example.beaconble
 
 import android.app.*
 import android.content.Intent
-import android.content.res.Configuration
 import android.content.ComponentCallbacks2
 import android.location.Location
 import android.util.Log
