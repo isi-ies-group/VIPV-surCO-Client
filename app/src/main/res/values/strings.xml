@@ -111,4 +111,6 @@
     <string name="notification_no_location_bluetooth_text">Bluetooth and Location disabled.</string>
     <string name="notification_no_location_text">Location disabled.</string>
     <string name="notification_no_bluetooth_text">Bluetooth disabled.</string>
+    <string name="want_to_use_offline_question">Prefer to take measurements for yourself?</string>
+    <string name="use_offline">Use offline</string>
 </resources>

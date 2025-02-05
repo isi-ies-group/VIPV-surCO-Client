@@ -339,6 +339,13 @@ class AppMain : Application(), ComponentCallbacks2 {
         startActivity(intent)
     }
 
+    /**
+     * Set the application to offline mode (user not logged in, but not never logged in)
+     */
+    fun setOfflineMode() {
+        apiUserSession.setOfflineMode()
+    }
+
     companion object {
         lateinit var instance: AppMain
             private set  // This is a singleton, setter is private but access is public

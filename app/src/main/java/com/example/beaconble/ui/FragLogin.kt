@@ -24,6 +24,7 @@ class FragLogin : Fragment() {
     lateinit var editTextPassword: EditText
     lateinit var buttonLogin: Button
     lateinit var buttonGoToRegister: Button
+    lateinit var buttonUseOffline: Button
     lateinit var progressBar: ProgressBar
 
     private val viewModel: FragLoginViewModel by viewModels()
@@ -38,6 +39,7 @@ class FragLogin : Fragment() {
         editTextPassword = view.findViewById<EditText>(R.id.etPassword)
         buttonLogin = view.findViewById<Button>(R.id.btnLogin)
         buttonGoToRegister = view.findViewById<Button>(R.id.btnGoToRegister)
+        buttonUseOffline = view.findViewById<Button>(R.id.btnUseOffline)
         progressBar = view.findViewById<ProgressBar>(R.id.pbLogin)
 
         // observe the login status to show the user any errors or return to the main activity
@@ -155,6 +157,23 @@ class FragLogin : Fragment() {
         buttonGoToRegister.setOnClickListener {
             // navigate to the register fragment
             findNavController().navigate(R.id.action_fragLogin_to_fragRegister)
+        }
+
+        buttonUseOffline.setOnClickListener {
+            // set the app to offline mode
+            viewModel.setOffLineMode()
+            // navigate backpressing to the main activity
+            findNavController().popBackStack()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        // Callback to use the app in offline mode if exited without never logging in
+        if (viewModel.loginStatus.value == ApiUserSessionState.NEVER_LOGGED_IN) {
+            // set the app to offline mode
+            viewModel.setOffLineMode()
         }
     }
 }

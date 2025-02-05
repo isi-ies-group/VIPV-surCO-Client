@@ -96,8 +96,31 @@
         android:layout_gravity="start"
         android:backgroundTint="#898787"
         android:text="@string/register_here"
+        android:drawableEnd="@drawable/arrow_forward"
+        android:drawableTint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/tvUseOffline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="@string/want_to_use_offline_question"
+        app:layout_constraintTop_toBottomOf="@+id/btnGoToRegister"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btnUseOffline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:backgroundTint="#898787"
+        android:text="@string/use_offline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvUseOffline" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

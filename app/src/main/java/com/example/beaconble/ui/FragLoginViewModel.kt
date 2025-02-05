@@ -51,4 +51,9 @@ class FragLoginViewModel : ViewModel() {
         val result = appMain.apiUserSession.login(email.value!!, password.value!!)
         loginStatus.postValue(result)
     }
+
+    fun setOffLineMode() {
+        // set the application to offline mode
+        appMain.apiUserSession.setOfflineMode()
+    }
 }

@@ -301,6 +301,11 @@ class ApiUserSession {
         return ApiUserSessionState.LOGGED_IN
     }
 
+    fun setOfflineMode() {
+        this._knownState.value = ApiUserSessionState.NOT_LOGGED_IN
+        saveToSharedPreferences()
+    }
+
     // sub classes and factories from root class
     class SaltResponse {
         var passSalt: String? = null

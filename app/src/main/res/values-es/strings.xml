@@ -105,4 +105,6 @@
         <item>Claro</item>
         <item>Oscuro</item>
     </array>
+    <string name="want_to_use_offline_question">¿Quieres tomar medidas solo para ti?</string>
+    <string name="use_offline">Usar sin cuenta</string>
 </resources>
