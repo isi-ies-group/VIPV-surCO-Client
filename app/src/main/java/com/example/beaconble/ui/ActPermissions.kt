@@ -190,17 +190,20 @@ class ActPermissions : AppCompatActivity() {
             if (group == null) {
                 return true
             } else {
-                for (permission in group) {
-                    if (ContextCompat.checkSelfPermission(
-                            context,
-                            permission
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        return false
-                    }
+                return group.all { permission ->
+                    permissionGranted(context, permission)
                 }
-                return true
             }
+        }
+
+        /**
+         * Determine whether the current [Context] has been granted the relevant [Manifest.permission].
+         */
+        fun permissionGranted(context: Context, permission: String): Boolean {
+            return ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
         }
 
         val permissionsByGroupMap: Map<String, Array<String>?> = mapOf(
