@@ -1,6 +1,14 @@
 package com.example.beaconble.ui
 
+import android.Manifest.permission.BLUETOOTH_CONNECT
+import android.app.Activity.RESULT_OK
 import android.app.AlertDialog
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE
+import android.bluetooth.BluetoothManager
+import android.content.Context.BLUETOOTH_SERVICE
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +19,7 @@ import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -35,6 +44,22 @@ class FragHome : Fragment() {
 
     // Application instance
     lateinit var appMain: AppMain
+
+    private val bluetoothAdapter: BluetoothAdapter by lazy {
+        val bluetoothManager = requireActivity().getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothManager.adapter
+    }
+
+    private val bluetoothEnablingResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // Bluetooth is enabled, good to go
+        } else {
+            // User dismissed or denied Bluetooth prompt
+            promptEnableBluetooth()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -112,6 +137,11 @@ class FragHome : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // Set click listeners for the buttons
         startStopSessionButton.setOnClickListener {
+            // Check if Bluetooth is enabled
+            if (!bluetoothAdapter.isEnabled) {
+                // If Bluetooth is not enabled, prompt the user to enable it
+                promptEnableBluetooth()
+            }
             viewModel.value.toggleSession()
         }
 
@@ -204,6 +234,26 @@ class FragHome : Fragment() {
             }
         } else {
             beaconCountTextView.text = getString(R.string.beacons_detected_paused)
+        }
+    }
+
+    /**
+     * Prompts the user to enable Bluetooth via a system dialog.
+     *
+     * For Android 12+, [Manifest.permission.BLUETOOTH_CONNECT] is required to use
+     * the [BluetoothAdapter.ACTION_REQUEST_ENABLE] intent.
+     */
+    private fun promptEnableBluetooth() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            !ActPermissions.Companion.permissionGranted(requireContext(), BLUETOOTH_CONNECT)
+        ) {
+            // Insufficient permission to prompt for Bluetooth enabling
+            return
+        }
+        if (!bluetoothAdapter.isEnabled) {
+            Intent(ACTION_REQUEST_ENABLE).apply {
+                bluetoothEnablingResult.launch(this)
+            }
         }
     }
 }
