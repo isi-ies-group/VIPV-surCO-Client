@@ -60,7 +60,7 @@ class AppMain : Application(), ComponentCallbacks2 {
         // Initialize the Bluetooth global scanner state
         val beaconManager = BeaconManager.getInstanceForApplication(this)
         // By default, the library will detect AltBeacon protocol beacons
-        beaconManager.beaconParsers.removeAll(beaconManager.beaconParsers)
+        beaconManager.beaconParsers.clear()
         // m:0-1=0505 stands for InPlay's Company Identifier Code (0x0505),
         // see https://www.bluetooth.com/specifications/assigned-numbers/
         // i:2-7 stands for the identifier, UUID (MAC) [little endian]
@@ -69,7 +69,6 @@ class AppMain : Application(), ComponentCallbacks2 {
         beaconManager.beaconParsers.add(customParser)
 
         // Activate debug mode only if build variant is debug
-        @Suppress("KotlinConstantConditions")
         BeaconManager.setDebug(BuildConfig.DEBUG)
 
         // Set API service

@@ -37,7 +37,6 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
 
     val app = AppMain.instance
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
