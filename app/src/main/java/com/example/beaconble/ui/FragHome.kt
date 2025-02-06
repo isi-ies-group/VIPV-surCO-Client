@@ -114,20 +114,6 @@ class FragHome : Fragment() {
         viewModel.value.isSessionActive.observe(viewLifecycleOwner) { isSessionActive ->
             updateStartStopButton(isSessionActive)
             updateBeaconCountTextView(viewModel.value.nRangedBeacons.value!!, isSessionActive)
-            // Show a toast message to indicate whether the session has started or stopped
-            if (isSessionActive) {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.session_started),
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.session_stopped),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
         }
 
         return view  // Return the view

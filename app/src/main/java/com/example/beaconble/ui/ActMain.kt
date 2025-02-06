@@ -46,7 +46,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         configureNavigationDrawer()  // setups .navView, .menuBtnLogin, .menuBtnLogout
 
         // Check if all permissions are granted
-        // If not, go to permissions activity and wait for user to grant permissions, so the session can start
+        // If not, go to permissions activity and wait for user to grant permissions, so the session can be started later by the user
         // Or if all permissions were already granted, start the session
         val arePermissionsOk = ActPermissions.Companion.allPermissionsGranted(this)
         if (!arePermissionsOk) {  // If any permission is not granted, go to permissions activity and wait for user to grant permissions
@@ -58,15 +58,9 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
                             this, "Permissions are required to continue", Toast.LENGTH_SHORT
                         ).show()
                         finish()
-                    } else {
-                        // If user granted permissions, start the session
-                        app.startSession()
                     }
                 }
             getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
-        } else {
-            // If all permissions were already granted, start the session
-            app.startSession()
         }
 
         checkNeedFirstLogin()

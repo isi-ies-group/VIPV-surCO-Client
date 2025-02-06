@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.ComponentCallbacks2
 import android.location.Location
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -231,7 +232,7 @@ class AppMain : Application(), ComponentCallbacks2 {
     }
 
     /**
-     * Toggle the beacon scanning session
+     * Toggle the beacon scanning session from opened UI button. Shows a toast message.
      * @return void
      *
      * Observe sessionRunning LiveData to get the current state of the session
@@ -239,8 +240,18 @@ class AppMain : Application(), ComponentCallbacks2 {
     fun toggleSession() {
         if (sessionRunning.value == true) {
             concludeSession()
+            Toast.makeText(
+                this,
+                getString(R.string.session_stopped),
+                Toast.LENGTH_SHORT
+            ).show()
         } else {
             startBeaconScanning()
+            Toast.makeText(
+                this,
+                getString(R.string.session_started),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
