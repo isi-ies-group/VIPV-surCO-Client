@@ -32,6 +32,9 @@ class ForegroundBeaconScanService : BeaconService() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var locationManager: LocationManager
 
+    private val beaconManager: org.altbeacon.beacon.BeaconManager by lazy {
+        org.altbeacon.beacon.BeaconManager.getInstanceForApplication(this)
+    }
     val region = Region(
         "all-beacons", null, null, null
     )  // criteria for identifying beacons
@@ -46,6 +49,7 @@ class ForegroundBeaconScanService : BeaconService() {
                 val beacons = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     data?.getParcelableArrayList("beacons", Beacon::class.java) ?: return false
                 } else {
+                    @Suppress("DEPRECATION")  // Deprecated in API 32
                     data?.getParcelableArrayList<Beacon>("beacons") ?: return false
                 }
                 // get the current location
@@ -228,7 +232,10 @@ class ForegroundBeaconScanService : BeaconService() {
             ).build()
 
         // Start the service in the foreground
-        startForeground(AppMain.NOTIFICATION_ONGOING_SESSION_ID, notification)
+        beaconManager.enableForegroundServiceScanning(notification, AppMain.NOTIFICATION_ONGOING_SESSION_ID)
+        beaconManager.setBackgroundBetweenScanPeriod(0)
+        beaconManager.setBackgroundScanPeriod(1100)
+        //startForeground(AppMain.NOTIFICATION_ONGOING_SESSION_ID, notification)
     }
 
     /**
