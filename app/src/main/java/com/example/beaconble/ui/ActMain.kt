@@ -68,6 +68,20 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         app.apiUserSession.lastKnownState.observeForever { state ->
             updateDrawerOptionsMenu()
         }
+
+        // Observe the session state to keep the screen on during a session on Android 14 and higher
+        // until we fix this issue in the future
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            app.isSessionActive.observeForever { isActive ->
+                if (isActive) {
+                    // Set screen to never turn off
+                    window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                } else {
+                    // Unset screen to never turn off
+                    window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+            }
+        }
     }
 
     /**
