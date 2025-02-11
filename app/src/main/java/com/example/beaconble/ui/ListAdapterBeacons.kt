@@ -9,6 +9,9 @@ import android.widget.TextView
 import android.widget.ArrayAdapter
 import com.example.beaconble.BeaconSimplified
 import com.example.beaconble.R
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 /**
  * Adapter for the list of beacons.
@@ -33,7 +36,9 @@ class ListAdapterBeacons(activityContext: Context, beaconsList: List<BeaconSimpl
 
         beaconIdTextView.text = beacon?.id.toString()
         beaconLastReadingTextView.text = beacon?.sensorData?.value?.lastOrNull()?.data.toString()
-        beaconLastSeenTextView.text = beacon?.sensorData?.value?.lastOrNull()?.timestamp.toString()
+        beaconLastSeenTextView.text = beacon?.sensorData?.value?.lastOrNull()?.timestamp?.let {
+            timestampFormatter.format(it)  // to local time
+        }.orEmpty()
 
         return view
     }
@@ -46,5 +51,13 @@ class ListAdapterBeacons(activityContext: Context, beaconsList: List<BeaconSimpl
         clear()
         addAll(beacons)
         notifyDataSetChanged()
+    }
+
+    companion object {
+        /**
+         * Formatter for the timestamp, from Instant to local time.
+         */
+        val timestampFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+            .withZone(ZoneId.systemDefault())
     }
 }

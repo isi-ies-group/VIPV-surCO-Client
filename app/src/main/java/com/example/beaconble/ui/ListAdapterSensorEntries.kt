@@ -9,6 +9,9 @@ import android.widget.TextView
 import android.widget.ArrayAdapter
 import com.example.beaconble.SensorEntry
 import com.example.beaconble.R
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 /**
  * Adapter for the list of logged sensor entries.
@@ -30,7 +33,9 @@ class ListAdapterSensorEntries(activityContext: Context, beaconsList: List<Senso
         val textViewTimestamp = view.findViewById<TextView>(R.id.tvTimestamp)
         val textViewMeasurement = view.findViewById<TextView>(R.id.tvMeasurement)
 
-        textViewTimestamp.text = dataEntry?.timestamp.toString()
+        textViewTimestamp.text = dataEntry?.timestamp?.let {
+            timestampFormatter.format(it)  // to local time
+        }.orEmpty()
         textViewMeasurement.text = dataEntry?.data.toString()
 
         return view
@@ -44,5 +49,13 @@ class ListAdapterSensorEntries(activityContext: Context, beaconsList: List<Senso
         clear()
         addAll(sensorEntries)
         notifyDataSetChanged()
+    }
+
+    companion object {
+        /**
+         * Formatter for the timestamp, from Instant to local time.
+         */
+        val timestampFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+            .withZone(ZoneId.systemDefault())
     }
 }
