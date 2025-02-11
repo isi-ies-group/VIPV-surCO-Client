@@ -10,7 +10,6 @@
     <string name="logout">Cerrar sesión</string>
     <string name="toolbar_close">Cerrar menú</string>
     <string name="settings_user_token_message">Token para publicar datos en el servidor</string>
-    <string name="settings_only_wifi_upload_off">Los datos no se subirán automáticamente. Se requiere intervención del Usuario mediante el botón de Publicar.</string>
     <string name="version">Versión: %1$s-%2$d</string>
     <string name="delete">Eliminar</string>
     <string name="stop_button">Detener sesión medidas</string>
@@ -31,7 +30,7 @@
     <string name="permission_notification">Mostrar Notificaciones</string>
     <string name="settings">Configuración</string>
     <string name="settings_app_behaviour">Comportamiento de la app</string>
-    <string name="settings_only_wifi_upload">Subir datos solo con WiFi</string>
+    <string name="settings_upload_behaviour_title">Cuándo se subirán las sesiones</string>
     <string name="settings_api_endpoint">Sección para servidores propios</string>
     <string name="settings_api_address">Dirección IP</string>
     <string name="settings_api_port">Puerto</string>
@@ -44,7 +43,6 @@
     <string name="permissions_title">Permisos necesarios</string>
     <string name="permission_grant">Dar permiso</string>
     <string name="settings_user_token">Clave del usuario</string>
-    <string name="settings_only_wifi_upload_on">Los datos se subirán automáticamente cuando se conecte a una red WiFi.</string>
     <string name="beacons_detected_zero">No se detectan balizas</string>
     <string name="beacons_detected_nonzero">Balizas cercanas: %1$d</string>
     <string name="beacon_last_read">Última lectura:</string>
@@ -104,6 +102,11 @@
         <item>Por defecto del sistema</item>
         <item>Claro</item>
         <item>Oscuro</item>
+    </array>
+    <array name="settings_upload_options">
+        <item>Automáticamente al terminar sesión</item>
+        <item>Automáticamente al conectar a WiFi y redes no itinerantes</item>
+        <item>Manualmente</item>
     </array>
     <string name="want_to_use_offline_question">¿Quieres tomar medidas solo para ti?</string>
     <string name="use_offline">Usar sin cuenta</string>

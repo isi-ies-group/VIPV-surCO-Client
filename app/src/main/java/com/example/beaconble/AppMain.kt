@@ -274,10 +274,12 @@ class AppMain : Application(), ComponentCallbacks2 {
     fun concludeSession() {
         stopBeaconScanning()
         // if the sharedPreference is set to upload files on metered network, schedule the upload
-        if (PreferenceManager.getDefaultSharedPreferences(this)
-                .getBoolean("auto_upload_on_metered", true)
-        ) {
-            scheduleFileUpload()
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val autoUploadBehaviour = sharedPreferences.getString("auto_upload_behaviour", "auto_un_metered")
+        when (autoUploadBehaviour) {
+            "auto_un_metered" -> scheduleFileUpload()
+            "auto_always" -> uploadAll()
+            // else, manual upload -> do nothing
         }
     }
 
