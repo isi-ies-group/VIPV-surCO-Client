@@ -1,59 +1,12 @@
 package com.example.beaconble.io
 
 import com.example.beaconble.BeaconSimplified
-import java.io.InputStream
-import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.time.Instant
 import java.util.Base64
 
 object SessionWriter {
     object V1 {
-        /**
-         * Dumps the data from the beacons to a custom-format file.
-         * This file has the following format:
-         *   - First lines is the JSON encoded:
-         *     * version scheme
-         *     * start instant
-         *     * finish instant
-         *     * indexed list of beacons
-         *       + with an ID field
-         *       + tilt
-         *       + orientation
-         *       + UTF-8 description in Base64.
-         *   - A newline separates the JSON line from the rest of the file.
-         *   - The remaining lines is a CSV file with each SensorEntry field and, in the first column, the beacon ID.
-         *     The fields are:
-         *     * beacon index (from the beacons list in the header)
-         *     * timestamp
-         *     * data
-         *     * latitude
-         *     * longitude
-         *     No assumptions are made on the order of the entries.
-         *   - File name is recommended to be VIPV_${timestamp}.txt
-         * @param outStream The file to write to.
-         * @param beacons The collection of beacons.
-         * @param startInstant The start instant of the session.
-         * @param finishInstant The finish instant of the session.
-         */
-        fun dump2file(
-            outStream: OutputStream,
-            beacons: Collection<BeaconSimplified>,
-            startInstant: Instant,
-            finishInstant: Instant
-        ) {
-            outStream.writer(Charsets.UTF_8).use {
-                // Write the JSON header.
-                createJSONHeader(it, beacons, startInstant, finishInstant)
-                // Separate the JSON header from the rest of the file with a blank line.
-                it.write("\n\n")
-                // Write the CSV part.
-                // Header
-                appendCsvHeader(it)
-                // Body
-                appendCsvBody(it, beacons)
-            }
-        }
 
         /**
          * Creates the JSON line for the beacons static data (ID, tilt, orientation, description).
@@ -165,46 +118,5 @@ object SessionWriter {
             }
         }
 
-        /**
-         * Update contents of a session file, from a previous file and a session.
-         * The header gets updated to the latest values.
-         * The previous body is kept, and the new data is appended.
-         * The beacons are assumed to have been cleared from the previous session data log.
-         * @param outStream The file to write to.
-         * @param inputStream The file to read from.
-         * @param beacons The collection of beacons.
-         * @param startInstant The start instant of the session.
-         * @param finishInstant The finish instant of the session.
-         */
-        fun updateFile(
-            outStream: OutputStream,
-            inputStream: InputStream,
-            beacons: Collection<BeaconSimplified>,
-            startInstant: Instant,
-            finishInstant: Instant,
-        ) {
-            outStream.writer(Charsets.UTF_8).use { writer ->
-                inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
-                    // Read the JSON header.
-                    /*val jsonHeader = */  reader.readLine()  // discard the JSON header
-                    reader.readLine()  // discard the next newline
-                    // Write the latest JSON header.
-                    createJSONHeader(writer, beacons, startInstant, finishInstant)
-                    // Separate the JSON header from the rest of the file with a blank line.
-                    writer.write("\n\n")
-                    // Write the CSV part.
-                    // Header
-                    appendCsvHeader(writer)
-                    // Body
-                    // From the previous file
-                    reader.lines().forEach { writer.write(it + "\n") }
-                    // From the current session
-                    appendCsvBody(writer, beacons)
-                    // Close, flush, whatever
-                    writer.close()
-                }
-            }
-
-        }
     }
 }
