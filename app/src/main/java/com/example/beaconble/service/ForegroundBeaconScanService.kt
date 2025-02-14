@@ -214,28 +214,31 @@ class ForegroundBeaconScanService : BeaconService() {
         )
 
         // Create the notification
-        val notification = NotificationCompat.Builder(this, "session-ongoing")
-            .setContentTitle(getString(R.string.notification_ongoing_title))
-            .setContentText(getString(R.string.notification_ongoing_text))
-            .setSmallIcon(R.mipmap.logo_ies_foreground).setOngoing(true)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).addAction(  // Stop action
+        val notification = NotificationCompat.Builder(this, "session-ongoing").apply {
+            setContentTitle(getString(R.string.notification_ongoing_title))
+            setContentText(getString(R.string.notification_ongoing_text))
+            setSmallIcon(R.mipmap.logo_ies_foreground).setOngoing(true)
+            setVisibility(NotificationCompat.VISIBILITY_PUBLIC).addAction(  // Stop action
                 R.drawable.square_stop,
                 getString(R.string.stop_notification_button),
                 stopPendingIntent
-            ).setContentIntent(  // Explicit intent to open the app when notification is clicked
-                PendingIntent.getActivity(
-                    this,
-                    0,
-                    Intent(this, ActMain::class.java),
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-            ).build()
+            )
+        }.setContentIntent(  // Explicit intent to open the app when notification is clicked
+            PendingIntent.getActivity(
+                this,
+                0,
+                Intent(this, ActMain::class.java),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        ).build()
 
         // Start the service in the foreground
-        beaconManager.enableForegroundServiceScanning(notification, AppMain.NOTIFICATION_ONGOING_SESSION_ID)
+        beaconManager.enableForegroundServiceScanning(
+            notification, AppMain.NOTIFICATION_ONGOING_SESSION_ID
+        )
         beaconManager.setBackgroundBetweenScanPeriod(0)
         beaconManager.setBackgroundScanPeriod(1100)
-        //startForeground(AppMain.NOTIFICATION_ONGOING_SESSION_ID, notification)
+        startForeground(AppMain.NOTIFICATION_ONGOING_SESSION_ID, notification)
     }
 
     /**
