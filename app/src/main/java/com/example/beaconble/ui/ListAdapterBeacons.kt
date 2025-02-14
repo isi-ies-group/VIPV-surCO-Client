@@ -54,10 +54,7 @@ class ListAdapterBeacons(activityContext: Context, beaconsList: List<BeaconSimpl
     }
 
     companion object {
-        /**
-         * Formatter for the timestamp, from Instant to local time.
-         */
-        val timestampFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-            .withZone(ZoneId.systemDefault())
+        val timestampFormatter =
+            DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.systemDefault())
     }
 }
