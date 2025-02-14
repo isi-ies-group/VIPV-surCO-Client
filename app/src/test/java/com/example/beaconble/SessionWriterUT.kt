@@ -3,9 +3,15 @@ package com.example.beaconble
 import com.example.beaconble.io.SessionWriter
 import org.altbeacon.beacon.Identifier
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowLooper
 import java.io.File
 import java.time.Instant
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [28])
 class SessionWriterV1UT {
     @Test
     fun createJSONHeader() {
@@ -15,15 +21,21 @@ class SessionWriterV1UT {
 
         // add two example beacons
         val beacon0 = BeaconSimplified(Identifier.parse("0x010203040506"))
-        beacon0.tilt = 0.0f
-        beacon0.direction = 0.0f
-        beacon0.description = "Soy la cosita más linda y mona de este mundo."
+        beacon0.apply {
+            setTilt(0.0f)
+            setDirection ( 0.0f)
+            setDescription("Soy la cosita más linda y mona de este mundo.")
+            setPosition("trunk")
+        }
         beacons.add(beacon0)
 
         val beacon1 = BeaconSimplified(Identifier.parse("0x010203040507"))
-        beacon1.tilt = 10.0f
-        beacon1.direction = 180.0f
-        beacon1.description = "Soy la cosita más linda y mona de este mundo."
+        beacon1.apply {
+            setTilt(10.0f)
+            setDirection ( 180.0f)
+            setDescription("Soy la cosita más linda y mona de este mundo.")
+            setPosition("roof")
+        }
         beacons.add(beacon1)
 
         // set start and finish instants
@@ -50,12 +62,14 @@ class SessionWriterV1UT {
               "id": "0x010203040506",
               "tilt": 0.0,
               "orientation": 0.0,
+              "position": "trunk",
               "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
             },
             {
               "id": "0x010203040507",
               "tilt": 10.0,
               "orientation": 180.0,
+              "position": "roof",
               "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
             }
           ]
@@ -65,6 +79,9 @@ class SessionWriterV1UT {
         val jsonHeaderFormatted = body.readText().replace("\n", "").replace(" ", "")
 
         assert(jsonHeaderFormatted == expected)
+
+        // Ensure all tasks on the main looper are executed
+        ShadowLooper.idleMainLooper()
     }
 
     @Test

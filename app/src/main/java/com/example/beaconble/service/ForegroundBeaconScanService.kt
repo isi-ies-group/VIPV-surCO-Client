@@ -95,13 +95,7 @@ class ForegroundBeaconScanService : BeaconService() {
             val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
             val isBluetoothEnabled = bluetoothManager.adapter.isEnabled
 
-            if (!isGpsEnabled || !isBluetoothEnabled) {
-                showConnectivityNotification(isGpsEnabled, isBluetoothEnabled)
-            } else {
-                val notificationManager =
-                    getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.cancel(AppMain.NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID)
-            }
+            handleConnectivityNotification(isGpsEnabled, isBluetoothEnabled)
 
             try {
                 Thread.sleep(2500)
@@ -280,13 +274,23 @@ class ForegroundBeaconScanService : BeaconService() {
         watchdogThread.join() // Ensure the thread stops before continuing
     }
 
+    private var lastNotificationState: Pair<Boolean, Boolean> = Pair(false, false)
     /**
      * Show a notification to the user if GPS or Bluetooth are disabled.
      * @param isGpsEnabled True if GPS is enabled, false otherwise.
      * @param isBluetoothEnabled True if Bluetooth is enabled, false otherwise.
      * @see startBluetoothAndGpsWatchdog
      */
-    private fun showConnectivityNotification(isGpsEnabled: Boolean, isBluetoothEnabled: Boolean) {
+    private fun handleConnectivityNotification(isGpsEnabled: Boolean, isBluetoothEnabled: Boolean) {
+        val currentState = Pair(isGpsEnabled, isBluetoothEnabled)
+        if (currentState == lastNotificationState) return  // No change -> do not create a new notification
+        if (currentState == Pair(true, true)) {  // Both are enabled -> remove notification
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(AppMain.NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID)
+            return
+        }
+
+        // Create a notification
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val notificationText = when {
             !isGpsEnabled && !isBluetoothEnabled -> getString(R.string.notification_no_location_bluetooth_text)
@@ -295,12 +299,15 @@ class ForegroundBeaconScanService : BeaconService() {
             else -> ""
         }
 
-        val notification = NotificationCompat.Builder(this, "location-and-bluetooth-watchdog")
-            .setContentTitle(getString(R.string.notification_no_location_bluetooth_title))
-            .setContentText(notificationText).setSmallIcon(R.mipmap.logo_ies_foreground)
-            .setOngoing(true).build()
+        val notification = NotificationCompat.Builder(this, "location-and-bluetooth-watchdog").apply {
+            setContentTitle(getString(R.string.notification_no_location_bluetooth_title))
+            setContentText(notificationText).setSmallIcon(R.mipmap.logo_ies_foreground)
+            setOngoing(true)
+        }.build()
 
         notificationManager.notify(AppMain.NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID, notification)
+
+        lastNotificationState = currentState
     }
 
     companion object {

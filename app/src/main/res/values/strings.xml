@@ -14,6 +14,7 @@
     <string name="all_sessions_upload">Upload saved sessions</string>
     <string name="logo">Logo</string>
     <string name="NaN" translatable="false">NaN</string>
+    <string name="degree_symbol" translatable="false">°</string>
     <string name="delete">Delete</string>
     <string name="stop_button">Stop session</string>
     <string name="start_button">Start session</string>
@@ -65,8 +66,9 @@
     // Home view
     <string name="beacons_detected_zero">No beacons detected</string>
     <string name="beacons_detected_nonzero">Nearby beacons: %1$d</string>
-    <string name="beacon_last_read">Last read:</string>
     <string name="beacons_detected_paused">Monitoring is disabled</string>
+    <string name="beacon_last_read">Last read:</string>
+    <string name="beacon_info_incomplete">Click to add missing required info fields.</string>
     <string name="empty_all_data">Delete all data?</string>
     <string name="empty_all_data_confirmation">This action can\'t be undone.</string>
     <string name="empty_session_nothing_to_do">Session cleared</string>
@@ -79,8 +81,19 @@
     // Beacon details view
     <string name="beacon_details">Beacon details</string>
     <string name="beacon_detail_description_hint">Optional beacon description</string>
-    <string name="beacon_detail_tilt">Tilt [degrees]</string>
-    <string name="beacon_detail_direction">Direction [degrees]</string>
+    <string name="beacon_detail_tilt">Tilt</string>
+    <string name="beacon_detail_direction">Direction</string>
+    <array name="beacon_positions">
+        <item>Select beacon position</item>
+        <item>Hood</item>
+        <item>Left Door</item>
+        <item>Right Door</item>
+        <item>Roof</item>
+        <item>Trunk</item>
+    </array>
+    <string name="beacon_detail_ok">Beacon configured and online</string>
+    <string name="beacon_detail_info_error">Missing required position data</string>
+    <string name="beacon_detail_out_of_range_error">Could not see beacon during the last seconds</string>
     // Login view
     <string name="bad_email">This email is not registered</string>
     <string name="bad_password">Incorrect password</string>
@@ -114,6 +127,7 @@
     <string name="notification_no_location_bluetooth_text">Bluetooth and Location disabled.</string>
     <string name="notification_no_location_text">Location disabled.</string>
     <string name="notification_no_bluetooth_text">Bluetooth disabled.</string>
+    // Misc
     <string name="want_to_use_offline_question">Prefer to take measurements for yourself?</string>
     <string name="use_offline">Use offline</string>
 </resources>

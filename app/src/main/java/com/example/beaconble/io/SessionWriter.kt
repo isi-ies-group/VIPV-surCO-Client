@@ -26,12 +26,14 @@ object SessionWriter {
          *      "id": "id_of_beacon1",
          *      "tilt": 0.0,
          *      "orientation": 0.0,
+         *      "position": "position_of_beacon1",
          *      "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
          *    },
          *    {
          *      "id": "id_of_beacon2",
          *      "tilt": 0.0,
          *      "orientation": 0.0,
+         *      "position": "position_of_beacon2",
          *      "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
          *    }
          *   ]
@@ -59,10 +61,11 @@ object SessionWriter {
                 // Encode the description in Base64 to avoid issues with special characters (especially quotes and newlines).
                 val base64encodedDescription =
                     Base64.getEncoder()
-                        .encodeToString(beacon.description.toByteArray(Charsets.UTF_8))
+                        .encodeToString(beacon.descriptionValue.toByteArray(Charsets.UTF_8))
                 outputStreamWriter.append("\"id\": \"${beacon.id}\",")
-                outputStreamWriter.append("\"tilt\": ${beacon.tilt},")
-                outputStreamWriter.append("\"orientation\": ${beacon.direction},")
+                outputStreamWriter.append("\"tilt\": ${beacon.tiltValue},")
+                outputStreamWriter.append("\"orientation\": ${beacon.directionValue},")
+                outputStreamWriter.append("\"position\": \"${beacon.positionValue}\",")
                 outputStreamWriter.append("\"description\": \"$base64encodedDescription\"")
 
                 outputStreamWriter.append("}")  // Close the unique beacon object.

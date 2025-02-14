@@ -54,13 +54,14 @@
     <string name="current_session_share">Compartir sesión en curso</string>
     <string name="beacon_details">Detalles de la baliza</string>
     <string name="beacon_detail_description_hint">Descripción opcional de la baliza</string>
-    <string name="beacon_detail_tilt">Inclinación [grados]</string>
-    <string name="beacon_detail_direction">Orientación [grados]</string>
+    <string name="beacon_detail_tilt">Inclinación</string>
+    <string name="beacon_detail_direction">Orientación</string>
     <string name="yes">Sí</string>
     <string name="empty_all_data">¿Eliminar todo?</string>
     <string name="settings_api_address_hint">http:// o https://</string>
     <string name="no_data_to_upload">No hay sesiones pasadas pendientes de subir</string>
     <string name="session_started">Sesión de medida iniciada</string>
+    <string name="beacon_detail_out_of_range_error">No se ha visto la baliza últimamente</string>
     <string name="bad_email">Este correo no está registrado</string>
     <string name="bad_password">Contraseña incorrecta</string>
     <string name="prompt_email">Correo electrónico</string>
@@ -110,4 +111,15 @@
     </array>
     <string name="want_to_use_offline_question">¿Quieres tomar medidas solo para ti?</string>
     <string name="use_offline">Usar sin cuenta</string>
+    <string name="beacon_info_incomplete">Añada los campos de información requeridos.</string>
+    <string name="beacon_detail_ok">Baliza configurada y comunicándose</string>
+    <string name="beacon_detail_info_error">Faltan datos sobre la posición de la baliza</string>
+    <array name="beacon_positions">
+        <item>Seleccione la posición de la baliza</item>
+        <item>Hood</item>
+        <item>Left Door</item>
+        <item>Right Door</item>
+        <item>Roof</item>
+        <item>Trunk</item>
+    </array>
 </resources>

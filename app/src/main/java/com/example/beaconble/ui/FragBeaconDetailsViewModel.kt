@@ -5,7 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.beaconble.AppMain
 import com.example.beaconble.BeaconSimplified
+import com.example.beaconble.BeaconSimplifiedStatus
 import com.example.beaconble.SensorEntry
+import com.example.beaconble.createPositionMap
 import org.altbeacon.beacon.Identifier
 import java.util.ArrayList
 
@@ -16,6 +18,7 @@ class FragBeaconDetailsViewModel : ViewModel() {
 
     private var _beacon = MutableLiveData<BeaconSimplified?>()
     val beacon: LiveData<BeaconSimplified?> get() = _beacon
+    val status: LiveData<BeaconSimplifiedStatus?> get() = _beacon.value?.statusValue as LiveData<BeaconSimplifiedStatus?>
 
     var sensorEntries: MutableLiveData<ArrayList<SensorEntry>> =
         MutableLiveData<ArrayList<SensorEntry>>()
@@ -38,17 +41,6 @@ class FragBeaconDetailsViewModel : ViewModel() {
     fun loadBeacon(id: String?) {
         if (id != null) {
             setBeaconId(Identifier.parse(id))
-        }
-    }
-
-    /**
-     * Updates the beacon fields with the given values.
-     */
-    fun updateBeacon4Fields(description: String, tilt: Float?, direction: Float?) {
-        if (_beacon.value != null) {
-            _beacon.value?.description = description
-            _beacon.value?.tilt = tilt
-            _beacon.value?.direction = direction
         }
     }
 

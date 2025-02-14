@@ -4,6 +4,8 @@ import android.app.*
 import android.content.Intent
 import android.content.ComponentCallbacks2
 import android.location.Location
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -46,6 +48,18 @@ class AppMain : Application(), ComponentCallbacks2 {
     // Data for the beacon session
     var sessionRunning = MutableLiveData<Boolean>(false)
     val isSessionActive: LiveData<Boolean> get() = sessionRunning
+
+    // Status update handler
+    // This handler is used to update the status of the beacons every STATUS_UPDATE_INTERVAL milliseconds
+    private val handler = Handler(Looper.getMainLooper())
+    private val statusUpdateRunnable = object : Runnable {
+        override fun run() {
+            loggingSession.beacons.value?.forEach { beacon ->
+                beacon.refreshStatus()
+            }
+            handler.postDelayed(this, STATUS_UPDATE_INTERVAL)
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -199,15 +213,15 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     fun stopBeaconScanning() {
-        loggingSession.stopInstant = Instant.now()
-        val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
-        stopService(serviceIntent)
         // Create a coroutine to write the session data to a file
         thread {
+            loggingSession.stopInstant = Instant.now()
+            val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
+            stopService(serviceIntent)
             loggingSession.concludeSession()
-
-            sessionRunning.postValue(false)
         }
+        sessionRunning.postValue(false)
+        handler.removeCallbacks(statusUpdateRunnable) // Stop periodic status updates
     }
 
     /**
@@ -228,6 +242,7 @@ class AppMain : Application(), ComponentCallbacks2 {
 
             val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
             startService(serviceIntent)
+            handler.post(statusUpdateRunnable) // Start periodic status updates of the beacon statuses
         }
     }
 
@@ -355,5 +370,6 @@ class AppMain : Application(), ComponentCallbacks2 {
         const val NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID = 2
         const val ACTION_STOP_SESSION = "com.example.beaconble.STOP_SESSION"
         const val GPS_LOCATION_PERIOD_MILLIS = 1000L  // 1 second
+        const val STATUS_UPDATE_INTERVAL = 3000L  // 3 seconds
     }  // companion object
 }

@@ -10,4 +10,12 @@
         <item>light</item>
         <item>dark</item>
     </string-array>
+    <string-array name="beacon_spinner_keys">
+        <item>select_position_default</item>
+        <item>capota</item>
+        <item>puerta_izquierda</item>
+        <item>puerta_derecha</item>
+        <item>techo</item>
+        <item>maletero</item>
+    </string-array>
 </resources>

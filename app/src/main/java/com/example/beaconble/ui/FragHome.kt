@@ -81,7 +81,7 @@ class FragHome : Fragment() {
         uploadSessionButton = view.findViewById<ImageButton>(R.id.imBtnActionUploadSession)
 
         // Create the adapter for the list view and assign it to the list view.
-        adapter = ListAdapterBeacons(requireContext(), ArrayList())
+        adapter = ListAdapterBeacons(requireContext(), ArrayList(), viewLifecycleOwner)
         beaconListView.adapter = adapter
 
         // Set the start stop button text and icon according to the session state
@@ -106,6 +106,7 @@ class FragHome : Fragment() {
 
         viewModel.value.nRangedBeacons.observe(viewLifecycleOwner) { n ->
             updateBeaconCountTextView(n, appMain.isSessionActive.value!!)
+            adapter.updateData(viewModel.value.rangedBeacons.value!!)
         }
 
         viewModel.value.isSessionActive.observe(viewLifecycleOwner) { isSessionActive ->

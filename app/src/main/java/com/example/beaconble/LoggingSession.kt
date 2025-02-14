@@ -147,15 +147,18 @@ object LoggingSession {
      * @return The file with the session data.
      */
     fun saveSession(): File? {
-        stopInstant = Instant.now()
-
         // exit if there is no data to save
         if ((beacons.value == null)  // no beacons
             || (beacons.value?.isEmpty() == true)  // no beacons
             || (beacons.value?.all { beacon -> beacon.sensorData.value?.isEmpty() != false } == true)  // all beacons are empty
+            || (beacons.value?.any { beacon -> beacon.statusValue.value != BeaconSimplifiedStatus.INFO_MISSING } == false)  // not a single beacon has complete info
         ) {
             return null
         }
+
+        // deep copy all beacons and their data to a temporary variable, and empty them
+        val temporaryBeacons = beacons.value!!.filter { it.statusValue.value != BeaconSimplifiedStatus.INFO_MISSING }.map { it.copy() }
+        beacons.value!!.map { it.clear() }
 
         var outFile = File(
             cacheDir,
@@ -164,7 +167,7 @@ object LoggingSession {
 
         outFile.outputStream().writer(Charsets.UTF_8).use {
             // write the header
-            SessionWriter.V1.createJSONHeader(it, beacons.value!!, startInstant!!, stopInstant!!)
+            SessionWriter.V1.createJSONHeader(it, temporaryBeacons, startInstant!!, stopInstant!!)
             it.write("\n\n")  // separate the header from the body
             // write the header
             it.write("beacon_id,timestamp,data,latitude,longitude\n")
@@ -178,7 +181,7 @@ object LoggingSession {
                 bodyFile!!.delete()
             }
             // append the latest data to the file
-            SessionWriter.V1.appendCsvBody(it, beacons.value!!)
+            SessionWriter.V1.appendCsvBody(it, temporaryBeacons)
             it.close()
         }
 
