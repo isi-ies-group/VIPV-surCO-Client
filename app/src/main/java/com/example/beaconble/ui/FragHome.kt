@@ -46,24 +46,22 @@ class FragHome : Fragment() {
     lateinit var appMain: AppMain
 
     private val bluetoothAdapter: BluetoothAdapter by lazy {
-        val bluetoothManager = requireActivity().getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothManager =
+            requireActivity().getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothManager.adapter
     }
 
     private val bluetoothEnablingResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            // Bluetooth is enabled, good to go
-        } else {
+        if (result.resultCode != RESULT_OK) {
             // User dismissed or denied Bluetooth prompt
             promptEnableBluetooth()
         }
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         // Create a ViewModel the first time the system creates this Class.
         // Re-created fragments receive the same ViewModel instance created by the first one.
@@ -100,8 +98,7 @@ class FragHome : Fragment() {
                 val beaconId = beacon.id
                 Log.d("FragHome", "Beacon clicked: $beaconId")
                 // navigate to the details fragment, passing the beacon ID
-                findNavController().navigate(
-                    R.id.action_homeFragment_to_fragBeaconDetails,
+                findNavController().navigate(R.id.action_homeFragment_to_fragBeaconDetails,
                     Bundle().apply {
                         putString("beaconId", beaconId.toString())
                     })
@@ -123,11 +120,8 @@ class FragHome : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // Set click listeners for the buttons
         startStopSessionButton.setOnClickListener {
-            // Check if Bluetooth is enabled
-            if (!bluetoothAdapter.isEnabled) {
-                // If Bluetooth is not enabled, prompt the user to enable it
-                promptEnableBluetooth()
-            }
+            // Check if Bluetooth is enabled and prompt the user to enable it if not
+            promptEnableBluetooth()
             viewModel.value.toggleSession()
         }
 
@@ -158,9 +152,7 @@ class FragHome : Fragment() {
             if (viewModel.value.rangedBeacons.value!!.isEmpty()) {
                 // If there are no beacons, show a toast message and return
                 Toast.makeText(
-                    requireContext(),
-                    getString(R.string.no_data_to_share),
-                    Toast.LENGTH_SHORT
+                    requireContext(), getString(R.string.no_data_to_share), Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
@@ -173,9 +165,7 @@ class FragHome : Fragment() {
             if (AppMain.instance.loggingSession.getSessionFiles().isEmpty()) {
                 // If there are no files, show a toast message and return
                 Toast.makeText(
-                    requireContext(),
-                    getString(R.string.no_data_to_upload),
-                    Toast.LENGTH_SHORT
+                    requireContext(), getString(R.string.no_data_to_upload), Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
@@ -226,12 +216,13 @@ class FragHome : Fragment() {
     /**
      * Prompts the user to enable Bluetooth via a system dialog.
      *
-     * For Android 12+, [Manifest.permission.BLUETOOTH_CONNECT] is required to use
+     * For Android 12+, BLUETOOTH_CONNECT is required to use
      * the [BluetoothAdapter.ACTION_REQUEST_ENABLE] intent.
      */
     private fun promptEnableBluetooth() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            !ActPermissions.Companion.permissionGranted(requireContext(), BLUETOOTH_CONNECT)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !ActPermissions.Companion.permissionGranted(
+                requireContext(), BLUETOOTH_CONNECT
+            )
         ) {
             // Insufficient permission to prompt for Bluetooth enabling
             return

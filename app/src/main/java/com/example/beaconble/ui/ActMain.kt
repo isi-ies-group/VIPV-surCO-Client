@@ -193,7 +193,6 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             menuBtnLogin.isVisible = isUserLoggedIn != true
             menuBtnLogout.isVisible = !menuBtnLogin.isVisible
             navView.invalidate()
-            Log.i(TAG, "Set visibilities: ${menuBtnLogin.isVisible}, ${menuBtnLogout.isVisible}")
         })
     }
 

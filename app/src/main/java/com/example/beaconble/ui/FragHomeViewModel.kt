@@ -12,8 +12,7 @@ class FragHomeViewModel() : ViewModel() {
 
     private val _nRangedBeacons = MutableLiveData<Int>()
     val nRangedBeacons: LiveData<Int> get() = _nRangedBeacons
-    val rangedBeacons: LiveData<ArrayList<BeaconSimplified>> =
-        appMain.loggingSession.beacons
+    val rangedBeacons: LiveData<ArrayList<BeaconSimplified>> = appMain.loggingSession.beacons
     val isSessionActive: LiveData<Boolean> = appMain.isSessionActive
 
     init {
