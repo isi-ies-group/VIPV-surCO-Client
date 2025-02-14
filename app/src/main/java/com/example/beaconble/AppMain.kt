@@ -241,16 +241,12 @@ class AppMain : Application(), ComponentCallbacks2 {
         if (sessionRunning.value == true) {
             concludeSession()
             Toast.makeText(
-                this,
-                getString(R.string.session_stopped),
-                Toast.LENGTH_SHORT
+                this, getString(R.string.session_stopped), Toast.LENGTH_SHORT
             ).show()
         } else {
             startBeaconScanning()
             Toast.makeText(
-                this,
-                getString(R.string.session_started),
-                Toast.LENGTH_SHORT
+                this, getString(R.string.session_started), Toast.LENGTH_SHORT
             ).show()
         }
     }
@@ -275,7 +271,8 @@ class AppMain : Application(), ComponentCallbacks2 {
         stopBeaconScanning()
         // if the sharedPreference is set to upload files on metered network, schedule the upload
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val autoUploadBehaviour = sharedPreferences.getString("auto_upload_behaviour", "auto_un_metered")
+        val autoUploadBehaviour =
+            sharedPreferences.getString("auto_upload_behaviour", "auto_un_metered")
         when (autoUploadBehaviour) {
             "auto_un_metered" -> scheduleFileUpload()
             "auto_always" -> uploadAll()
@@ -321,8 +318,7 @@ class AppMain : Application(), ComponentCallbacks2 {
     private fun isServiceRunning(serviceClass: Class<*>): Boolean {
         val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
 
-        @Suppress("DEPRECATION")
-        val runningServices = manager.getRunningServices(Int.MAX_VALUE)
+        @Suppress("DEPRECATION") val runningServices = manager.getRunningServices(Int.MAX_VALUE)
 
         for (service in runningServices) {
             if (service.service.className == serviceClass.name) {
@@ -358,6 +354,6 @@ class AppMain : Application(), ComponentCallbacks2 {
         const val NOTIFICATION_ONGOING_SESSION_ID = 1
         const val NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID = 2
         const val ACTION_STOP_SESSION = "com.example.beaconble.STOP_SESSION"
-        const val GPS_LOCATION_PERIOD_MILLIS = 1000L
+        const val GPS_LOCATION_PERIOD_MILLIS = 1000L  // 1 second
     }  // companion object
 }
