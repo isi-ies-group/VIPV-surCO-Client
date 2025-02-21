@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <Preference
+        android:key="manage_sessions"
+        android:title="Manage saved session files" />
+
     <PreferenceCategory
         android:icon="@drawable/settings_gear"
         android:title="@string/settings_app_behaviour">
 
-        <SwitchPreferenceCompat
-            android:key="auto_upload_on_metered"
-            android:summaryOff="@string/settings_only_wifi_upload_off"
-            android:summaryOn="@string/settings_only_wifi_upload_on"
-            android:defaultValue="true"
-            android:title="@string/settings_only_wifi_upload" />
+        <ListPreference
+            android:defaultValue="auto_un_metered"
+            android:entries="@array/settings_upload_options"
+            android:entryValues="@array/settings_upload_values"
+            android:key="auto_upload_behaviour"
+            android:title="@string/settings_upload_behaviour_title" />
 
         <ListPreference
-            android:key="color_theme"
-            android:title="@string/settings_color_theme"
+            android:defaultValue="system-default"
             android:entries="@array/settings_color_theme_entries"
             android:entryValues="@array/settings_color_theme_keys"
-            android:defaultValue="system-default" />
+            android:key="color_theme"
+            android:title="@string/settings_color_theme" />
 
     </PreferenceCategory>
 

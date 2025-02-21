@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="settings_upload_values">
+        <item>auto_on_finish</item>
+        <item>auto_un_metered</item>
+        <item>manual</item>
+    </string-array>
     <string-array name="settings_color_theme_keys">
         <item>system-default</item>
         <item>light</item>
         <item>dark</item>
+    </string-array>
+    <string-array name="beacon_spinner_keys">
+        <item>select_position_default</item>
+        <item>capota</item>
+        <item>puerta_izquierda</item>
+        <item>puerta_derecha</item>
+        <item>techo</item>
+        <item>maletero</item>
     </string-array>
 </resources>

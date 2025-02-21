@@ -10,9 +10,9 @@
     <string name="logout">Cerrar sesión</string>
     <string name="toolbar_close">Cerrar menú</string>
     <string name="settings_user_token_message">Token para publicar datos en el servidor</string>
-    <string name="settings_only_wifi_upload_off">Los datos no se subirán automáticamente. Se requiere intervención del Usuario mediante el botón de Publicar.</string>
-    <string name="version">Versión: %1$s-%2$d</string>
+    <string name="version">Versión: %1$s (%2$d)</string>
     <string name="delete">Eliminar</string>
+    <string name="share">Compartir</string>
     <string name="stop_button">Detener sesión medidas</string>
     <string name="start_button">Iniciar sesión medidas</string>
     <string name="no">No</string>
@@ -23,7 +23,7 @@
     <string name="welcome_continue">Empezar a compartir medidas</string>
     <string name="welcome_message">Bienvenid@ al  Programa de Adquisición VIPV!</string>
     // Permissions view
-    <string name="permissions_needed">Photovolta requiere utilizar los siguientes permisos. Podrás acceder a la app cuando se hayan otorgado los permisos necesarios:</string>
+    <string name="permissions_needed">Esta aplicación necesita los siguientes permisos. Podrás acceder a la app cuando se hayan otorgado los permisos necesarios:</string>
     <string name="permissions_show_in_settings">Ver permisos en la configuración del sistema</string>
     <string name="permission_localization">Ubicación</string>
     <string name="permission_localization_background">Ubicación en segundo plano</string>
@@ -31,7 +31,7 @@
     <string name="permission_notification">Mostrar Notificaciones</string>
     <string name="settings">Configuración</string>
     <string name="settings_app_behaviour">Comportamiento de la app</string>
-    <string name="settings_only_wifi_upload">Subir datos solo con WiFi</string>
+    <string name="settings_upload_behaviour_title">Cuándo se subirán las sesiones</string>
     <string name="settings_api_endpoint">Sección para servidores propios</string>
     <string name="settings_api_address">Dirección IP</string>
     <string name="settings_api_port">Puerto</string>
@@ -44,25 +44,26 @@
     <string name="permissions_title">Permisos necesarios</string>
     <string name="permission_grant">Dar permiso</string>
     <string name="settings_user_token">Clave del usuario</string>
-    <string name="settings_only_wifi_upload_on">Los datos se subirán automáticamente cuando se conecte a una red WiFi.</string>
     <string name="beacons_detected_zero">No se detectan balizas</string>
     <string name="beacons_detected_nonzero">Balizas cercanas: %1$d</string>
     <string name="beacon_last_read">Última lectura:</string>
     <string name="beacons_detected_paused">Detección de balizas en pausa</string>
     <string name="empty_all_data_confirmation">Esta acción no se puede deshacer.</string>
     <string name="empty_session_nothing_to_do">Sesión vacía</string>
+    <string name="upload_failed">No se pudieron subir todas las sesiones</string>
     <string name="no_data_to_share">No se puede compartir una sesión vacía</string>
     <string name="session_stopped">Sesión de medida finalizada</string>
     <string name="current_session_share">Compartir sesión en curso</string>
     <string name="beacon_details">Detalles de la baliza</string>
     <string name="beacon_detail_description_hint">Descripción opcional de la baliza</string>
-    <string name="beacon_detail_tilt">Inclinación [grados]</string>
-    <string name="beacon_detail_direction">Orientación [grados]</string>
+    <string name="beacon_detail_tilt">Inclinación</string>
+    <string name="beacon_detail_direction">Orientación</string>
     <string name="yes">Sí</string>
     <string name="empty_all_data">¿Eliminar todo?</string>
     <string name="settings_api_address_hint">http:// o https://</string>
     <string name="no_data_to_upload">No hay sesiones pasadas pendientes de subir</string>
     <string name="session_started">Sesión de medida iniciada</string>
+    <string name="beacon_detail_out_of_range_error">No se ha visto la baliza últimamente</string>
     <string name="bad_email">Este correo no está registrado</string>
     <string name="bad_password">Contraseña incorrecta</string>
     <string name="prompt_email">Correo electrónico</string>
@@ -105,4 +106,25 @@
         <item>Claro</item>
         <item>Oscuro</item>
     </array>
+    <array name="settings_upload_options">
+        <item>Automáticamente al terminar sesión</item>
+        <item>Automáticamente al conectar a WiFi y redes no itinerantes</item>
+        <item>Manualmente</item>
+    </array>
+    <string name="want_to_use_offline_question">¿Quieres tomar medidas solo para ti?</string>
+    <string name="use_offline">Usar sin cuenta</string>
+    <string name="beacon_info_incomplete">Añada los campos de información requeridos.</string>
+    <string name="beacon_detail_ok">Baliza configurada y comunicándose</string>
+    <string name="beacon_detail_info_error">Faltan datos sobre la posición de la baliza</string>
+    <array name="beacon_positions">
+        <item>Seleccione la posición de la baliza</item>
+        <item>Hood</item>
+        <item>Left Door</item>
+        <item>Right Door</item>
+        <item>Roof</item>
+        <item>Trunk</item>
+    </array>
+    <string name="uploading_session_data">Subiendo sesiones guardadas…</string>
+    <string name="upload_successful">Sesiones subidas</string>
+    <string name="manage_sessions">Gestión sesiones almacenadas</string>
 </resources>

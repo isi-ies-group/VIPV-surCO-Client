@@ -14,7 +14,9 @@
     <string name="all_sessions_upload">Upload saved sessions</string>
     <string name="logo">Logo</string>
     <string name="NaN" translatable="false">NaN</string>
+    <string name="degree_symbol" translatable="false">°</string>
     <string name="delete">Delete</string>
+    <string name="share">Share</string>
     <string name="stop_button">Stop session</string>
     <string name="start_button">Start session</string>
     <string name="yes">Yes</string>
@@ -27,7 +29,7 @@
     <string name="welcome_message">Welcome to \nVIPV Acquisition Program!</string>
     // Permissions view
     <string name="permissions_title">Required permissions</string>
-    <string name="permissions_needed">The following permissions are required to use Photovolta. You will have access to the app once all permissions are granted:</string>
+    <string name="permissions_needed">The following permissions are required to use this app. You will have access to the app once all permissions are granted:</string>
     <string name="permissions_show_in_settings">View permissions in system settings</string>
     <string name="permission_localization">Location</string>
     <string name="permission_localization_background">Location in background</string>
@@ -37,15 +39,13 @@
     // Settings view
     <string name="settings">Settings</string>
     <string name="settings_app_behaviour">Behaviour</string>
-    <string name="settings_only_wifi_upload">Upload only on WiFi</string>
+    <string name="settings_upload_behaviour_title">When sessions will be uploaded</string>
     <string name="settings_api_endpoint">Self-hosting zone</string>
     <string name="settings_api_address">Address</string>
     <string name="settings_api_address_hint">http:// or https://</string>
     <string name="settings_api_port">Port</string>
     <string name="settings_user_token">User access token</string>
     <string name="settings_user_token_message">Token to post data to server</string>
-    <string name="settings_only_wifi_upload_on">Data will be uploaded automatically when the device connects to a WiFi network.</string>
-    <string name="settings_only_wifi_upload_off">Data won\'t be uploaded automatically. User interaction through the Upload button is required.</string>
     <string name="settings_api_test">Test API endpoint</string>
     <string name="settings_api_valid">Endpoint is reachable</string>
     <string name="settings_api_invalid">Could not reach endpoint</string>
@@ -56,18 +56,27 @@
         <item>Light</item>
         <item>Dark</item>
     </array>
+    <array name="settings_upload_options">
+        <item>Automatically when session ends</item>
+        <item>Automatically on WiFi and un-metered networks</item>
+        <item>Manually upload session files</item>
+    </array>
     // About view
-    <string name="version">Version: %1$s-%2$d</string>
+    <string name="version">Version: %1$s (%2$d)</string>
     <string name="credits">App developed by the ISI-IES group at Universidad Politécnica de Madrid.</string>
     // Home view
     <string name="beacons_detected_zero">No beacons detected</string>
     <string name="beacons_detected_nonzero">Nearby beacons: %1$d</string>
-    <string name="beacon_last_read">Last read:</string>
     <string name="beacons_detected_paused">Monitoring is disabled</string>
+    <string name="beacon_last_read">Last read:</string>
+    <string name="beacon_info_incomplete">Click to add missing required info fields.</string>
     <string name="empty_all_data">Delete all data?</string>
     <string name="empty_all_data_confirmation">This action can\'t be undone.</string>
     <string name="empty_session_nothing_to_do">Session cleared</string>
+    <string name="upload_successful">Sessions uploaded</string>
+    <string name="upload_failed">Could not upload sessions</string>
     <string name="no_data_to_share">Cannot export an empty session</string>
+    <string name="uploading_session_data">Uploading saved sessions…</string>
     <string name="no_data_to_upload">No past sessions pending for upload</string>
     <string name="session_started">Measurement session has started</string>
     <string name="session_stopped">Measurement session has ended</string>
@@ -76,8 +85,19 @@
     // Beacon details view
     <string name="beacon_details">Beacon details</string>
     <string name="beacon_detail_description_hint">Optional beacon description</string>
-    <string name="beacon_detail_tilt">Tilt [degrees]</string>
-    <string name="beacon_detail_direction">Direction [degrees]</string>
+    <string name="beacon_detail_tilt">Tilt</string>
+    <string name="beacon_detail_direction">Direction</string>
+    <array name="beacon_positions">
+        <item>Select beacon position</item>
+        <item>Hood</item>
+        <item>Left Door</item>
+        <item>Right Door</item>
+        <item>Roof</item>
+        <item>Trunk</item>
+    </array>
+    <string name="beacon_detail_ok">Beacon configured and online</string>
+    <string name="beacon_detail_info_error">Missing required position data</string>
+    <string name="beacon_detail_out_of_range_error">Could not see beacon during the last seconds</string>
     // Login view
     <string name="bad_email">This email is not registered</string>
     <string name="bad_password">Incorrect password</string>
@@ -111,4 +131,9 @@
     <string name="notification_no_location_bluetooth_text">Bluetooth and Location disabled.</string>
     <string name="notification_no_location_text">Location disabled.</string>
     <string name="notification_no_bluetooth_text">Bluetooth disabled.</string>
+    // Misc
+    <string name="want_to_use_offline_question">Prefer to take measurements for yourself?</string>
+    <string name="use_offline">Use offline</string>
+    // Manage Sessions
+    <string name="manage_sessions">Manage cached sessions</string>
 </resources>

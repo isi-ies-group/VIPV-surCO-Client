@@ -12,4 +12,7 @@
     <color name="IES_blue_dark">#2a6496</color>
     <color name="IES_yellow_logo">#f0b450</color>
     <color name="grey">#FF9E9E9E</color>
+    <color name="warning_red">#FFD32F2F</color>
+    <color name="warning_orange">#FF6F00</color>
+    <color name="green_ok">#FF4CAF50</color>
 </resources>

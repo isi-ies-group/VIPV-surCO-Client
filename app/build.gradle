@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace 'com.example.beaconble'
+    namespace 'es.upm.ies.vipvble'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.example.beaconble"
+        applicationId 'es.upm.ies.vipvble'
         minSdk 26
         targetSdk 35
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,43 +51,47 @@ android {
 }
 
 dependencies {
-
+    // General
     implementation 'androidx.core:core-ktx:1.15.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.work:work-runtime-ktx:2.10.0'
+    implementation 'androidx.annotation:annotation:1.9.1'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // Connectivity
+    implementation 'org.altbeacon:android-beacon-library:2.21.0-beta5'
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+
+    // UI
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
-    implementation 'org.altbeacon:android-beacon-library:2.20.7'
-    implementation 'com.google.android.gms:play-services-location:21.3.0'
     implementation 'androidx.preference:preference-ktx:1.2.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.8.5'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.8.5'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.fragment:fragment-ktx:1.8.6'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.8.7'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7'
-    implementation 'androidx.annotation:annotation:1.9.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 
-    //Retrofit
+    // HTTP & API
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 
-    //JSON
+    // Types
     implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'org.apache.commons:commons-collections4:4.4'
 
-    //Corrutinas
+    // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
 
-    //Misc (TODO: tidy up)
-    implementation 'androidx.preference:preference-ktx:1.2.1'
-    implementation 'androidx.fragment:fragment-ktx:1.8.5'
-    implementation 'org.apache.commons:commons-collections4:4.4'
-
-    //Security
+    // Security
     implementation 'com.lambdapioneer.argon2kt:argon2kt:1.6.0'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.10.3'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }

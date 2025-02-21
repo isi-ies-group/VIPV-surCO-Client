@@ -6,51 +6,64 @@
     android:layout_height="match_parent"
     tools:context=".ui.FragBeaconDetails">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerIdentifier"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10sp"
-        android:layout_marginHorizontal="30sp"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginHorizontal="20sp"
+        android:layout_marginVertical="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/tvBeaconIdentifier"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="30sp"
-            android:layout_alignParentStart="true" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
             android:id="@+id/imBtnDeleteBeacon"
             android:layout_width="wrap_content"
-            android:layout_height="30sp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+            android:layout_height="48sp"
             android:background="@null"
             android:contentDescription="@string/delete"
-            android:src="@drawable/delete_forever_bin" />
+            android:minWidth="48sp"
+            android:minHeight="48sp"
+            android:src="@drawable/delete_forever_bin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/teal_700" />
 
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <EditText
-        android:id="@+id/editTextDescription"
+    <TextView
+        android:id="@+id/tvBeaconStatusMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5sp"
+        android:text="@string/beacon_info_incomplete"
+        android:gravity="center"
+        app:drawableStartCompat="@drawable/check"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/headerIdentifier" />
+
+    <Spinner
+        android:id="@+id/spinnerPosition"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="30sp"
-        android:layout_marginTop="10sp"
         android:layout_marginEnd="30sp"
-        android:autofillHints=""
-        android:gravity="start|top"
-        android:hint="@string/beacon_detail_description_hint"
-        android:inputType="textMultiLine"
-        android:maxLines="3"
-        android:minLines="1"
+        android:entries="@array/beacon_positions"
+        android:minHeight="48sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerIdentifier" />
+        app:layout_constraintTop_toBottomOf="@id/tvBeaconStatusMessage" />
 
     <TableLayout
         android:id="@+id/tableLayoutTiltDirection"
@@ -59,7 +72,7 @@
         android:layout_marginHorizontal="30sp"
         android:layout_marginVertical="5sp"
         android:shrinkColumns="0,2"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDescription">
+        app:layout_constraintTop_toBottomOf="@+id/spinnerPosition">
 
         <TableRow
             android:id="@+id/tableRowTilt"
@@ -72,7 +85,8 @@
             <TextView
                 android:id="@+id/textViewTilt"
                 android:labelFor="@id/editTextTilt"
-                android:text="@string/beacon_detail_tilt" />
+                android:text="@string/beacon_detail_tilt"
+                android:textSize="16sp" />
 
             <Space
                 android:layout_width="80sp"
@@ -84,10 +98,14 @@
                 android:layout_height="wrap_content"
                 android:autofillHints=""
                 android:ems="5"
-                android:hint="@string/NaN"
                 android:inputType="number"
                 android:minHeight="48sp" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/degree_symbol"
+                android:textSize="28sp" />
         </TableRow>
 
         <TableRow
@@ -101,10 +119,11 @@
             <TextView
                 android:id="@+id/textViewDirection"
                 android:labelFor="@id/editTextDirection"
-                android:text="@string/beacon_detail_direction" />
+                android:text="@string/beacon_detail_direction"
+                android:textSize="16sp" />
 
             <Space
-                android:layout_width="80sp"
+                android:layout_width="0sp"
                 android:layout_height="wrap_content" />
 
             <EditText
@@ -113,13 +132,35 @@
                 android:layout_height="wrap_content"
                 android:autofillHints=""
                 android:ems="5"
-                android:hint="@string/NaN"
                 android:inputType="number"
                 android:minHeight="48sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/degree_symbol"
+                android:textSize="28sp" />
 
         </TableRow>
 
     </TableLayout>
+
+    <EditText
+        android:id="@+id/editTextDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30sp"
+        android:layout_marginTop="10sp"
+        android:layout_marginEnd="30sp"
+        android:autofillHints=""
+        android:gravity="start|top"
+        android:hint="@string/beacon_detail_description_hint"
+        android:inputType="textMultiLine"
+        android:maxLines="3"
+        android:minHeight="48sp"
+        android:minLines="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tableLayoutTiltDirection" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -129,7 +170,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayoutTiltDirection"
+        app:layout_constraintTop_toBottomOf="@+id/editTextDescription"
         app:layout_constraintVertical_weight="1">
 
         <ListView

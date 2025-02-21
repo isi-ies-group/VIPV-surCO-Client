@@ -46,20 +46,6 @@
         android:layout_gravity="bottom">
 
         <ImageButton
-            android:id="@+id/imBtnActionEmptyAll"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:layout_marginHorizontal="20sp"
-            android:background="@null"
-            android:contentDescription="@string/current_session_empty"
-            android:tooltipText="@string/current_session_empty"
-            android:padding="14sp"
-            android:scaleType="centerInside"
-            android:src="@drawable/delete_forever_bin"
-            app:tint="@color/white"/>
-
-        <ImageButton
             android:id="@+id/imBtnActionUploadSession"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -74,7 +60,7 @@
             app:tint="@color/white"/>
 
         <ImageButton
-            android:id="@+id/imBtnActionShareSession"
+            android:id="@+id/imBtnActionManageSessions"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
@@ -84,7 +70,7 @@
             android:tooltipText="@string/current_session_share"
             android:padding="14sp"
             android:scaleType="centerInside"
-            android:src="@drawable/share"
+            android:src="@drawable/file_open"
             app:tint="@color/white"/>
 
     </com.google.android.material.bottomappbar.BottomAppBar>

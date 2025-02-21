@@ -7,65 +7,71 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.beaconble.ui.FragHome"
+        android:name="es.upm.ies.vipvble.ui.FragHome"
         android:label="@string/app_name"
         tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_homeFragment_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
+            app:destination="@id/fragSettings" />
         <action
             android:id="@+id/action_homeFragment_to_aboutFragment"
-            app:destination="@id/aboutFragment" />
+            app:destination="@id/fragAbout" />
         <action
             android:id="@+id/action_homeFragment_to_fragBeaconDetails"
             app:destination="@id/fragBeaconDetails" />
         <action
             android:id="@+id/action_homeFragment_to_fragLogin"
             app:destination="@id/fragLogin" />
+        <action
+            android:id="@+id/action_homeFragment_to_fragManageSessions"
+            app:destination="@id/fragManageSessions" />
     </fragment>
     <fragment
-        android:id="@+id/settingsFragment"
-        android:name="com.example.beaconble.ui.FragSettings"
-        android:label="@string/settings" >
+        android:id="@+id/fragSettings"
+        android:name="es.upm.ies.vipvble.ui.FragSettings"
+        android:label="@string/settings">
         <action
             android:id="@+id/action_settingsFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_fragManageSessions"
+            app:destination="@id/fragManageSessions" />
     </fragment>
     <fragment
-        android:id="@+id/aboutFragment"
-        android:name="com.example.beaconble.ui.AboutFragment"
-        android:label="@string/about" >
+        android:id="@+id/fragAbout"
+        android:name="es.upm.ies.vipvble.ui.AboutFragment"
+        android:label="@string/about">
         <action
             android:id="@+id/action_aboutFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
     <fragment
         android:id="@+id/fragBeaconDetails"
-        android:name="com.example.beaconble.ui.FragBeaconDetails"
+        android:name="es.upm.ies.vipvble.ui.FragBeaconDetails"
         android:label="@string/beacon_details"
-        tools:layout="@layout/fragment_beacon_details" >
+        tools:layout="@layout/fragment_beacon_details">
         <action
             android:id="@+id/action_fragBeaconDetails_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
     <fragment
         android:id="@+id/fragLogin"
-        android:name="com.example.beaconble.ui.FragLogin"
+        android:name="es.upm.ies.vipvble.ui.FragLogin"
         android:label="@string/login"
-        tools:layout="@layout/fragment_login" >
+        tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_fragLogin_to_homeFragment"
             app:destination="@id/homeFragment"
             app:popUpTo="@+id/main_nav"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_fragLogin_to_fragRegister"
             app:destination="@id/fragRegister" />
     </fragment>
     <fragment
         android:id="@+id/fragRegister"
-        android:name="com.example.beaconble.ui.FragRegister"
-        android:label="@string/register" >
+        android:name="es.upm.ies.vipvble.ui.FragRegister"
+        android:label="@string/register">
         <action
             android:id="@+id/action_fragRegister_to_fragLogin"
             app:destination="@id/fragLogin" />
@@ -75,5 +81,13 @@
             app:launchSingleTop="true"
             app:popUpTo="@+id/main_nav"
             app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragManageSessions"
+        android:name="es.upm.ies.vipvble.ui.FragManageSessions"
+        android:label="@string/manage_sessions">
+        <action
+            android:id="@+id/action_settingsFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
     </fragment>
 </navigation>

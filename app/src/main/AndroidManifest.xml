@@ -32,19 +32,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.beaconble.ui.ActPermissions"
+            android:name=".ui.ActPermissions"
             android:exported="false"/>
         <service
-            android:name="com.example.beaconble.service.ForegroundBeaconScanService"
+            android:name="es.upm.ies.vipvble.service.ForegroundBeaconScanService"
             android:exported="false"
             android:foregroundServiceType="location|connectedDevice"
             android:permission="android.permission.FOREGROUND_SERVICE"
             tools:node="merge" />
         <receiver
-            android:name=".broadcastReceivers.StopBroadcastReceiver"
+            android:name="es.upm.ies.vipvble.broadcastReceivers.StopBroadcastReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.beaconble.STOP_SESSION" />
+                <action android:name="es.upm.ies.vipvble.STOP_SESSION" />
             </intent-filter>
         </receiver>
         <provider

@@ -1,4 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- YOU CAN IGNORE THIS FILE CAUSE I'M UNABLE MAKE IT WORK. -->
     <!-- Dark mode application theme. -->
     <style name="Theme.BeaconBLE.Dark" parent="Theme.BeaconBLE">
         <!-- Primary brand color. -->
