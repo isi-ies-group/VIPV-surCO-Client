@@ -42,16 +42,16 @@ class SessionWriterV1UT {
         beacons.add(beacon1)
 
         // set start and finish instants
-        beaconsCollectionRef.startInstant = Instant.parse("2021-10-01T12:00:00Z")
-        beaconsCollectionRef.stopInstant = Instant.parse("2021-10-01T12:30:00Z")
+        val startInstant = Instant.parse("2021-10-01T12:00:00Z")
+        val stopInstant = Instant.parse("2021-10-01T12:30:00Z")
 
         var body = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = body.outputStream().writer()
         SessionWriter.V1.createJSONHeader(
             outputStreamWriter,
             beacons,
-            beaconsCollectionRef.startInstant!!,
-            beaconsCollectionRef.stopInstant!!
+            startInstant,
+            stopInstant
         )
         outputStreamWriter.flush()
 
