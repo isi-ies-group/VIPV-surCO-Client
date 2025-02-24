@@ -14,6 +14,7 @@ import es.upm.ies.vipvble.BuildConfig
 import es.upm.ies.vipvble.databinding.FragmentManageSessionsBinding
 import es.upm.ies.vipvble.databinding.RowItemSessionFileBinding
 import es.upm.ies.vipvble.AppMain
+import es.upm.ies.vipvble.R
 import java.io.File
 
 class FragManageSessions : Fragment() {
@@ -94,7 +95,7 @@ class FragManageSessions : Fragment() {
                 binding.btnDelete.setOnClickListener {
                     file.delete()
                     updateFiles(files - file)
-                    Toast.makeText(binding.root.context, "File deleted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(binding.root.context, R.string.was_deleted, Toast.LENGTH_SHORT).show()
                 }
             }
         }

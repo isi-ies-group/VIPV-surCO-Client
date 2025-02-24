@@ -16,6 +16,7 @@
     <string name="NaN" translatable="false">NaN</string>
     <string name="degree_symbol" translatable="false">°</string>
     <string name="delete">Delete</string>
+    <string name="was_deleted">Item deleted</string>
     <string name="share">Share</string>
     <string name="stop_button">Stop session</string>
     <string name="start_button">Start session</string>
