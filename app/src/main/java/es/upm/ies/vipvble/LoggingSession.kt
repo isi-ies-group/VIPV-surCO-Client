@@ -6,6 +6,9 @@ import es.upm.ies.vipvble.io.SessionWriter
 import org.altbeacon.beacon.Identifier
 import java.io.File
 import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.TimeZone
 
 /**
  * Singleton object to hold the logging session and some other metadata.
@@ -32,10 +35,11 @@ object LoggingSession {
     val beacons: LiveData<ArrayList<BeaconSimplified>> = beaconsInternal
 
     /**
-     * Start and stop instants of the session.
+     * Time management of the session.
      */
-    private var startInstant: Instant? = null
-    private var stopInstant: Instant? = null
+    private var zone: TimeZone = TimeZone.getDefault()
+    private var startZonedDateTime: ZonedDateTime? = null
+    private var stopZonedDateTime: ZonedDateTime? = null
 
     /**
      * File to store data temporarily.
@@ -118,8 +122,8 @@ object LoggingSession {
         if (bodyFile != null) {
             bodyFile!!.delete()
         }
-        startInstant = null
-        stopInstant = null
+        startZonedDateTime = null
+        stopZonedDateTime = null
     }
 
     /**
@@ -129,11 +133,11 @@ object LoggingSession {
      */
     fun freeDataTemporarily() {
         if (bodyFile == null) {
-            bodyFile = File.createTempFile("cached_body_", ".txt", cacheDir)
+            bodyFile = File.createTempFile("cached_body_", ".temp", cacheDir)
         }
         // append the latest data to the temporary file
         bodyFile!!.outputStream().writer(Charsets.UTF_8).use {
-            SessionWriter.V1.appendCsvBody(it, beacons.value!!)
+            SessionWriter.V2.appendCsvBodyFromBeacons(it, zone, beacons.value!!)
             it.close()
         }
         // clear the data from the beacons to free memory
@@ -162,6 +166,8 @@ object LoggingSession {
                 .map { it.copy() }
         beacons.value!!.map { it.clear() }
 
+        val startInstant = ZonedDateTime.ofInstant(startZonedDateTime!!.toInstant(), ZoneId.of("UTC"))
+        val stopInstant = ZonedDateTime.ofInstant(stopZonedDateTime!!.toInstant(), ZoneId.of("UTC"))
         var outFile = File(
             cacheDir,
             "${SESSION_FILE_PREFIX}${startInstant}-${stopInstant}.${SESSION_FILE_EXTENSION}"
@@ -169,21 +175,22 @@ object LoggingSession {
 
         outFile.outputStream().writer(Charsets.UTF_8).use {
             // write the header
-            SessionWriter.V1.createJSONHeader(it, temporaryBeacons, startInstant!!, stopInstant!!)
+            SessionWriter.V2.createJSONHeader(
+                it,
+                TimeZone.getDefault(),
+                temporaryBeacons,
+                startInstant!!,
+                stopInstant!!
+            )
             it.write("\n\n")  // separate the header from the body
             // write the header
-            it.write("beacon_id,timestamp,data,latitude,longitude\n")
-            // write the body
+            SessionWriter.V2.appendCsvHeader(it)
+            // append the body from the cached file
             if (bodyFile != null) {
-                // concat body file if it was saved previously
-                bodyFile!!.inputStream().bufferedReader(Charsets.UTF_8).use { reader ->
-                    reader.lines().forEach { line -> it.write(line + "\n") }
-                    reader.close()
-                }
-                bodyFile!!.delete()
+                SessionWriter.V2.appendCsvBodyFromTempFile(it, bodyFile!!)
             }
-            // append the latest data to the file
-            SessionWriter.V1.appendCsvBody(it, temporaryBeacons)
+            // append the body from the beacons
+            SessionWriter.V2.appendCsvBodyFromBeacons(it, zone, temporaryBeacons)
             it.close()
         }
 
@@ -196,7 +203,7 @@ object LoggingSession {
      */
     fun startSession() {
         clear()
-        startInstant = Instant.now()
+        startZonedDateTime = ZonedDateTime.now()
     }
 
     /**
@@ -204,7 +211,7 @@ object LoggingSession {
      * @return The file with the session data.
      */
     fun concludeSession(): File? {
-        stopInstant = Instant.now()
+        stopZonedDateTime = ZonedDateTime.now()
         return saveSession()
     }
 

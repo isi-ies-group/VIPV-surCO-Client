@@ -12,10 +12,12 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLooper
 import java.io.File
 import java.time.Instant
+import java.time.ZonedDateTime
+import java.util.TimeZone
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
-class SessionWriterV1UT {
+class SessionWriterUT {
     @Test
     fun createJSONHeader() {
         val beaconsCollectionRef = LoggingSession
@@ -26,7 +28,7 @@ class SessionWriterV1UT {
         val beacon0 = BeaconSimplified(Identifier.parse("0x010203040506"))
         beacon0.apply {
             setTilt(0.0f)
-            setDirection ( 0.0f)
+            setDirection(0.0f)
             setDescription("Soy la cosita más linda y mona de este mundo.")
             setPosition("trunk")
         }
@@ -35,31 +37,33 @@ class SessionWriterV1UT {
         val beacon1 = BeaconSimplified(Identifier.parse("0x010203040507"))
         beacon1.apply {
             setTilt(10.0f)
-            setDirection ( 180.0f)
+            setDirection(180.0f)
             setDescription("Soy la cosita más linda y mona de este mundo.")
             setPosition("roof")
         }
         beacons.add(beacon1)
 
         // set start and finish instants
-        val startInstant = Instant.parse("2021-10-01T12:00:00Z")
-        val stopInstant = Instant.parse("2021-10-01T12:30:00Z")
+        val startZonedDateTime = ZonedDateTime.parse("2021-10-01T12:00:00Z")
+        val stopZonedDateTime = ZonedDateTime.parse("2021-10-01T12:30:00Z")
 
         var body = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = body.outputStream().writer()
-        SessionWriter.V1.createJSONHeader(
+        SessionWriter.V2.createJSONHeader(
             outputStreamWriter,
+            TimeZone.getTimeZone("UTC"),
             beacons,
-            startInstant,
-            stopInstant
+            startZonedDateTime,
+            stopZonedDateTime
         )
         outputStreamWriter.flush()
 
         val expected = """
         {
-          "version_scheme": 1,
-          "start_instant": "2021-10-01T12:00:00Z",
-          "finish_instant": "2021-10-01T12:30:00Z",
+          "version_scheme": 2,
+          "timezone": "UTC",
+          "start_localized_instant": "2021-10-01T12:00:00Z",
+          "finish_localized_instant": "2021-10-01T12:30:00Z",
           "beacons": [
             {
               "id": "0x010203040506",
@@ -150,12 +154,12 @@ class SessionWriterV1UT {
 
         val file = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = file.outputStream().writer()
-        SessionWriter.V1.appendCsvHeader(outputStreamWriter)
-        SessionWriter.V1.appendCsvBody(outputStreamWriter, beacons)
+        SessionWriter.V2.appendCsvHeader(outputStreamWriter)
+        SessionWriter.V2.appendCsvBodyFromBeacons(outputStreamWriter, TimeZone.getTimeZone("UTC"), beacons)
         outputStreamWriter.flush()
 
         val expected = """
-        beacon_id,timestamp,data,latitude,longitude
+        beacon_id,localized_timestamp,data,latitude,longitude
         0x010203040506,2021-10-01T12:00:00Z,127,0.0,0.0
         0x010203040506,2021-10-01T12:00:01Z,126,0.0,0.0
         0x010203040506,2021-10-01T12:00:02Z,125,0.0,0.0

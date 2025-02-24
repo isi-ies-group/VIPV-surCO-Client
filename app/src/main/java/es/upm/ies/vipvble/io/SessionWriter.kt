@@ -1,24 +1,28 @@
 package es.upm.ies.vipvble.io
 
 import es.upm.ies.vipvble.BeaconSimplified
+import java.io.File
 import java.io.OutputStreamWriter
-import java.time.Instant
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Base64
+import java.util.TimeZone
 
 object SessionWriter {
-    object V1 {
-
+    object V2 {
         /**
          * Creates the JSON line for the beacons static data (ID, tilt, orientation, description).
          * @param outputStreamWriter The output stream to write to.
+         * @param timeZone The time zone of the session (at the end).
          * @param beacons The collection of beacons.
-         * @param startInstant The start instant of the session.
-         * @param finishInstant The finish instant of the session.
+         * @param startZonedDateTime The start instant of the session.
+         * @param finishZonedDateTime The finish instant of the session.
          * @return The JSON line String.
          *
          * Output example, formatted for readability:
          * {
-         *  "version_scheme": 1,
+         *  "version_scheme": 2,
+         *  "timezone": "Europe/Madrid",
          *  "start_instant": "2021-10-01T12:00:00Z",
          *  "finish_instant": "2021-10-01T12:30:00Z",
          *  "beacons": [
@@ -41,37 +45,44 @@ object SessionWriter {
          */
         fun createJSONHeader(
             outputStreamWriter: OutputStreamWriter,
+            timeZone: TimeZone,
             beacons: Collection<BeaconSimplified>,
-            startInstant: Instant,
-            finishInstant: Instant,
+            startZonedDateTime: ZonedDateTime,
+            finishZonedDateTime: ZonedDateTime,
         ) {
-            outputStreamWriter.append("{")
-            outputStreamWriter.append("\"version_scheme\": 1,")  // Version of the file format (this is the first version).
-            outputStreamWriter.append("\"start_instant\": \"${startInstant}\",")
-            outputStreamWriter.append("\"finish_instant\": \"${finishInstant}\",")
-            outputStreamWriter.append("\"beacons\": [")  // Open "beacons"
+            val bufferedOutputStreamWriter = outputStreamWriter.buffered()
+
+            val formatter = DateTimeFormatter.ISO_INSTANT
+
+            bufferedOutputStreamWriter.append("{")
+            bufferedOutputStreamWriter.append("\"version_scheme\": 2,")  // Version of the file format.
+            bufferedOutputStreamWriter.append("\"timezone\": \"${timeZone.id}\",")
+            bufferedOutputStreamWriter.append("\"start_localized_instant\": \"${startZonedDateTime.format(formatter)}\",")
+            bufferedOutputStreamWriter.append("\"finish_localized_instant\": \"${finishZonedDateTime.format(formatter)}\",")
+            bufferedOutputStreamWriter.append("\"beacons\": [")  // Open "beacons"
             for ((index, beacon) in beacons.withIndex()) {
                 // Add a comma before the next element, as JSON does not allow trailing commas.
                 // https://stackoverflow.com/questions/201782/can-you-use-a-trailing-comma-in-a-json-object
                 if (index > 0) {
-                    outputStreamWriter.append(",")
+                    bufferedOutputStreamWriter.append(",")
                 }
-                outputStreamWriter.append("{")  // Open the unique beacon object.
+                bufferedOutputStreamWriter.append("{")  // Open the unique beacon object.
 
                 // Encode the description in Base64 to avoid issues with special characters (especially quotes and newlines).
                 val base64encodedDescription =
                     Base64.getEncoder()
                         .encodeToString(beacon.descriptionValue.toByteArray(Charsets.UTF_8))
-                outputStreamWriter.append("\"id\": \"${beacon.id}\",")
-                outputStreamWriter.append("\"tilt\": ${beacon.tiltValue},")
-                outputStreamWriter.append("\"orientation\": ${beacon.directionValue},")
-                outputStreamWriter.append("\"position\": \"${beacon.positionValue}\",")
-                outputStreamWriter.append("\"description\": \"$base64encodedDescription\"")
+                bufferedOutputStreamWriter.append("\"id\": \"${beacon.id}\",")
+                bufferedOutputStreamWriter.append("\"tilt\": ${beacon.tiltValue},")
+                bufferedOutputStreamWriter.append("\"orientation\": ${beacon.directionValue},")
+                bufferedOutputStreamWriter.append("\"position\": \"${beacon.positionValue}\",")
+                bufferedOutputStreamWriter.append("\"description\": \"$base64encodedDescription\"")
 
-                outputStreamWriter.append("}")  // Close the unique beacon object.
+                bufferedOutputStreamWriter.append("}")  // Close the unique beacon object.
             }
-            outputStreamWriter.append("]")  // Close "beacons"
-            outputStreamWriter.append("}")  // Close the JSON object.
+            bufferedOutputStreamWriter.append("]")  // Close "beacons"
+            bufferedOutputStreamWriter.append("}")  // Close the JSON object.
+            bufferedOutputStreamWriter.flush()
         }
 
         /**
@@ -82,7 +93,7 @@ object SessionWriter {
          * beacon_id,timestamp,data,latitude,longitude
          */
         fun appendCsvHeader(outputStreamWriter: OutputStreamWriter) {
-            outputStreamWriter.write("beacon_id,timestamp,data,latitude,longitude\n")
+            outputStreamWriter.write("beacon_id,localized_timestamp,data,latitude,longitude\n")
         }
 
         /**
@@ -99,27 +110,47 @@ object SessionWriter {
          * 0x010203040507,2021-10-01T12:00:01Z,128,0.0,0.0
          * 0x010203040507,2021-10-01T12:00:02Z,129,0.0,0.0
          */
-        fun appendCsvBody(
+        fun appendCsvBodyFromBeacons(
             outputStreamWriter: OutputStreamWriter,
+            timeZone: TimeZone,
             beacons: Collection<BeaconSimplified>
         ) {
+            val bufferedWriter = outputStreamWriter.buffered()
+            val result = StringBuilder()
+            val zoneId = timeZone.toZoneId()
+
+            val formatter = DateTimeFormatter.ISO_INSTANT
+
             for (beacon in beacons) {
                 for (entry in beacon.sensorData.value!!) {
-                    val result = StringBuilder()
-                    result.append(beacon.id.toString())
-                    result.append(",")
-                    result.append(entry.timestamp.toString())
-                    result.append(",")
-                    result.append(entry.data.toString())
-                    result.append(",")
-                    result.append(entry.latitude.toString())
-                    result.append(",")
-                    result.append(entry.longitude.toString())
-                    result.append("\n")
-                    outputStreamWriter.write(result.toString())
+                    val localizedTimestamp = ZonedDateTime.ofInstant(entry.timestamp, zoneId)
+                    result.setLength(0)  // Clear the StringBuilder
+                    result.append(beacon.id)
+                        .append(",")
+                        .append(localizedTimestamp.format(formatter))
+                        .append(",")
+                        .append(entry.data)
+                        .append(",")
+                        .append(entry.latitude)
+                        .append(",")
+                        .append(entry.longitude)
+                        .append("\n")
+                    bufferedWriter.write(result.toString())
                 }
             }
+            bufferedWriter.flush()
         }
 
+        /**
+         * Append the CSV body of the session, from a temporary file.
+         */
+        fun appendCsvBodyFromTempFile(
+            outputStreamWriter: OutputStreamWriter,
+            tempFile: File
+        ) {
+            tempFile.reader(Charsets.UTF_8).use { reader ->
+                reader.copyTo(outputStreamWriter)
+            }
+        }
     }
 }
