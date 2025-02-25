@@ -11,8 +11,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.RowItemBeaconBinding
-import es.upm.ies.surco.BeaconSimplified
-import es.upm.ies.surco.BeaconSimplifiedStatus
+import es.upm.ies.surco.session_logging.BeaconSimplified
+import es.upm.ies.surco.session_logging.BeaconSimplifiedStatus
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.toString

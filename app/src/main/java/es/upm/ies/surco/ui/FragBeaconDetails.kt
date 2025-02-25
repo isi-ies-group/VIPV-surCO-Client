@@ -16,7 +16,7 @@ import androidx.fragment.app.viewModels
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentBeaconDetailsBinding
 import es.upm.ies.surco.AppMain
-import es.upm.ies.surco.BeaconSimplifiedStatus
+import es.upm.ies.surco.session_logging.BeaconSimplifiedStatus
 import es.upm.ies.surco.createPositionMap
 
 class FragBeaconDetails : Fragment() {

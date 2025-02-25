@@ -12,6 +12,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <uses-feature
+        android:name="android.hardware.sensor.compass"
+        android:required="false" />
+
     <application
         android:name="AppMain"
         android:allowBackup="true"
@@ -33,7 +37,8 @@
         </activity>
         <activity
             android:name=".ui.ActPermissions"
-            android:exported="false"/>
+            android:exported="false" />
+
         <service
             android:name="es.upm.ies.surco.service.ForegroundBeaconScanService"
             android:exported="false"

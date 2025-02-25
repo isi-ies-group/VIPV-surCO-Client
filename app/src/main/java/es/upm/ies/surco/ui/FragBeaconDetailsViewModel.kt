@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import es.upm.ies.surco.AppMain
-import es.upm.ies.surco.BeaconSimplified
-import es.upm.ies.surco.BeaconSimplifiedStatus
-import es.upm.ies.surco.SensorEntry
+import es.upm.ies.surco.session_logging.BeaconSimplified
+import es.upm.ies.surco.session_logging.BeaconSimplifiedStatus
+import es.upm.ies.surco.session_logging.SensorEntry
 import org.altbeacon.beacon.Identifier
 import java.util.ArrayList
 

@@ -33,7 +33,7 @@ class FragManageSessions : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sessionFilesAdapter = SessionFilesAdapter(app.loggingSession.getSessionFiles())
+        sessionFilesAdapter = SessionFilesAdapter(app.loggingSession.getSessionFiles().asList())
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = sessionFilesAdapter
@@ -65,6 +65,7 @@ class FragManageSessions : Fragment() {
         fun updateFiles(newFiles: List<File>) {
             files = newFiles
             selectedFiles.clear()
+            @Suppress("NotifyDataSetChanged")
             notifyDataSetChanged()
         }
 

@@ -1,9 +1,9 @@
 package es.upm.ies
 
 import es.upm.ies.surco.session_logging.SessionWriter
-import es.upm.ies.surco.BeaconSimplified
+import es.upm.ies.surco.session_logging.BeaconSimplified
 import es.upm.ies.surco.LoggingSession
-import es.upm.ies.surco.SensorEntry
+import es.upm.ies.surco.session_logging.SensorEntry
 import org.altbeacon.beacon.Identifier
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -103,24 +103,18 @@ class SessionWriterUT {
         beacon0.sensorData.value?.add(
             SensorEntry(
                 127,
-                0.0f,
-                0.0f,
                 Instant.parse("2021-10-01T12:00:00Z")
             )
         )
         beacon0.sensorData.value?.add(
             SensorEntry(
                 126,
-                0.0f,
-                0.0f,
                 Instant.parse("2021-10-01T12:00:01Z")
             )
         )
         beacon0.sensorData.value?.add(
             SensorEntry(
                 125,
-                0.0f,
-                0.0f,
                 Instant.parse("2021-10-01T12:00:02Z")
             )
         )
@@ -130,42 +124,36 @@ class SessionWriterUT {
         beacon1.sensorData.value?.add(
             SensorEntry(
                 127,
-                0.0f,
-                0.0f,
                 Instant.parse("2021-10-01T12:00:00Z")
             )
         )
         beacon1.sensorData.value?.add(
             SensorEntry(
                 128,
-                0.0f,
-                0.0f,
                 Instant.parse("2021-10-01T12:00:01Z")
             )
         )
         beacon1.sensorData.value?.add(
             SensorEntry(
                 129,
-                0.0f,
-                0.0f,
                 Instant.parse("2021-10-01T12:00:02Z")
             )
         )
 
         val file = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = file.outputStream().writer()
-        SessionWriter.V2.appendCsvHeader(outputStreamWriter)
+        SessionWriter.V2.appendCsvBeaconHeader(outputStreamWriter)
         SessionWriter.V2.appendCsvBodyFromBeacons(outputStreamWriter, TimeZone.getTimeZone("UTC"), beacons)
         outputStreamWriter.flush()
 
         val expected = """
-        beacon_id,localized_timestamp,data,latitude,longitude
-        0x010203040506,2021-10-01T12:00:00Z,127,0.0,0.0
-        0x010203040506,2021-10-01T12:00:01Z,126,0.0,0.0
-        0x010203040506,2021-10-01T12:00:02Z,125,0.0,0.0
-        0x010203040507,2021-10-01T12:00:00Z,127,0.0,0.0
-        0x010203040507,2021-10-01T12:00:01Z,128,0.0,0.0
-        0x010203040507,2021-10-01T12:00:02Z,129,0.0,0.0
+        beacon_id,localized_timestamp,data
+        0x010203040506,12:00:00.000,127
+        0x010203040506,12:00:01.000,126
+        0x010203040506,12:00:02.000,125
+        0x010203040507,12:00:00.000,127
+        0x010203040507,12:00:01.000,128
+        0x010203040507,12:00:02.000,129
         
         """.trimIndent()  // remove leading whitespaces; last line is the trailing newline
 

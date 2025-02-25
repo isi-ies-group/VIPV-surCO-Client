@@ -1,4 +1,4 @@
-package es.upm.ies.surco
+package es.upm.ies.surco.session_logging
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,8 +12,6 @@ import java.time.Instant
  */
 data class SensorEntry(
     val data: Short,
-    val latitude: Float,
-    val longitude: Float,
     val timestamp: Instant,
 )
 

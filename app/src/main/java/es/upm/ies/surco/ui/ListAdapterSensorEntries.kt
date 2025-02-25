@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import es.upm.ies.surco.R
-import es.upm.ies.surco.SensorEntry
+import es.upm.ies.surco.session_logging.SensorEntry
 import es.upm.ies.surco.databinding.RowItemDataLogBinding
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

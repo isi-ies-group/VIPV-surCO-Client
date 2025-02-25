@@ -22,7 +22,7 @@ import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentHomeBinding
 import es.upm.ies.surco.AppMain
-import es.upm.ies.surco.BeaconSimplified
+import es.upm.ies.surco.session_logging.BeaconSimplified
 
 class FragHome : Fragment() {
     private var _binding: FragmentHomeBinding? = null

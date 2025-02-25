@@ -14,6 +14,7 @@ import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.AppMain.Companion.ACTION_STOP_SESSION
 import es.upm.ies.surco.broadcastReceivers.StopBroadcastReceiver
 import es.upm.ies.surco.ui.ActMain
+import es.upm.ies.surco.R
 import com.google.android.gms.location.*
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
@@ -43,7 +44,7 @@ class ForegroundBeaconScanService : BeaconService() {
     val rangingCallback: Callback =
         object : Callback("es.upm.ies.surco") {
             override fun call(context: Context?, dataName: String?, data: Bundle?): Boolean {
-                Log.i(TAG, "Ranging callback called with data: ${data?.describeContents()}")
+                val timestamp = Instant.now()
                 // get the beacons from the bundle
                 // if the SDK version is 32 or higher, use the new method to get the beacons
                 // as the old method is deprecated as type-unsafe
@@ -53,24 +54,8 @@ class ForegroundBeaconScanService : BeaconService() {
                     @Suppress("DEPRECATION")  // Deprecated in API 32
                     data?.getParcelableArrayList<Beacon>("beacons") ?: return false
                 }
-                // get the current location
-                try {
-                    val now = Instant.now()
-                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                        // Got last known location. In some rare situations this can be null.
-                        // add the beacons to the appMain
-                        appMain.addBeaconCollectionData(beacons, location, now)
-                    }
-                    fusedLocationClient.lastLocation.addOnFailureListener { e ->
-                        Log.e(TAG, "Failed to get location: $e")
-                        // Add a null location to the appMain
-                        appMain.addBeaconCollectionData(beacons, null, now)
-                    }
-
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "Location permission denied: $e")
-                    // TODO handle location permission denied
-                }
+                // add the beacons to the AppMain singleton
+                appMain.addBeaconCollectionData(beacons, timestamp)
                 return true
             }
         }
@@ -130,7 +115,13 @@ class ForegroundBeaconScanService : BeaconService() {
         // Setup location callback
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                // void implementation
+                // get the timestamp of the location
+                val timestamp = Instant.now()
+                // latitude and longitude
+                val latitude = locationResult.lastLocation?.latitude?.toFloat() ?: Float.NaN
+                val longitude = locationResult.lastLocation?.longitude?.toFloat() ?: Float.NaN
+                // add the location to the AppMain singleton
+                appMain.addLocationDataEntry(timestamp, latitude, longitude)
             }
         }
 

@@ -1,6 +1,5 @@
 package es.upm.ies.surco.session_logging
 
-import es.upm.ies.surco.BeaconSimplified
 import java.io.File
 import java.io.OutputStreamWriter
 import java.time.ZonedDateTime
@@ -86,29 +85,29 @@ object SessionWriter {
         }
 
         /**
-         * Create the CSV header of the file.
+         * Create the beacons CSV header of the file.
          * @param outputStreamWriter The output stream to write to.
          *
          * Currently, it is:
          * beacon_id,timestamp,data,latitude,longitude
          */
-        fun appendCsvHeader(outputStreamWriter: OutputStreamWriter) {
-            outputStreamWriter.write("beacon_id,localized_timestamp,data,latitude,longitude\n")
+        fun appendCsvBeaconHeader(outputStreamWriter: OutputStreamWriter) {
+            outputStreamWriter.write("beacon_id,localized_timestamp,data\n")
         }
 
         /**
-         * Create the CSV body of the file.
+         * Create the beacons CSV body of the file.
          * @param outputStreamWriter The output stream to write to.
          * @param beacons The collection of beacons.
          *
          * For example:
          * <header>
-         * 0x010203040506,2021-10-01T12:00:00Z,127,0.0,0.0
-         * 0x010203040506,2021-10-01T12:00:01Z,126,0.0,0.0
-         * 0x010203040506,2021-10-01T12:00:02Z,125,0.0,0.0
-         * 0x010203040507,2021-10-01T12:00:00Z,127,0.0,0.0
-         * 0x010203040507,2021-10-01T12:00:01Z,128,0.0,0.0
-         * 0x010203040507,2021-10-01T12:00:02Z,129,0.0,0.0
+         * 0x010203040506,2021-10-01T12:00:00.000,127
+         * 0x010203040506,2021-10-01T12:00:01.000,126
+         * 0x010203040506,2021-10-01T12:00:02.000,125
+         * 0x010203040507,2021-10-01T12:00:00.000,127
+         * 0x010203040507,2021-10-01T12:00:01.000,128
+         * 0x010203040507,2021-10-01T12:00:02.000,129
          */
         fun appendCsvBodyFromBeacons(
             outputStreamWriter: OutputStreamWriter,
@@ -119,7 +118,7 @@ object SessionWriter {
             val result = StringBuilder()
             val zoneId = timeZone.toZoneId()
 
-            val formatter = DateTimeFormatter.ISO_INSTANT
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
 
             for (beacon in beacons) {
                 for (entry in beacon.sensorData.value!!) {
@@ -130,13 +129,56 @@ object SessionWriter {
                         .append(localizedTimestamp.format(formatter))
                         .append(",")
                         .append(entry.data)
-                        .append(",")
-                        .append(entry.latitude)
-                        .append(",")
-                        .append(entry.longitude)
                         .append("\n")
                     bufferedWriter.write(result.toString())
                 }
+            }
+            bufferedWriter.flush()
+        }
+
+        /**
+         * Create the CSV for the internal sensors data.
+         * @param outputStreamWriter The output stream to write to.
+         */
+        fun appendCsvInternalSensorsHeader(outputStreamWriter: OutputStreamWriter) {
+            outputStreamWriter.write("localized_timestamp,latitude,longitude,compass_angle\n")
+        }
+
+        /**
+         * Create the CSV for the internal sensors data.
+         * @param outputStreamWriter The output stream to write to.
+         * @param timeZone The time zone of the session.
+         * @param internalSensors The collection of internal sensors data.
+         *
+         * For example:
+         * <header>
+         * 12:00:00.000,40.0,-3.0,0.0
+         * 12:00:01.000,40.0,-3.0,1.0
+         * 12:00:02.000,40.0,-3.0,2.0
+         */
+        fun appendCsvBodyFromInternalSensors(
+            outputStreamWriter: OutputStreamWriter,
+            timeZone: TimeZone,
+            internalSensors: Collection<GpsAndCompassInfo>
+        ) {
+            val bufferedWriter = outputStreamWriter.buffered()
+            val result = StringBuilder()
+            val zoneId = timeZone.toZoneId()
+
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+
+            for (entry in internalSensors) {
+                val localizedTimestamp = ZonedDateTime.ofInstant(entry.timestamp, zoneId)
+                result.setLength(0)  // Clear the StringBuilder
+                result.append(localizedTimestamp.format(formatter))
+                    .append(",")
+                    .append(entry.latitude)
+                    .append(",")
+                    .append(entry.longitude)
+                    .append(",")
+                    .append(entry.compassAngle)
+                    .append("\n")
+                bufferedWriter.write(result.toString())
             }
             bufferedWriter.flush()
         }

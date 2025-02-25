@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import es.upm.ies.surco.AppMain
-import es.upm.ies.surco.BeaconSimplified
+import es.upm.ies.surco.session_logging.BeaconSimplified
 
 @OptIn(ExperimentalStdlibApi::class)
 class FragHomeViewModel() : ViewModel() {
@@ -28,10 +28,6 @@ class FragHomeViewModel() : ViewModel() {
 
     fun toggleSession() {
         appMain.toggleSession()
-    }
-
-    fun emptyAll() {
-        appMain.emptyAll()
     }
 
     fun uploadAllSessions() {
