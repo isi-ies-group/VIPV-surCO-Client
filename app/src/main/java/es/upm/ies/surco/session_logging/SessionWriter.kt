@@ -1,4 +1,4 @@
-package es.upm.ies.surco.io
+package es.upm.ies.surco.session_logging
 
 import es.upm.ies.surco.BeaconSimplified
 import java.io.File

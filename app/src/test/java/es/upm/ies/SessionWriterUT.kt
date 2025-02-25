@@ -1,6 +1,6 @@
 package es.upm.ies
 
-import es.upm.ies.surco.io.SessionWriter
+import es.upm.ies.surco.session_logging.SessionWriter
 import es.upm.ies.surco.BeaconSimplified
 import es.upm.ies.surco.LoggingSession
 import es.upm.ies.surco.SensorEntry

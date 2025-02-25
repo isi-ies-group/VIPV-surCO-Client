@@ -2,7 +2,7 @@ package es.upm.ies.surco
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import es.upm.ies.surco.io.SessionWriter
+import es.upm.ies.surco.session_logging.SessionWriter
 import org.altbeacon.beacon.Identifier
 import java.io.File
 import java.time.Instant
