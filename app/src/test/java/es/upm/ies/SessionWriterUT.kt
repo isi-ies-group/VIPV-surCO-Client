@@ -1,9 +1,9 @@
 package es.upm.ies
 
-import es.upm.ies.vipvble.io.SessionWriter
-import es.upm.ies.vipvble.BeaconSimplified
-import es.upm.ies.vipvble.LoggingSession
-import es.upm.ies.vipvble.SensorEntry
+import es.upm.ies.surco.io.SessionWriter
+import es.upm.ies.surco.BeaconSimplified
+import es.upm.ies.surco.LoggingSession
+import es.upm.ies.surco.SensorEntry
 import org.altbeacon.beacon.Identifier
 import org.junit.Test
 import org.junit.runner.RunWith

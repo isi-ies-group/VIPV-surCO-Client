@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="es.upm.ies.vipvble.ui.FragHome"
+        android:name="es.upm.ies.surco.ui.FragHome"
         android:label="@string/app_name"
         tools:layout="@layout/fragment_home">
         <action
@@ -28,7 +28,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragSettings"
-        android:name="es.upm.ies.vipvble.ui.FragSettings"
+        android:name="es.upm.ies.surco.ui.FragSettings"
         android:label="@string/settings">
         <action
             android:id="@+id/action_settingsFragment_to_homeFragment"
@@ -39,7 +39,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragAbout"
-        android:name="es.upm.ies.vipvble.ui.AboutFragment"
+        android:name="es.upm.ies.surco.ui.AboutFragment"
         android:label="@string/about">
         <action
             android:id="@+id/action_aboutFragment_to_homeFragment"
@@ -47,7 +47,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragBeaconDetails"
-        android:name="es.upm.ies.vipvble.ui.FragBeaconDetails"
+        android:name="es.upm.ies.surco.ui.FragBeaconDetails"
         android:label="@string/beacon_details"
         tools:layout="@layout/fragment_beacon_details">
         <action
@@ -56,7 +56,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragLogin"
-        android:name="es.upm.ies.vipvble.ui.FragLogin"
+        android:name="es.upm.ies.surco.ui.FragLogin"
         android:label="@string/login"
         tools:layout="@layout/fragment_login">
         <action
@@ -70,7 +70,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragRegister"
-        android:name="es.upm.ies.vipvble.ui.FragRegister"
+        android:name="es.upm.ies.surco.ui.FragRegister"
         android:label="@string/register">
         <action
             android:id="@+id/action_fragRegister_to_fragLogin"
@@ -84,7 +84,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragManageSessions"
-        android:name="es.upm.ies.vipvble.ui.FragManageSessions"
+        android:name="es.upm.ies.surco.ui.FragManageSessions"
         android:label="@string/manage_sessions">
         <action
             android:id="@+id/action_settingsFragment_to_homeFragment"

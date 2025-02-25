@@ -1,6 +1,6 @@
 <resources>
     // Generic
-    <string name="app_name">VIPV Acquisition Program</string>
+    <string name="app_name">surCO: Solar Urban Resource Collaboration</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="login">Log In</string>

@@ -1,8 +1,8 @@
 package es.upm.ies
 
 import android.content.SharedPreferences
-import es.upm.ies.vipvble.APIService
-import es.upm.ies.vipvble.ApiUserSession
+import es.upm.ies.surco.APIService
+import es.upm.ies.surco.ApiUserSession
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.BeforeClass

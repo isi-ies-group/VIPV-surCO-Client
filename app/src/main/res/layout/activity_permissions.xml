@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
-        android:theme="@style/Theme.BeaconBLE.ActionBar"
+        android:theme="@style/Theme.surCO.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.DayNight"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

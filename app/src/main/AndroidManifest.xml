@@ -21,7 +21,7 @@
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BeaconBLE"
+        android:theme="@style/Theme.surCO"
         tools:targetApi="31">
         <activity
             android:name=".ui.ActMain"
@@ -35,16 +35,16 @@
             android:name=".ui.ActPermissions"
             android:exported="false"/>
         <service
-            android:name="es.upm.ies.vipvble.service.ForegroundBeaconScanService"
+            android:name="es.upm.ies.surco.service.ForegroundBeaconScanService"
             android:exported="false"
             android:foregroundServiceType="location|connectedDevice"
             android:permission="android.permission.FOREGROUND_SERVICE"
             tools:node="merge" />
         <receiver
-            android:name="es.upm.ies.vipvble.broadcastReceivers.StopBroadcastReceiver"
+            android:name="es.upm.ies.surco.broadcastReceivers.StopBroadcastReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="es.upm.ies.vipvble.STOP_SESSION" />
+                <action android:name="es.upm.ies.surco.STOP_SESSION" />
             </intent-filter>
         </receiver>
         <provider

@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- YOU CAN IGNORE THIS FILE CAUSE I'M UNABLE MAKE IT WORK. -->
     <!-- Dark mode application theme. -->
-    <style name="Theme.BeaconBLE.Dark" parent="Theme.BeaconBLE">
+    <style name="Theme.surCO.Dark" parent="Theme.surCO">
         <!-- Primary brand color. -->
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
