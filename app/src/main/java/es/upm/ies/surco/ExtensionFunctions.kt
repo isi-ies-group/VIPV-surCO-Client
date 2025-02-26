@@ -8,7 +8,7 @@ import es.upm.ies.surco.R
  * Notifies the observers of a MutableLiveData.
  */
 fun <T> MutableLiveData<T>.notifyObservers() {
-    this.value = this.value
+    this.postValue(this.value)
 }
 
 /**

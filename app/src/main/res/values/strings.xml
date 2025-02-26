@@ -83,6 +83,8 @@
     <string name="session_stopped">Measurement session has ended</string>
     <string name="current_session_empty">Delete current session</string>
     <string name="current_session_share">Share current session</string>
+    <string name="low_compass_precision_title">Low Compass Precision</string>
+    <string name="low_compass_precision_message">Please move your phone gently in circles to recalibrate the compass.</string>
     // Beacon details view
     <string name="beacon_details">Beacon details</string>
     <string name="beacon_detail_description_hint">Optional beacon description</string>

@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE
 import android.bluetooth.BluetoothManager
 import android.content.Context.BLUETOOTH_SERVICE
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -16,6 +18,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -102,8 +105,12 @@ class FragHome : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // Set click listeners for the buttons
         binding.startStopSessionButton.setOnClickListener {
-            // Check if Bluetooth is enabled and prompt the user to enable it if not
-            promptEnableBluetooth()
+            if (viewModel.value.isSessionActive.value == false) {
+                // Check if Bluetooth is enabled and prompt the user to enable it if not
+                promptEnableBluetooth()
+                // Check compass precision
+                promptAlertOnLowCompassPrecision()
+            }
             viewModel.value.toggleSession()
         }
 
@@ -191,6 +198,23 @@ class FragHome : Fragment() {
         if (!bluetoothAdapter.isEnabled) {
             Intent(ACTION_REQUEST_ENABLE).apply {
                 bluetoothEnablingResult.launch(this)
+            }
+        }
+    }
+
+    /**
+     * Alerts the user if the compass precision is low and asks them to recalibrate it.
+     */
+    private fun promptAlertOnLowCompassPrecision() {
+        appMain.sensorAccuracy.value?.let {
+            if (it <= SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setTitle(getString(R.string.low_compass_precision_title))
+                builder.setMessage(getString(R.string.low_compass_precision_message))
+                builder.setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                builder.create().show()
             }
         }
     }

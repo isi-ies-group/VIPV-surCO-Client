@@ -172,9 +172,19 @@ class AppMain : Application(), ComponentCallbacks2, SensorEventListener {
     /**
      * Get compass azimuth angle in degrees.
      */
-    private val sensorManager: SensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-    private val accelerometer: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-    private val magnetometer: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+    private val sensorManager: SensorManager by lazy {
+        getSystemService(SENSOR_SERVICE) as SensorManager
+    }
+    private val accelerometer: Sensor? by lazy {
+        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    }
+    private val magnetometer: Sensor? by lazy {
+        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+    }
+    private val magnetometerAccuracyStatus = MutableLiveData<Int>(SensorManager.SENSOR_STATUS_UNRELIABLE)
+    private val accelerometerAccuracyStatus = MutableLiveData<Int>(SensorManager.SENSOR_STATUS_UNRELIABLE)
+    private val minSensorAccuracy = MutableLiveData<Int>(SensorManager.SENSOR_STATUS_UNRELIABLE)
+    val sensorAccuracy: LiveData<Int> get() = minSensorAccuracy
     private val rotationMatrix = FloatArray(9)
     private val orientationAngles = FloatArray(3)
     private val lastAccelerometerReading = FloatArray(3)
@@ -204,18 +214,16 @@ class AppMain : Application(), ComponentCallbacks2, SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         if (sensor?.type == Sensor.TYPE_MAGNETIC_FIELD) {
-            when (accuracy) {
-                SensorManager.SENSOR_STATUS_UNRELIABLE -> {
-                    Toast.makeText(this, "Compass is unreliable. Calibrate your device.", Toast.LENGTH_SHORT).show()
-                }
-                SensorManager.SENSOR_STATUS_ACCURACY_LOW -> {
-                    Toast.makeText(this, "Compass accuracy is low. Move away from magnetic interference.", Toast.LENGTH_SHORT).show()
-                }
-                SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> {
-                    Toast.makeText(this, "Compass accuracy is high.", Toast.LENGTH_SHORT).show()
-                }
-            }
+            magnetometerAccuracyStatus.postValue(accuracy)
+        } else if (sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            accelerometerAccuracyStatus.postValue(accuracy)
         }
+        minSensorAccuracy.postValue(
+            minOf(
+                magnetometerAccuracyStatus.value ?: SensorManager.SENSOR_STATUS_UNRELIABLE,
+                accelerometerAccuracyStatus.value ?: SensorManager.SENSOR_STATUS_UNRELIABLE
+            )
+        )
     }
 
     /**
