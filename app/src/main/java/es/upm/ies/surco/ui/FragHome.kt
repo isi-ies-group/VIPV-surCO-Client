@@ -24,6 +24,7 @@ import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentHomeBinding
 import es.upm.ies.surco.AppMain
+import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.session_logging.BeaconSimplified
 
 class FragHome : Fragment() {
@@ -80,8 +81,7 @@ class FragHome : Fragment() {
                 val beaconId = beacon.id
                 Log.d("FragHome", "Beacon clicked: $beaconId")
                 // navigate to the details fragment, passing the beacon ID
-                findNavController().navigate(
-                    R.id.action_homeFragment_to_fragBeaconDetails,
+                findNavController().navigate(R.id.action_homeFragment_to_fragBeaconDetails,
                     Bundle().apply {
                         putString("beaconId", beaconId.toString())
                     })
@@ -119,6 +119,11 @@ class FragHome : Fragment() {
                 // If there are no files, show a toast message and return
                 Toast.makeText(
                     requireContext(), getString(R.string.no_data_to_upload), Toast.LENGTH_SHORT
+                ).show()
+            } else if (AppMain.Companion.instance.apiUserSession.lastKnownState.value == ApiUserSessionState.NOT_LOGGED_IN || AppMain.Companion.instance.apiUserSession.lastKnownState.value == ApiUserSessionState.NEVER_LOGGED_IN) {
+                // If the user is not logged in, show a toast message and return
+                Toast.makeText(
+                    requireContext(), getString(R.string.session_not_active), Toast.LENGTH_SHORT
                 ).show()
             } else {
                 // Toast that the data is being uploaded
