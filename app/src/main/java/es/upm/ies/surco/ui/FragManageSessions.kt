@@ -37,6 +37,11 @@ class FragManageSessions : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = sessionFilesAdapter
         }
+        binding.sessionStatusTextView.text = if (sessionFilesAdapter.itemCount == 0) {
+            getString(R.string.manage_sessions_no_sessions_available)
+        } else {
+            getString(R.string.manage_sessions_sessions_stored, sessionFilesAdapter.itemCount)
+        }
     }
 
     class SessionFilesAdapter(private var files: List<File>) :

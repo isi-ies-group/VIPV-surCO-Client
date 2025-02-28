@@ -130,4 +130,6 @@
     <string name="uploading_session_data">Subiendo sesiones guardadas…</string>
     <string name="upload_successful">Sesiones subidas</string>
     <string name="manage_sessions">Gestión sesiones almacenadas</string>
+    <string name="manage_sessions_no_sessions_available">No hay sesiones guardadas en el dispositivo</string>
+    <string name="manage_sessions_sessions_stored">Hay %1$d sesiones pendientes de subir</string>
 </resources>

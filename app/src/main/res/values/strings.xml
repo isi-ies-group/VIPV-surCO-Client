@@ -139,4 +139,6 @@
     <string name="use_offline">Use offline</string>
     // Manage Sessions
     <string name="manage_sessions">Manage cached sessions</string>
+    <string name="manage_sessions_no_sessions_available">No sessions are stored locally</string>
+    <string name="manage_sessions_sessions_stored">There are %1$d sessions pending for upload</string>
 </resources>
