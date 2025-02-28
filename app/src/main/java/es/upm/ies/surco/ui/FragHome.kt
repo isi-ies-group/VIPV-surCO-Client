@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE
 import android.bluetooth.BluetoothManager
 import android.content.Context.BLUETOOTH_SERVICE
 import android.content.Intent
-import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
@@ -206,7 +205,7 @@ class FragHome : Fragment() {
      * Alerts the user if the compass precision is low and asks them to recalibrate it.
      */
     private fun promptAlertOnLowCompassPrecision() {
-        appMain.sensorAccuracy.value?.let {
+        appMain.sensorAccuracyValue.value?.let {
             if (it <= SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
                 val builder = AlertDialog.Builder(requireContext())
                 builder.setTitle(getString(R.string.low_compass_precision_title))
