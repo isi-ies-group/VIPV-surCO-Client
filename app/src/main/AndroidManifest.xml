@@ -47,7 +47,15 @@
             android:exported="false"
             android:foregroundServiceType="location|connectedDevice"
             android:permission="android.permission.FOREGROUND_SERVICE"
-            tools:node="merge" />
+            tools:node="merge">
+            <meta-data
+                android:name="longScanForcingEnabled"
+                android:value="true" />
+        </service>
+        <service android:name="org.altbeacon.beacon.service.BeaconService"
+            tools:node="replace">
+            <meta-data android:name="longScanForcingEnabled" android:value="true"/>
+        </service>
         <receiver
             android:name="es.upm.ies.surco.broadcastReceivers.StopBroadcastReceiver"
             android:exported="false">
