@@ -211,7 +211,7 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
         val notification = NotificationCompat.Builder(this, "session-ongoing").apply {
             setContentTitle(getString(R.string.notification_ongoing_title))
             setContentText(getString(R.string.notification_ongoing_text))
-            setSmallIcon(R.mipmap.logo_ies_foreground).setOngoing(true)
+            setSmallIcon(R.mipmap.logo_surco).setOngoing(true)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC).addAction(  // Stop action
                 R.drawable.square_stop,
                 getString(R.string.stop_notification_button),
@@ -303,7 +303,7 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
         val notification =
             NotificationCompat.Builder(this, "location-and-bluetooth-watchdog").apply {
                 setContentTitle(getString(R.string.notification_no_location_bluetooth_title))
-                setContentText(notificationText).setSmallIcon(R.mipmap.logo_ies_foreground)
+                setContentText(notificationText).setSmallIcon(R.mipmap.logo_surco)
                 setOngoing(true)
             }.build()
 
