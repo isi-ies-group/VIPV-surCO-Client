@@ -1,7 +1,6 @@
 package es.upm.ies.surco.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -24,6 +23,7 @@ import es.upm.ies.surco.databinding.ActivityMainBinding
 import com.google.android.material.navigation.NavigationView
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.AppMain
+import androidx.core.net.toUri
 
 class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
@@ -189,7 +189,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     fun openURL(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
         try {
             startActivity(intent)
         } catch (e: Exception) {

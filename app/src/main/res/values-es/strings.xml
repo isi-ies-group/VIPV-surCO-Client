@@ -10,6 +10,8 @@
     <string name="logout">Cerrar sesión</string>
     <string name="toolbar_close">Cerrar menú</string>
     <string name="settings_user_token_message">Token para publicar datos en el servidor</string>
+    <string name="settings_bluetooth_scan_interval">Intervalo de escáner Bluetooth</string>
+    <string name="settings_bluetooth_scan_interval_invalid">Debe ser un número natural</string>
     <string name="version">Versión: %1$s (%2$d)</string>
     <string name="delete">Eliminar</string>
     <string name="was_deleted">Elemento eliminado</string>
@@ -30,6 +32,7 @@
     <string name="permission_localization_background">Ubicación en segundo plano</string>
     <string name="permission_bluetooth">Sensor Bluetooth</string>
     <string name="permission_notification">Mostrar Notificaciones</string>
+    <string name="battery_whitelist">Desactivar optimización batería</string>
     <string name="settings">Configuración</string>
     <string name="settings_app_behaviour">Comportamiento de la app</string>
     <string name="settings_upload_behaviour_title">Cuándo se subirán las sesiones</string>
@@ -41,10 +44,11 @@
     <string name="toolbar_open">Abrir menú</string>
     <string name="all_sessions_upload">Publicar sesiones guardadas</string>
     <string name="logo">Logo</string>
-    <string name="credits">Aplicación desarrollada por el grupo ISI-IES de la Universidad Politécnica de Madrid.</string>
+    <string name="credits">Aplicación desarrollada por el grupo de investigación ISI-IES de la Universidad Politécnica de Madrid.</string>
     <string name="permissions_title">Permisos necesarios</string>
     <string name="permission_grant">Dar permiso</string>
     <string name="settings_user_token">Clave del usuario</string>
+    <string name="email_subject">[surCO]: Consulta App</string>
     <string name="beacons_detected_zero">No se detectan balizas</string>
     <string name="beacons_detected_nonzero">Balizas cercanas: %1$d</string>
     <string name="beacon_last_read">Última lectura:</string>
@@ -133,4 +137,7 @@
     <string name="manage_sessions">Gestión sesiones almacenadas</string>
     <string name="manage_sessions_no_sessions_available">No hay sesiones guardadas en el dispositivo</string>
     <string name="manage_sessions_sessions_stored">Hay %1$d sesiones pendientes de subir</string>
+    <string name="website">Web</string>
+    <string name="github">GitHub</string>
+    <string name="data_recollection_get_in_contact">Para ponerte en contacto con nosotros, para hacer comentarios o para solicitar la eliminación o modificación de tus datos, utiliza alguno de los medios citados al final.\nEsta aplicación comparte la ubicación GPS, la orientación del móvil, medidas de las balizas Bluetooth, el modelo y fabricante del móvil y la versión de Android, en algún momento del tiempo después de que finalice una sesión de medidas.\nLos datos recogidos se tratarán con un fines puramente científicos y que no se compartirá con terceros bajo ningún concepto, a excepción si es solicitado por el mismo usuario o las autoridades competentes.</string>
 </resources>

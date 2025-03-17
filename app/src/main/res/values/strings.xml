@@ -37,6 +37,7 @@
     <string name="permission_bluetooth">Bluetooth access</string>
     <string name="permission_notification">Push notifications</string>
     <string name="permission_grant">Grant</string>
+    <string name="battery_whitelist">Disable battery optimization</string>
     // Settings view
     <string name="settings">Settings</string>
     <string name="settings_app_behaviour">Behaviour</string>
@@ -62,9 +63,16 @@
         <item>Automatically on WiFi and un-metered networks</item>
         <item>Manually upload session files</item>
     </array>
+    <string name="settings_bluetooth_scan_interval">Bluetooth Scan Interval</string>
+    <string name="settings_bluetooth_scan_interval_invalid">Must be a natural number</string>
     // About view
     <string name="version">Version: %1$s (%2$d)</string>
-    <string name="credits">App developed by the ISI-IES group at Universidad Politécnica de Madrid.</string>
+    <string name="credits">App developed by the ISI-IES research group at Universidad Politécnica de Madrid.</string>
+    <string name="data_recollection_get_in_contact">To get in contact with us, to provide feedback, or ask for deletion or modification of your data, use any of the methods referenced at the bottom.\nThis application shares GPS location, phone orientation, Bluetooth beacon measurements, model and manufacturer of the phone, and Android version to a web server when a user is logged in and somewhere in time when a session has ended.\nData collected will be used for scientific purposes and won\'t be shared with third parties under no circumstance, except if it asked by the same user or the legal authorities.</string>
+    <string name="website">Website</string>
+    <string name="github">GitHub</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="email_subject">[surCO]: App Inquiry</string>
     // Home view
     <string name="beacons_detected_zero">No beacons detected</string>
     <string name="beacons_detected_nonzero">Nearby beacons: %1$d</string>

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import es.upm.ies.surco.BuildConfig
@@ -36,6 +37,7 @@ class FragManageSessions : Fragment() {
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = sessionFilesAdapter
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
         binding.sessionStatusTextView.text = if (sessionFilesAdapter.itemCount == 0) {
             getString(R.string.manage_sessions_no_sessions_available)

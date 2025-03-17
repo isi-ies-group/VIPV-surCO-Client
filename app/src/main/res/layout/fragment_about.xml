@@ -1,44 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.AboutFragment"
-    android:orientation="vertical">
+    android:layout_margin="16sp"
+    android:orientation="vertical"
+    tools:context=".ui.AboutFragment">
 
     <ImageView
         android:layout_width="100sp"
         android:layout_height="wrap_content"
-        android:layout_margin="32sp"
         android:layout_gravity="center_horizontal"
-        android:src="@mipmap/logo_ies"
+        android:layout_margin="32sp"
         android:adjustViewBounds="true"
         android:contentDescription="@string/logo"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/app_name"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="10sp"
-        android:id="@+id/version_textview"
-        />
+        android:src="@mipmap/logo_surco_round" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16sp"
-        android:id="@+id/about_textview"
-        android:text="@string/credits"
-        />
+        android:gravity="center_horizontal"
+        android:text="@string/app_name"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
-    <!-- TODO(Add GitHub / Server main pages) -->
+    <TextView
+        android:id="@+id/version_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10sp"
+        android:gravity="center_horizontal"
+        android:text="Version: " />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8sp"
+            android:minWidth="80sp"
+            android:contentDescription="IES logo"
+            android:src="@mipmap/logo_ies" />
+
+        <TextView
+            android:id="@+id/about_textview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/credits" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="80sp"
+            android:minHeight="80sp"
+            android:scaleX="1.6"
+            android:scaleY="1.6"
+            android:layout_marginStart="8sp"
+            android:contentDescription="UPM Logo"
+            android:src="@mipmap/logo_upm" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32sp"
+        android:gravity="start"
+        android:text="@string/data_recollection_get_in_contact" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16sp">
+
+        <TextView
+            android:id="@+id/emailButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/email"
+            android:textColor="@android:color/holo_blue_dark"
+            android:linksClickable="true"
+            android:textStyle="bold"
+            android:paddingHorizontal="16sp" />
+
+        <TextView
+            android:id="@+id/projectMainButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/website"
+            android:textColor="@android:color/holo_blue_dark"
+            android:autoLink="web"
+            android:linksClickable="true"
+            android:textStyle="bold"
+            android:paddingHorizontal="16sp" />
+
+        <TextView
+            android:id="@+id/githubButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/github"
+            android:textColor="@android:color/holo_blue_dark"
+            android:autoLink="web"
+            android:linksClickable="true"
+            android:textStyle="bold"
+            android:paddingHorizontal="16sp" />
+    </LinearLayout>
 
 </LinearLayout>
