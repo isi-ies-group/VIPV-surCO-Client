@@ -1,12 +1,14 @@
 package es.upm.ies.surco.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View.OnClickListener
@@ -15,9 +17,10 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.ActivityPermissionsBinding
-import com.google.android.material.button.MaterialButton
+import kotlin.text.get
 
 class PermissionsRowAtomicHandler(
     val show: Boolean,
@@ -59,27 +62,27 @@ class ActPermissions : AppCompatActivity() {
     private lateinit var rowPermissionsLocalization: PermissionsRowAtomicHandler
     private lateinit var rowPermissionsBluetooth: PermissionsRowAtomicHandler
     private lateinit var rowPermissionsNotifications: PermissionsRowAtomicHandler
+    private lateinit var rowDisableBatteryOptimization: PermissionsRowAtomicHandler
 
     private lateinit var mapOfRowHandlers: Map<String, PermissionsRowAtomicHandler>
 
-    private val requestPermissionsLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            // Map<String, Boolean> where String=Key permission and Boolean=result
-            permissions.entries.forEach { (permissionName, isGranted) ->
-                Log.d(TAG, "$permissionName permission granted: $isGranted")
-                if (!isGranted) {
-                    // Get the last part of the permission name
-                    val permissionHumanName = permissionName.split(".").last()
-                    Toast.makeText(
-                        this,
-                        "Permission required: $permissionHumanName",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+    private var isIgnoringBatteryOptimizations = false
+
+    private val requestPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // Map<String, Boolean> where String=Key permission and Boolean=result
+        permissions.entries.forEach { (permissionName, isGranted) ->
+            Log.d(TAG, "$permissionName permission granted: $isGranted")
+            if (!isGranted) {
+                // Get the last part of the permission name
+                val permissionHumanName = permissionName.split(".").last()
+                Toast.makeText(
+                    this, "Permission required: $permissionHumanName", Toast.LENGTH_SHORT
+                ).show()
             }
         }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +105,14 @@ class ActPermissions : AppCompatActivity() {
             buttonUI = binding.swPermissionNotifications,
         )
 
+        val powerManager = this.getSystemService(POWER_SERVICE) as PowerManager
+        isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(this.packageName)
+        rowDisableBatteryOptimization = PermissionsRowAtomicHandler(
+            show = !isIgnoringBatteryOptimizations,
+            rowUI = binding.rowDisableBatteryOptimization,
+            buttonUI = binding.btnDisableBatteryOptimization,
+        )
+
         mapOfRowHandlers = mapOf(
             "Location" to rowPermissionsLocalization,
             "Bluetooth" to rowPermissionsBluetooth,
@@ -113,9 +124,16 @@ class ActPermissions : AppCompatActivity() {
             rowHandler?.setOnCheckedChangeListener(
                 OnClickListener {
                     promptForPermissions(key)
-                }
-            )
+                })
         }
+        rowDisableBatteryOptimization.setOnCheckedChangeListener(
+            OnClickListener {
+                @SuppressLint("BatteryLife")
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                }
+                startActivity(intent)
+            })
 
         binding.btnPermissionsShowInSettings.setOnClickListener {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -169,21 +187,31 @@ class ActPermissions : AppCompatActivity() {
              * @param context: Context
              * @return Boolean: True if all permissions are granted, False otherwise
              */
-            return permissionsByGroupMap.keys.none { permissionGroup ->
-                groupPermissionsGranted(context, permissionGroup) == false
+            val permissionsOk = permissionsByGroupMap.keys.all { permissionGroupKey ->
+                val granted = groupPermissionsGranted(context, permissionGroupKey)
+                Log.i(TAG, "Group $permissionGroupKey granted: $granted")
+                granted
             }
+            val environmentOk = isIgnoringBatteryOptimizations(context) != false
+            Log.i(TAG, "Permissions: $permissionsOk, Environment: $environmentOk")
+            return permissionsOk && environmentOk
+        }
+
+        private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+            val powerManager = context.getSystemService(POWER_SERVICE) as PowerManager
+            return powerManager.isIgnoringBatteryOptimizations(context.packageName)
         }
 
         fun groupPermissionsGranted(context: Context, groupKey: String): Boolean {
             // Check if all permissions are granted
             val group = permissionsByGroupMap[groupKey]
-            return if (group == null) {
-                true
-            } else {
-                group.all { permission ->
-                    permissionGranted(context, permission)
-                }
-            }
+            val allGranted = group?.all { permission ->
+                val granted = permissionGranted(context, permission)
+                Log.d(TAG, "Permission $permission granted: $granted")
+                granted
+            } != false  // if group is null, return true
+            Log.d(TAG, "Group $groupKey all permissions granted: $allGranted")
+            return allGranted
         }
 
         /**
@@ -191,8 +219,7 @@ class ActPermissions : AppCompatActivity() {
          */
         fun permissionGranted(context: Context, permission: String): Boolean {
             return ContextCompat.checkSelfPermission(
-                context,
-                permission
+                context, permission
             ) == PackageManager.PERMISSION_GRANTED
         }
 
@@ -200,14 +227,13 @@ class ActPermissions : AppCompatActivity() {
             "Location" to arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
             // BLUETOOTH_CONNECT to obtain additional information
             "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) arrayOf(
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT
+                Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT
             ) else null),
             "Notifications" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(
                 Manifest.permission.POST_NOTIFICATIONS
             ) else null),
         )
 
-        const val TAG = "PermissionsActivity"
+        val TAG: String = ActPermissions::class.java.name
     }  // companion object
 }
