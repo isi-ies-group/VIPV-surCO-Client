@@ -27,6 +27,22 @@ class FragSettings : PreferenceFragmentCompat() {
             true
         }
 
+        // Set the callback to change the scan_interval
+        findPreference<EditTextPreference>("scan_interval")?.onPreferenceChangeListener =
+            Preference.OnPreferenceChangeListener { _, newValue ->
+                try {
+                    AppMain.Companion.instance.scanInterval = (newValue as String).toLong()
+                } catch (_: NumberFormatException) {
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.settings_bluetooth_scan_interval_invalid),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@OnPreferenceChangeListener false
+                }
+                true
+            }
+
         // Get the color theme setting
         val colorThemePreference = findPreference<ListPreference>("color_theme")
         if (colorThemePreference == null) {

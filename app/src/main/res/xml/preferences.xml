@@ -23,6 +23,12 @@
             android:key="color_theme"
             android:title="@string/settings_color_theme" />
 
+        <EditTextPreference
+            android:key="scan_interval"
+            android:title="@string/settings_bluetooth_scan_interval"
+            android:inputType="number"
+            android:defaultValue="50" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

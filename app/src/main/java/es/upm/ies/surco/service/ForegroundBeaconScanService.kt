@@ -22,6 +22,7 @@ import es.upm.ies.surco.R
 import com.google.android.gms.location.*
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.Region
 import org.altbeacon.beacon.service.BeaconService
 import org.altbeacon.beacon.service.Callback
@@ -79,13 +80,13 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
      * Flag to indicate if the watchdog thread is running.
      */
     @Volatile
-    private var watchdogMayRun = false
+    private var watchdogRunning = false
 
     /**
      * Watchdog thread that continuously checks if Bluetooth and GPS are enabled.
      */
     private val watchdogThread = thread(start = false) {
-        while (watchdogMayRun) {
+        while (watchdogRunning) {
             val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
             val isBluetoothEnabled = bluetoothManager.adapter.isEnabled
 
@@ -128,6 +129,17 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
                 longitude = locationResult.lastLocation?.longitude?.toFloat() ?: Float.NaN
             }
         }
+
+        // By default, the library will detect AltBeacon protocol beacons
+        beaconManager.beaconParsers.clear()
+        // m:0-1=0505 stands for InPlay's Company Identifier Code (0x0505),
+        // see https://www.bluetooth.com/specifications/assigned-numbers/
+        // i:2-7 stands for the identifier, UUID (MAC) [little endian]
+        // d:8-9 stands for the data, CH1 analog value [little endian]
+        val customParser = BeaconParser().setBeaconLayout("m:0-1=0505,i:2-7,d:8-9")
+        beaconManager.beaconParsers.add(customParser)
+        // Set the scan periods
+        setScanPeriods(appMain.scanInterval, 0L, false)
 
         // Create all notification channels
         createNotificationChannels()
@@ -226,12 +238,15 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
             )
         ).build()
 
+        Log.i(
+            "ForegroundBeaconScanService",
+            "Scan intervals: ${beaconManager.foregroundScanPeriod} (${beaconManager.foregroundBetweenScanPeriod}) / ${beaconManager.backgroundScanPeriod} (${beaconManager.backgroundBetweenScanPeriod}) [ms]",
+            )
+
         // Start the service in the foreground
         beaconManager.enableForegroundServiceScanning(
             notification, AppMain.NOTIFICATION_ONGOING_SESSION_ID
         )
-        beaconManager.setBackgroundBetweenScanPeriod(0)
-        beaconManager.setBackgroundScanPeriod(1100)
         startForeground(AppMain.NOTIFICATION_ONGOING_SESSION_ID, notification)
     }
 
@@ -260,8 +275,8 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
      * If not, show a notification to the user.
      */
     private fun startBluetoothAndGpsWatchdog() {
-        if (!watchdogMayRun) {
-            watchdogMayRun = true
+        if (!watchdogRunning) {
+            watchdogRunning = true
             watchdogThread.start()
         }
     }
@@ -270,7 +285,7 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
      * Stop the watchdog thread.
      */
     private fun stopBluetoothAndGpsWatchdog() {
-        watchdogMayRun = false
+        watchdogRunning = false
         watchdogThread.join() // Ensure the thread stops before continuing
     }
 

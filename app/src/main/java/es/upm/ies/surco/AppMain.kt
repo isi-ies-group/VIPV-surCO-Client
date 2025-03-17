@@ -1,6 +1,7 @@
 package es.upm.ies.surco
 
-import android.app.*
+import android.app.ActivityManager
+import android.app.Application
 import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.hardware.Sensor
@@ -46,6 +47,7 @@ class AppMain : Application(), ComponentCallbacks2 {
 
     // Beacons abstractions
     var loggingSession = LoggingSession
+    lateinit var beaconManager: BeaconManager
 
     // Ring buffer to store the last 5 numbers of beacons detected,
     // to avoid reporting a lower number by mis-skipping them in scans
@@ -61,6 +63,7 @@ class AppMain : Application(), ComponentCallbacks2 {
     // Data for the beacon session
     val sessionRunning = MutableLiveData<Boolean>(false)
     val isSessionActive: LiveData<Boolean> get() = sessionRunning
+    var scanInterval: Long = DEFAULT_SCAN_WINDOW_INTERVAL
 
     // Status update handler
     // This handler is used to update the status of the beacons every STATUS_UPDATE_INTERVAL milliseconds
@@ -80,13 +83,21 @@ class AppMain : Application(), ComponentCallbacks2 {
         // Session initialization
         loggingSession.init(cacheDir)
 
-        // Set the theme
+        // Initialize the shared preferences
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        // Set the theme
         val theme = sharedPreferences.getString("color_theme", "system-default") ?: "system-default"
         setupTheme(theme)
+        // Load the scan interval
+        try {
+            scanInterval = sharedPreferences.getString("scan_interval", null)?.toLong()
+                ?: DEFAULT_SCAN_WINDOW_INTERVAL
+        } catch (_: NumberFormatException) {
+            Log.e(TAG, "Invalid scan interval")
+            scanInterval = DEFAULT_SCAN_WINDOW_INTERVAL
+        }
 
-        // Initialize the Bluetooth global scanner state
-        val beaconManager = BeaconManager.getInstanceForApplication(this)
+        beaconManager = BeaconManager.getInstanceForApplication(this)
         // By default, the library will detect AltBeacon protocol beacons
         beaconManager.beaconParsers.clear()
         // m:0-1=0505 stands for InPlay's Company Identifier Code (0x0505),
@@ -97,10 +108,7 @@ class AppMain : Application(), ComponentCallbacks2 {
         beaconManager.beaconParsers.add(customParser)
 
         // Activate debug mode only if build variant is debug
-        @Suppress("SENSELESS_COMPARISON")
-        if (BuildConfig.DEBUG) {
-            BeaconManager.setDebug(true)
-        }
+        BeaconManager.setDebug(BuildConfig.DEBUG)
 
         // Set API service
         setupApiService()
@@ -134,7 +142,11 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @param timestamp: Instant, timestamp of the data
      */
     fun addBeaconCollectionData(
-        beacons: Collection<Beacon>, timestamp: Instant, latitude: Float, longitude: Float, azimuth: Float
+        beacons: Collection<Beacon>,
+        timestamp: Instant,
+        latitude: Float,
+        longitude: Float,
+        azimuth: Float
     ) {
         for (beacon in beacons) {
             val id = beacon.id1
@@ -156,7 +168,14 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @param data: Short, data to be added to the beacon
      *
      */
-    fun addSensorDataEntry(timestamp: Instant, id: Identifier, data: Short, latitude: Float, longitude: Float, azimuth: Float) {
+    fun addSensorDataEntry(
+        timestamp: Instant,
+        id: Identifier,
+        data: Short,
+        latitude: Float,
+        longitude: Float,
+        azimuth: Float
+    ) {
         loggingSession.addBLESensorEntry(timestamp, id, data, latitude, longitude, azimuth)
     }
 
@@ -373,5 +392,6 @@ class AppMain : Application(), ComponentCallbacks2 {
         const val ACTION_STOP_SESSION = "es.upm.ies.surco.STOP_SESSION"
         const val GPS_LOCATION_PERIOD_MILLIS = 1000L  // 1 second
         const val STATUS_UPDATE_INTERVAL = 3000L  // 3 seconds
+        const val DEFAULT_SCAN_WINDOW_INTERVAL = 50L  // 50 milliseconds
     }  // companion object
 }
