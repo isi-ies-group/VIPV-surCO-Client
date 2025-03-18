@@ -244,10 +244,10 @@ object LoggingSession {
      * Unfinished sessions (i.e., the current one) are not included.
      */
     fun getSessionFiles(): Array<File> {
+        // filter out the cached body file
         val files = cacheDir!!.listFiles { _, name ->
             name.startsWith(SESSION_FILE_PREFIX) && name.endsWith(SESSION_FILE_EXTENSION)
         }
-        // filter out the cached body file
         return files
     }
 }

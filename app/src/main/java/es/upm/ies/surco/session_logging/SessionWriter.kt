@@ -1,5 +1,6 @@
 package es.upm.ies.surco.session_logging
 
+import es.upm.ies.surco.BuildConfig
 import java.io.File
 import java.io.OutputStreamWriter
 import java.time.ZonedDateTime
@@ -56,6 +57,7 @@ object SessionWriter {
 
             bufferedOutputStreamWriter.append("{")
             bufferedOutputStreamWriter.append("\"version_scheme\":$VERSION_SCHEME,")  // Version of the file format.
+            bufferedOutputStreamWriter.append("\"app_version\":\"${BuildConfig.VERSION_CODE}\",")
             bufferedOutputStreamWriter.append("\"timezone\":\"${timeZone.id}\",")
             bufferedOutputStreamWriter.append("\"start_localized_instant\":\"${startZonedDateTime.format(formatter)}\",")
             bufferedOutputStreamWriter.append("\"finish_localized_instant\":\"${finishZonedDateTime.format(formatter)}\",")
