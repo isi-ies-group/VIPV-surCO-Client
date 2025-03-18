@@ -25,6 +25,7 @@ import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentHomeBinding
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.api.ApiUserSessionState
+import es.upm.ies.surco.hideKeyboard
 import es.upm.ies.surco.session_logging.BeaconSimplified
 
 class FragHome : Fragment() {
@@ -102,6 +103,7 @@ class FragHome : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        hideKeyboard() // Close the virtual keyboard
         // Set click listeners for the buttons
         binding.startStopSessionButton.setOnClickListener {
             if (viewModel.value.isSessionActive.value == false) {

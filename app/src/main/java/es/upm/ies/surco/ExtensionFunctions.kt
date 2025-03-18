@@ -1,8 +1,10 @@
 package es.upm.ies.surco
 
 import android.content.Context
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
-import es.upm.ies.surco.R
 
 /**
  * Notifies the observers of a MutableLiveData.
@@ -22,4 +24,16 @@ fun createPositionMap(context: Context): Map<String, String> {
     // unlocalized keys
     val values = context.resources.getStringArray(R.array.beacon_spinner_keys)
     return positions.zip(values).toMap()
+}
+
+/**
+ * Hides the keyboard.
+ */
+fun Fragment.hideKeyboard() {
+    view?.let { activity?.hideKeyboard(it) }
+}
+
+fun Context.hideKeyboard(view: View) {
+    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
 }
