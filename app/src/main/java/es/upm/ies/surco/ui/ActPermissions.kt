@@ -2,6 +2,7 @@ package es.upm.ies.surco.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
 import android.view.View.OnClickListener
 import android.widget.TableRow
 import android.widget.Toast
@@ -20,7 +20,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.ActivityPermissionsBinding
-import kotlin.text.get
 
 class PermissionsRowAtomicHandler(
     val show: Boolean,
@@ -73,7 +72,6 @@ class ActPermissions : AppCompatActivity() {
     ) { permissions ->
         // Map<String, Boolean> where String=Key permission and Boolean=result
         permissions.entries.forEach { (permissionName, isGranted) ->
-            Log.d(TAG, "$permissionName permission granted: $isGranted")
             if (!isGranted) {
                 // Get the last part of the permission name
                 val permissionHumanName = permissionName.split(".").last()
@@ -128,11 +126,26 @@ class ActPermissions : AppCompatActivity() {
         }
         rowDisableBatteryOptimization.setOnCheckedChangeListener(
             OnClickListener {
-                @SuppressLint("BatteryLife")
-                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                    data = Uri.fromParts("package", packageName, null)
+                try {
+                    @SuppressLint("BatteryLife")
+                    val intent =
+                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                            data = Uri.fromParts("package", packageName, null)
+                        }
+                    startActivity(intent)
+                } catch (_: ActivityNotFoundException) {
+                    try {
+                        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                            data = Uri.fromParts("package", packageName, null)
+                        }
+                        startActivity(intent)
+                    } catch (_: ActivityNotFoundException) {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", packageName, null)
+                        }
+                        startActivity(intent)
+                    }
                 }
-                startActivity(intent)
             })
 
         binding.btnPermissionsShowInSettings.setOnClickListener {
@@ -162,7 +175,6 @@ class ActPermissions : AppCompatActivity() {
     fun exitIfAllPermissionsAreGranted() {
         // Check if all permissions are granted
         if (allPermissionsGranted(this)) {
-            Log.d(TAG, "All granted")
             setResult(RESULT_OK)
             finish()
         }
@@ -188,12 +200,9 @@ class ActPermissions : AppCompatActivity() {
              * @return Boolean: True if all permissions are granted, False otherwise
              */
             val permissionsOk = permissionsByGroupMap.keys.all { permissionGroupKey ->
-                val granted = groupPermissionsGranted(context, permissionGroupKey)
-                Log.i(TAG, "Group $permissionGroupKey granted: $granted")
-                granted
+                groupPermissionsGranted(context, permissionGroupKey)
             }
             val environmentOk = isIgnoringBatteryOptimizations(context) != false
-            Log.i(TAG, "Permissions: $permissionsOk, Environment: $environmentOk")
             return permissionsOk && environmentOk
         }
 
@@ -207,10 +216,8 @@ class ActPermissions : AppCompatActivity() {
             val group = permissionsByGroupMap[groupKey]
             val allGranted = group?.all { permission ->
                 val granted = permissionGranted(context, permission)
-                Log.d(TAG, "Permission $permission granted: $granted")
                 granted
             } != false  // if group is null, return true
-            Log.d(TAG, "Group $groupKey all permissions granted: $allGranted")
             return allGranted
         }
 
@@ -234,6 +241,6 @@ class ActPermissions : AppCompatActivity() {
             ) else null),
         )
 
-        val TAG: String = ActPermissions::class.java.name
+        val TAG: String = ActPermissions::class.java.simpleName
     }  // companion object
 }

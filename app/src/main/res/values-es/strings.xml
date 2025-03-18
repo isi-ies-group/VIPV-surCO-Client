@@ -12,6 +12,7 @@
     <string name="settings_user_token_message">Token para publicar datos en el servidor</string>
     <string name="settings_bluetooth_scan_interval">Intervalo de escáner Bluetooth</string>
     <string name="settings_bluetooth_scan_interval_invalid">Debe ser un número natural</string>
+    <string name="settings_open_battery_optimization_settings">Abrir configuración del optimizador de batería</string>
     <string name="version">Versión: %1$s (%2$d)</string>
     <string name="delete">Eliminar</string>
     <string name="was_deleted">Elemento eliminado</string>

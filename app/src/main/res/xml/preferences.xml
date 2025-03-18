@@ -5,6 +5,10 @@
         android:key="manage_sessions"
         android:title="Manage saved session files" />
 
+    <Preference
+        android:key="open_battery_optimization_settings"
+        android:title="@string/settings_open_battery_optimization_settings" />
+
     <PreferenceCategory
         android:icon="@drawable/settings_gear"
         android:title="@string/settings_app_behaviour">
