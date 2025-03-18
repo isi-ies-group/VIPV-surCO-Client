@@ -9,7 +9,7 @@ import java.util.TimeZone
 
 object SessionWriter {
     object V3 {
-        const val VERSION_SCHEME = 3
+        const val VERSION_SCHEME = 4
         /**
          * Creates the JSON line for the beacons static data (ID, tilt, orientation, description).
          * @param outputStreamWriter The output stream to write to.
@@ -55,11 +55,18 @@ object SessionWriter {
             val formatter = DateTimeFormatter.ISO_INSTANT
 
             bufferedOutputStreamWriter.append("{")
-            bufferedOutputStreamWriter.append("\"version_scheme\": $VERSION_SCHEME,")  // Version of the file format.
-            bufferedOutputStreamWriter.append("\"timezone\": \"${timeZone.id}\",")
-            bufferedOutputStreamWriter.append("\"start_localized_instant\": \"${startZonedDateTime.format(formatter)}\",")
-            bufferedOutputStreamWriter.append("\"finish_localized_instant\": \"${finishZonedDateTime.format(formatter)}\",")
-            bufferedOutputStreamWriter.append("\"beacons\": [")  // Open "beacons"
+            bufferedOutputStreamWriter.append("\"version_scheme\":$VERSION_SCHEME,")  // Version of the file format.
+            bufferedOutputStreamWriter.append("\"timezone\":\"${timeZone.id}\",")
+            bufferedOutputStreamWriter.append("\"start_localized_instant\":\"${startZonedDateTime.format(formatter)}\",")
+            bufferedOutputStreamWriter.append("\"finish_localized_instant\":\"${finishZonedDateTime.format(formatter)}\",")
+            bufferedOutputStreamWriter.append("\"device_info\":{")
+            bufferedOutputStreamWriter.append("\"manufacturer\":\"${android.os.Build.MANUFACTURER}\",")
+            bufferedOutputStreamWriter.append("\"model\":\"${android.os.Build.MODEL}\",")
+            bufferedOutputStreamWriter.append("\"device\":\"${android.os.Build.DEVICE}\",")
+            bufferedOutputStreamWriter.append("\"android_version\":\"${android.os.Build.VERSION.RELEASE}\",")
+            bufferedOutputStreamWriter.append("\"sdk_int\":${android.os.Build.VERSION.SDK_INT}")
+            bufferedOutputStreamWriter.append("},")
+            bufferedOutputStreamWriter.append("\"beacons\":[")  // Open "beacons"
             for ((index, beacon) in beacons.withIndex()) {
                 // Add a comma before the next element, as JSON does not allow trailing commas.
                 // https://stackoverflow.com/questions/201782/can-you-use-a-trailing-comma-in-a-json-object
@@ -72,11 +79,11 @@ object SessionWriter {
                 val base64encodedDescription =
                     Base64.getEncoder()
                         .encodeToString(beacon.descriptionValue.toByteArray(Charsets.UTF_8))
-                bufferedOutputStreamWriter.append("\"id\": \"${beacon.id}\",")
-                bufferedOutputStreamWriter.append("\"tilt\": ${beacon.tiltValue},")
-                bufferedOutputStreamWriter.append("\"orientation\": ${beacon.directionValue},")
-                bufferedOutputStreamWriter.append("\"position\": \"${beacon.positionValue}\",")
-                bufferedOutputStreamWriter.append("\"description\": \"$base64encodedDescription\"")
+                bufferedOutputStreamWriter.append("\"id\":\"${beacon.id}\",")
+                bufferedOutputStreamWriter.append("\"tilt\":${beacon.tiltValue},")
+                bufferedOutputStreamWriter.append("\"orientation\":${beacon.directionValue},")
+                bufferedOutputStreamWriter.append("\"position\":\"${beacon.positionValue}\",")
+                bufferedOutputStreamWriter.append("\"description\":\"$base64encodedDescription\"")
 
                 bufferedOutputStreamWriter.append("}")  // Close the unique beacon object.
             }
