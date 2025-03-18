@@ -3,6 +3,8 @@ package es.upm.ies.surco.workers
 import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
+import androidx.work.Data
+import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.AppMain
@@ -11,13 +13,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
+/**
+ * Worker to upload session files to the server.
+ */
 class SessionFilesUploadWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWork(): ListenableWorker.Result {
         Log.i(TAG, "Uploading session files")
         return try {
             val files = LoggingSession.getSessionFiles()
+            if (files.isEmpty()) {
+                return ListenableWorker.Result.success(Data.Builder().putBoolean("no_files", true).build())
+            }
 
             // Upload files using coroutines
             val allSuccessful = withContext(Dispatchers.IO) {
@@ -26,12 +34,12 @@ class SessionFilesUploadWorker(appContext: Context, workerParams: WorkerParamete
 
             AppMain.Companion.instance.wasUploadedSuccessfully.postValue(allSuccessful)
             if (allSuccessful) {
-                Result.success()
+                ListenableWorker.Result.success()
             } else {
-                Result.retry()
+                ListenableWorker.Result.retry()
             }
         } catch (_: Exception) {
-            Result.retry() // Retry on failure
+            ListenableWorker.Result.retry() // Retry on failure
         }
     }
 
@@ -46,6 +54,6 @@ class SessionFilesUploadWorker(appContext: Context, workerParams: WorkerParamete
     }
 
     companion object {
-        const val TAG = "SessionFilesUploadWorker"
+        val TAG: String = SessionFilesUploadWorker::class.java.simpleName
     }
 }

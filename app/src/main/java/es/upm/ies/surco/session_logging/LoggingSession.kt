@@ -173,6 +173,12 @@ object LoggingSession {
      * @return The file with the session data.
      */
     fun saveSession(): File? {
+        // deep copy all beacons and their data to a temporary variable, and empty them
+        val temporaryBeacons =
+            beacons.value!!.filter { it.statusValue.value != BeaconSimplifiedStatus.INFO_MISSING }
+                .map { it.copy() }
+        beacons.value!!.map { it.clear() }
+
         // exit if there is no data to save
         @Suppress("UsePropertyAccessSyntax")
         if ((beacons.value == null)  // no beacons
@@ -182,12 +188,6 @@ object LoggingSession {
         ) {
             return null
         }
-
-        // deep copy all beacons and their data to a temporary variable, and empty them
-        val temporaryBeacons =
-            beacons.value!!.filter { it.statusValue.value != BeaconSimplifiedStatus.INFO_MISSING }
-                .map { it.copy() }
-        beacons.value!!.map { it.clear() }
 
         var outFile = File(
             cacheDir,

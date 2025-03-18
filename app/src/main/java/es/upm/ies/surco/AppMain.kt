@@ -55,7 +55,7 @@ class AppMain : Application(), ComponentCallbacks2 {
 
     // -- for public use by UI --
     val nRangedBeacons: MutableLiveData<Int> = MutableLiveData(0)
-    val wasUploadedSuccessfully = MutableLiveData<Boolean>(false)
+    val wasUploadedSuccessfully = MutableLiveData<Boolean>(false)  // set by the worker
 
     val minSensorAccuracy = MutableLiveData<Int>(SensorManager.SENSOR_STATUS_UNRELIABLE)
     val sensorAccuracyValue: LiveData<Int> get() = minSensorAccuracy
@@ -259,11 +259,9 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     fun stopBeaconScanning() {
-        // Create a coroutine to write the session data to a file
         thread {
             val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
             stopService(serviceIntent)
-            loggingSession.concludeSession()
         }
         // Set the status of the session to not running
         sessionRunning.postValue(false)
@@ -305,27 +303,40 @@ class AppMain : Application(), ComponentCallbacks2 {
      */
     fun concludeSession() {
         stopBeaconScanning()
-        // if the sharedPreference is set to upload files on metered network, schedule the upload
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val autoUploadBehaviour =
-            sharedPreferences.getString("auto_upload_behaviour", "auto_un_metered")
-        when (autoUploadBehaviour) {
-            "auto_un_metered" -> scheduleFileUpload()
-            "auto_always" -> uploadAll()
-            // else, manual upload -> do nothing
+        thread {
+            val file = loggingSession.concludeSession()
+            if (file != null) {  // null means it was not valid session
+                // if the sharedPreference is set to upload files on metered network, schedule the upload
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+                val autoUploadBehaviour =
+                    sharedPreferences.getString("auto_upload_behaviour", "auto_un_metered")
+                when (autoUploadBehaviour) {
+                    "auto_un_metered" -> scheduleFileUpload( now = false )
+                    "auto_always" -> scheduleFileUpload( now = true )
+                    // else, manual upload -> do nothing
+                }
+            }
         }
     }
 
-    fun scheduleFileUpload() {
-        Log.i(TAG, "Scheduling file upload")
-        // Define constraints for non-metered networks
-        val constraints =
-            Constraints.Builder().setRequiredNetworkType(NetworkType.UNMETERED).build()
-
+    /**
+     * Schedule a file upload to the server
+     * @param now: Boolean, true if the upload should be done immediately, false otherwise
+     * @return void
+     */
+    fun scheduleFileUpload(now: Boolean) {
+        Log.i(TAG, "Scheduling file upload ${if (now) "now" else "later"}")
         // Create a OneTimeWorkRequest
-        val fileUploadWorkRequest =
-            OneTimeWorkRequestBuilder<SessionFilesUploadWorker>().setConstraints(constraints)
-                .build()
+        val fileUploadWorkRequestBuilder = OneTimeWorkRequestBuilder<SessionFilesUploadWorker>()
+
+        if (now) {
+            // Define constraints for non-metered networks
+            val constraints =
+                Constraints.Builder().setRequiredNetworkType(NetworkType.UNMETERED).build()
+            fileUploadWorkRequestBuilder.setConstraints(constraints)
+        }
+
+        val fileUploadWorkRequest = fileUploadWorkRequestBuilder.build()
 
         // Enqueue the work
         WorkManager.getInstance(this).enqueue(fileUploadWorkRequest)
