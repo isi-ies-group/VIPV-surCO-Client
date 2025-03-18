@@ -3,7 +3,7 @@
 
     <Preference
         android:key="manage_sessions"
-        android:title="Manage saved session files" />
+        android:title="@string/settings_manage_sessions" />
 
     <Preference
         android:key="open_battery_optimization_settings"
@@ -30,6 +30,7 @@
         <EditTextPreference
             android:key="scan_interval"
             android:title="@string/settings_bluetooth_scan_interval"
+            android:summary="@string/settings_bluetooth_scan_interval_summary"
             android:inputType="number"
             android:defaultValue="50" />
 

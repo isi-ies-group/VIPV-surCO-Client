@@ -141,4 +141,6 @@
     <string name="website">Web</string>
     <string name="github">GitHub</string>
     <string name="data_recollection_get_in_contact">Para ponerte en contacto con nosotros, para hacer comentarios o para solicitar la eliminación o modificación de tus datos, utiliza alguno de los medios citados al final.\nEsta aplicación comparte la ubicación GPS, la orientación del móvil, medidas de las balizas Bluetooth, el modelo y fabricante del móvil y la versión de Android, en algún momento del tiempo después de que finalice una sesión de medidas.\nLos datos recogidos se tratarán con un fines puramente científicos y que no se compartirá con terceros bajo ningún concepto, a excepción si es solicitado por el mismo usuario o las autoridades competentes.</string>
+    <string name="settings_bluetooth_scan_interval_summary">Milisegundos</string>
+    <string name="settings_manage_sessions">Gestión sesiones guardadas</string>
 </resources>
