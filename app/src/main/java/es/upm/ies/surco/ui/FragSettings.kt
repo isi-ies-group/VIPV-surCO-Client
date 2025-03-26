@@ -1,8 +1,6 @@
 package es.upm.ies.surco.ui
 
-import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -163,14 +161,14 @@ class FragSettings : PreferenceFragmentCompat() {
     }
 
     companion object {
-        @SuppressLint("BatteryLife")
+        /*@SuppressLint("BatteryLife")
         fun canHandleBatteryOptimizationIntent(context: Context): Boolean {
             val packageName = context.packageName
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                 data = Uri.fromParts("package", packageName, null)
             }
             return intent.resolveActivity(context.packageManager) != null
-        }
+        }*/
 
         val TAG: String = FragSettings::class.java.simpleName
     }
