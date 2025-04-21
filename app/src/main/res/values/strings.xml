@@ -1,6 +1,7 @@
 <resources>
     // Generic
-    <string name="app_name">surCO: Solar Urban Resource Collaboration</string>
+    <string name="app_name" translatable="false">surCO</string>
+    <string name="app_name_long" translatable="false">surCO: Solar Urban Resource Collaboration</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="login">Log In</string>
