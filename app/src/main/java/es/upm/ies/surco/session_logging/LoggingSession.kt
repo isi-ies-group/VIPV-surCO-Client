@@ -83,13 +83,13 @@ object LoggingSession {
     /**
      * Cache directory to store the session files.
      */
-    private var cacheDir: File? = null
+    private var sessionsFolder: File? = null
 
     /**
      * Initialize the singleton with the cache directory.
      */
-    fun init(cacheDir: File) {
-        this.cacheDir = cacheDir
+    fun init(sessionsFolder: File) {
+        this.sessionsFolder = sessionsFolder
     }
 
     /**
@@ -160,6 +160,7 @@ object LoggingSession {
         beaconMap.clear()
         (beacons as MutableLiveData).notifyObservers()
         beaconStatusMap.clear()
+        _nBeaconsOnline.postValue(0)
         startZonedDateTime = null
         stopZonedDateTime = null
     }
@@ -194,9 +195,9 @@ object LoggingSession {
         beaconStatusMap[id] = newStatus
 
         if (previousStatus != BeaconSimplifiedStatus.OFFLINE && newStatus == BeaconSimplifiedStatus.OFFLINE) {
-            _nBeaconsOnline.value = ((_nBeaconsOnline.value ?: 0) - 1)
+            _nBeaconsOnline.postValue((_nBeaconsOnline.value ?: 0) - 1)
         } else if (previousStatus == BeaconSimplifiedStatus.OFFLINE && newStatus != BeaconSimplifiedStatus.OFFLINE) {
-            _nBeaconsOnline.value = ((_nBeaconsOnline.value ?: 0) + 1)
+            _nBeaconsOnline.postValue((_nBeaconsOnline.value ?: 0) + 1)
         }
     }
 
@@ -208,7 +209,8 @@ object LoggingSession {
     fun freeDataTemporarily() {
         // create the temporary file if needed
         if (dataCacheFile == null) {
-            dataCacheFile = File.createTempFile(TEMP_FILE_PREFIX, TEMP_FILE_EXTENSION, cacheDir)
+            dataCacheFile =
+                File.createTempFile(TEMP_FILE_PREFIX, TEMP_FILE_EXTENSION, sessionsFolder)
         }
 
         // append the latest data to the temporary files
@@ -239,7 +241,7 @@ object LoggingSession {
         }
 
         var outFile = File(
-            cacheDir,
+            sessionsFolder,
             "${SESSION_FILE_PREFIX}${startZonedDateTime!!.formatAsPathSafeString()}-${stopZonedDateTime!!.formatAsPathSafeString()}${SESSION_FILE_EXTENSION}"
         )
 
@@ -304,9 +306,9 @@ object LoggingSession {
      */
     fun getSessionFiles(): Array<File> {
         // filter out the cached body file
-        val files = cacheDir!!.listFiles { _, name ->
+        val files = sessionsFolder?.listFiles { _, name ->
             name.startsWith(SESSION_FILE_PREFIX) && name.endsWith(SESSION_FILE_EXTENSION)
         }
-        return files
+        return files ?: emptyArray()
     }
 }

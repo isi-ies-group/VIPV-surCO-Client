@@ -61,11 +61,15 @@ class AppMain : Application(), ComponentCallbacks2 {
         }
     }
 
+    val cachedSessionsDir by lazy {
+        cacheDir.resolve(SESSIONS_SUBDIR_IN_CACHE)
+    }
+
     override fun onCreate() {
         super.onCreate()
 
         // Session initialization
-        loggingSession.init(cacheDir)
+        loggingSession.init(cachedSessionsDir)
 
         // Initialize the shared preferences
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
@@ -96,9 +100,6 @@ class AppMain : Application(), ComponentCallbacks2 {
 
         // Set API service
         setupApiService()
-
-        // Save instance for singleton access
-        instance = this
     }
 
     @Suppress("OVERRIDE_DEPRECATION")
@@ -303,11 +304,22 @@ class AppMain : Application(), ComponentCallbacks2 {
         WorkManager.getInstance(this).enqueue(fileUploadWorkRequest)
     }
 
-    fun uploadAll() {
+    fun uploadAllSessions() {
         // Create a OneTimeWorkRequest
         val fileUploadWorkRequest = OneTimeWorkRequestBuilder<SessionFilesUploadWorker>().build()
         // Enqueue the work
         WorkManager.getInstance(this).enqueue(fileUploadWorkRequest)
+    }
+
+    fun deleteAllSessions() {
+        thread {
+            val files = loggingSession.getSessionFiles()
+            for (file in files) {
+                if (file.exists()) {
+                    file.delete()
+                }
+            }
+        }
     }
 
     /**
@@ -356,9 +368,8 @@ class AppMain : Application(), ComponentCallbacks2 {
     }
 
     companion object {
-        lateinit var instance: AppMain
-            private set  // This is a singleton, setter is private but access is public
         const val TAG = "AppMain"
+        const val SESSIONS_SUBDIR_IN_CACHE = "sessions"
         const val NOTIFICATION_ONGOING_SESSION_ID = 1
         const val NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID = 2
         const val ACTION_STOP_SESSION = "es.upm.ies.surco.STOP_SESSION"
