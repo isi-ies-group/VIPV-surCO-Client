@@ -31,7 +31,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
     private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
     private lateinit var navController: NavController
 
-    private val app = AppMain.Companion.instance
+    private val app by lazy { application as AppMain }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

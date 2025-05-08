@@ -108,7 +108,7 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
         Log.i(TAG, "Service created")
 
         // get AppMain singleton
-        appMain = AppMain.instance
+        appMain = applicationContext as AppMain
 
         // Get the Bluetooth and Location managers
         bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager

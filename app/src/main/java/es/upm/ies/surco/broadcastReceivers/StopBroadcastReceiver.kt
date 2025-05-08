@@ -14,6 +14,7 @@ import es.upm.ies.surco.AppMain.Companion.TAG
 class StopBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.i(TAG, "Received stop signal on broadcast receiver")
-        AppMain.instance.concludeSession()
+        val appMain = context as AppMain
+        appMain.concludeSession()
     }
 }

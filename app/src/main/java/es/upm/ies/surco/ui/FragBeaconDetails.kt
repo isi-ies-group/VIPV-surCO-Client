@@ -20,9 +20,16 @@ import es.upm.ies.surco.session_logging.BeaconSimplifiedStatus
 import es.upm.ies.surco.createPositionMap
 
 class FragBeaconDetails : Fragment() {
-    private val viewModel: FragBeaconDetailsViewModel by viewModels()
+    private val viewModel: FragBeaconDetailsViewModel by viewModels(
+        factoryProducer = {
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        }
+    )
     private var _binding: FragmentBeaconDetailsBinding? = null
     private val binding get() = _binding!!
+
+    private val appMain = requireActivity().application as AppMain
+    private val positionMap: Map<String, String> = createPositionMap(appMain)
 
     private val descriptionTextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -48,10 +55,7 @@ class FragBeaconDetails : Fragment() {
     private val positionSpinnerOnItemSelectedListener =
         object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View,
-                position: Int,
-                id: Long
+                parent: AdapterView<*>, view: View, position: Int, id: Long
             ) {
                 val localizedItemText = parent.getItemAtPosition(position).toString()
                 val unlocalizedItemValue = positionMap[localizedItemText]
@@ -169,7 +173,8 @@ class FragBeaconDetails : Fragment() {
             val direction = viewModel.beacon.value?.directionValue?.toInt()?.toString()
             binding.editTextDirection.setText(direction ?: "")
 
-            val positionKey = positionMap.entries.find { it.value == viewModel.beacon.value?.positionValue }?.key
+            val positionKey =
+                positionMap.entries.find { it.value == viewModel.beacon.value?.positionValue }?.key
             val positionIndex = positionMap.keys.indexOf(positionKey)
             if (positionIndex >= 0) {
                 binding.spinnerPosition.setSelection(positionIndex)
@@ -187,9 +192,5 @@ class FragBeaconDetails : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    companion object {
-        val positionMap: Map<String, String> = createPositionMap(AppMain.Companion.instance)
     }
 }
