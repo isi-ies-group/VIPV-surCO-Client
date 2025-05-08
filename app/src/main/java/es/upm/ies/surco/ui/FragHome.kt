@@ -27,6 +27,7 @@ import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.hideKeyboard
 import es.upm.ies.surco.session_logging.BeaconSimplified
+import es.upm.ies.surco.session_logging.LoggingSessionStatus
 
 class FragHome : Fragment() {
     private var _binding: FragmentHomeBinding? = null
@@ -69,7 +70,9 @@ class FragHome : Fragment() {
         binding.beaconListView.adapter = adapter
 
         // Set the start stop button text and icon according to the session state
-        updateStartStopButton(appMain.isSessionActive.value!!)
+        updateStartStopButton(
+            viewModel.value.loggingSessionStatus.value ?: LoggingSessionStatus.SESSION_STOPPING
+        )
 
         // Assign observers and callbacks to the ViewModel's LiveData objects.
         viewModel.value.rangedBeacons.observe(viewLifecycleOwner) { beacons ->
@@ -82,20 +85,26 @@ class FragHome : Fragment() {
                 val beaconId = beacon.id
                 Log.d("FragHome", "Beacon clicked: $beaconId")
                 // navigate to the details fragment, passing the beacon ID
-                findNavController().navigate(R.id.action_homeFragment_to_fragBeaconDetails,
-                    Bundle().apply {
+                findNavController().navigate(
+                    R.id.action_homeFragment_to_fragBeaconDetails, Bundle().apply {
                         putString("beaconId", beaconId.toString())
                     })
             }
 
-        viewModel.value.nRangedBeacons.observe(viewLifecycleOwner) { n ->
-            updateBeaconCountTextView(n, appMain.isSessionActive.value!!)
+        viewModel.value.nBeaconsOnline.observe(viewLifecycleOwner) { n ->
+            updateBeaconCountTextView(
+                n,
+                viewModel.value.loggingSessionStatus.value == LoggingSessionStatus.SESSION_ONGOING
+            )
             adapter.updateData(viewModel.value.rangedBeacons.value!!)
         }
 
-        viewModel.value.isSessionActive.observe(viewLifecycleOwner) { isSessionActive ->
-            updateStartStopButton(isSessionActive)
-            updateBeaconCountTextView(viewModel.value.nRangedBeacons.value!!, isSessionActive)
+        viewModel.value.loggingSessionStatus.observe(viewLifecycleOwner) { status ->
+            updateStartStopButton(status)
+            updateBeaconCountTextView(
+                viewModel.value.nBeaconsOnline.value!!,
+                status == LoggingSessionStatus.SESSION_ONGOING
+            )
         }
 
         return binding.root
@@ -106,7 +115,7 @@ class FragHome : Fragment() {
         hideKeyboard() // Close the virtual keyboard
         // Set click listeners for the buttons
         binding.startStopSessionButton.setOnClickListener {
-            if (viewModel.value.isSessionActive.value == false) {
+            if (viewModel.value.loggingSessionStatus.value == LoggingSessionStatus.SESSION_TRIGGERABLE) {
                 // Check if Bluetooth is enabled and prompt the user to enable it if not
                 promptEnableBluetooth()
                 // Check compass precision
@@ -153,34 +162,50 @@ class FragHome : Fragment() {
     /**
      * Updates the start/stop session button icon according to the session state, as well as the
      * content description.
-     * @param isSessionActive True if the session is active, false otherwise.
+     * @param status The current session status.
      */
-    private fun updateStartStopButton(isSessionActive: Boolean) {
-        if (isSessionActive) {
-            binding.startStopSessionButton.setImageResource(R.drawable.square_stop)
-            binding.startStopSessionButton.tooltipText = getString(R.string.stop_button)
-            binding.startStopSessionButton.contentDescription = getString(R.string.stop_button)
-        } else {
-            binding.startStopSessionButton.setImageResource(R.drawable.triangle_start)
-            binding.startStopSessionButton.tooltipText = getString(R.string.start_button)
-            binding.startStopSessionButton.contentDescription = getString(R.string.start_button)
+    private fun updateStartStopButton(status: LoggingSessionStatus) {
+        when (status) {
+            LoggingSessionStatus.SESSION_ONGOING -> {
+                binding.startStopSessionButton.setImageResource(R.drawable.square_stop)
+                binding.startStopSessionButton.tooltipText = getString(R.string.stop_button)
+                binding.startStopSessionButton.contentDescription = getString(R.string.stop_button)
+
+                binding.startStopSessionButton.isEnabled = true
+                binding.startStopSessionButton.isClickable = true
+            }
+
+            LoggingSessionStatus.SESSION_TRIGGERABLE -> {
+                binding.startStopSessionButton.setImageResource(R.drawable.triangle_start)
+                binding.startStopSessionButton.tooltipText = getString(R.string.start_button)
+                binding.startStopSessionButton.contentDescription = getString(R.string.start_button)
+
+                binding.startStopSessionButton.isEnabled = true
+                binding.startStopSessionButton.isClickable = true
+            }
+
+            LoggingSessionStatus.SESSION_STOPPING -> {
+                // Just disable the button
+                binding.startStopSessionButton.isEnabled = false
+                binding.startStopSessionButton.isClickable = false
+            }
         }
     }
 
     /**
      * Updates the text view with the number of beacons detected, and whether the session is paused
      * or not.
-     * @param nRangedBeacons The number of beacons detected.
+     * @param nBeacons The number of beacons detected.
      * @param isSessionActive True if the session is active, false otherwise.
      */
-    private fun updateBeaconCountTextView(nRangedBeacons: Int, isSessionActive: Boolean) {
+    private fun updateBeaconCountTextView(nBeacons: Int, isSessionActive: Boolean) {
         if (isSessionActive) {
             // Update the top message textview to show the number of beacons detected
-            if (nRangedBeacons == 0) {
+            if (nBeacons == 0) {
                 binding.beaconCountTextView.text = getString(R.string.beacons_detected_zero)
             } else {
                 binding.beaconCountTextView.text =
-                    getString(R.string.beacons_detected_nonzero, nRangedBeacons)
+                    getString(R.string.beacons_detected_nonzero, nBeacons)
             }
         } else {
             binding.beaconCountTextView.text = getString(R.string.beacons_detected_paused)

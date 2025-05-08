@@ -3,9 +3,9 @@ package es.upm.ies.surco.ui
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.api.ApiUserSession
 import es.upm.ies.surco.api.ApiUserSessionState
-import es.upm.ies.surco.AppMain
 import kotlinx.coroutines.launch
 
 class FragRegisterViewModel : ViewModel() {
@@ -29,12 +29,23 @@ class FragRegisterViewModel : ViewModel() {
     // mutable status for whether login button should be enabled
     val registerButtonEnabled = MutableLiveData<Boolean>()
 
+    // observer instance for text fields validation
+    private val onCredentialsChangedObserver = { _: String -> onCredentialsChanged() }
+
     init {
         // observe the email and password fields for changes
-        username.observeForever { onCredentialsChanged() }
-        email.observeForever { onCredentialsChanged() }
-        password.observeForever { onCredentialsChanged() }
-        password2.observeForever { onCredentialsChanged() }
+        username.observeForever { onCredentialsChangedObserver }
+        email.observeForever { onCredentialsChangedObserver }
+        password.observeForever { onCredentialsChangedObserver }
+        password2.observeForever { onCredentialsChangedObserver }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        username.removeObserver(onCredentialsChangedObserver)
+        email.removeObserver(onCredentialsChangedObserver)
+        password.removeObserver(onCredentialsChangedObserver)
+        password2.removeObserver(onCredentialsChangedObserver)
     }
 
     fun onCredentialsChanged() {
@@ -58,9 +69,7 @@ class FragRegisterViewModel : ViewModel() {
         // if successful, the user will be redirected to the main activity
         // else, update the loginStatus variable with the error message
         val result = appMain.apiUserSession.register(
-            username.value!!,
-            email.value!!,
-            password.value!!
+            username.value!!, email.value!!, password.value!!
         )
         registerStatus.postValue(result)
     }

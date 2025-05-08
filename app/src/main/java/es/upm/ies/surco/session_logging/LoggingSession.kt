@@ -10,6 +10,16 @@ import java.time.ZonedDateTime
 import java.util.TimeZone
 
 /**
+ * Status of the session.
+ * SESSION_ONGOING: The session is ongoing and data is being collected.
+ * SESSION_STOPPING: The session is stopping and data is being saved.
+ * SESSION_TRIGGERABLE: The session can be triggered to start or stop.
+ */
+enum class LoggingSessionStatus {
+    SESSION_ONGOING, SESSION_STOPPING, SESSION_TRIGGERABLE,
+}
+
+/**
  * Singleton object to hold the logging session and some other metadata.
  *
  * Handles the addition of SensorEntries to the beacons. Creates new instances of Beacon if the
@@ -56,6 +66,20 @@ object LoggingSession {
     private var dataCacheFile: File? = null
 
     /**
+     * Number of online beacons tracking in the session.
+     */
+    private val beaconStatusMap = mutableMapOf<Identifier, BeaconSimplifiedStatus>()
+    private val _nBeaconsOnline: MutableLiveData<Int> = MutableLiveData(0)
+    val nBeaconsOnline: LiveData<Int> get() = _nBeaconsOnline
+
+    /**
+     * Session _status.
+     */
+    private var _status: MutableLiveData<LoggingSessionStatus> =
+        MutableLiveData(LoggingSessionStatus.SESSION_TRIGGERABLE)
+    val status: LiveData<LoggingSessionStatus> get() = _status
+
+    /**
      * Cache directory to store the session files.
      */
     private var cacheDir: File? = null
@@ -89,25 +113,26 @@ object LoggingSession {
         val beacon = beaconMap[id]
         if (beacon != null) {
             // Add the sensor entry to the existing beacon
-            beacon.sensorData.value?.add(SensorEntry(timestamp, data, latitude, longitude, azimuth))
-            beacon.sensorData.notifyObservers()
+            beacon.addSensorEntry(
+                timestamp, data, latitude, longitude, azimuth
+            )
         } else {
             // Create a new beacon and add it to the list and the Map
             val newBeacon = BeaconSimplified(id)
-            newBeacon.sensorData.value?.add(
-                SensorEntry(
-                    timestamp,
-                    data,
-                    latitude,
-                    longitude,
-                    azimuth
-                )
+            newBeacon.addSensorEntry(
+                timestamp, data, latitude, longitude, azimuth
             )
             beaconMap[id] = newBeacon
+            beaconStatusMap[id] =
+                BeaconSimplifiedStatus.OFFLINE  // Required so it detects the first online
         }
         (beacons as MutableLiveData).value = ArrayList(beaconMap.values)
         // Notify observers of the updated beaconsData
         beacons.notifyObservers()
+
+        // Update the beacon's status
+        val currentStatus = beaconMap[id]?.statusValue?.value ?: BeaconSimplifiedStatus.OFFLINE
+        updateBeaconStatus(id, currentStatus)
     }
 
     /**
@@ -133,6 +158,7 @@ object LoggingSession {
     fun clear() {
         beaconMap.clear()
         (beacons as MutableLiveData).notifyObservers()
+        beaconStatusMap.clear()
         startZonedDateTime = null
         stopZonedDateTime = null
     }
@@ -145,6 +171,32 @@ object LoggingSession {
         beaconMap.remove(id)
         (beacons as MutableLiveData).value = ArrayList(beaconMap.values)
         beacons.notifyObservers()
+    }
+
+    /**
+     * Update the status of all beacons.
+     */
+    fun refreshBeaconStatuses() {
+        beaconMap.forEach { (id, beacon) ->
+            val newStatus = beacon.refreshStatus()
+            updateBeaconStatus(id, newStatus)
+        }
+    }
+
+    /**
+     * Update the status of a beacon.
+     * @param id The identifier of the beacon.
+     * @param newStatus The new status of the beacon.
+     */
+    private fun updateBeaconStatus(id: Identifier, newStatus: BeaconSimplifiedStatus) {
+        val previousStatus = beaconStatusMap[id]
+        beaconStatusMap[id] = newStatus
+
+        if (previousStatus != BeaconSimplifiedStatus.OFFLINE && newStatus == BeaconSimplifiedStatus.OFFLINE) {
+            _nBeaconsOnline.value = ((_nBeaconsOnline.value ?: 0) - 1)
+        } else if (previousStatus == BeaconSimplifiedStatus.OFFLINE && newStatus != BeaconSimplifiedStatus.OFFLINE) {
+            _nBeaconsOnline.value = ((_nBeaconsOnline.value ?: 0) + 1)
+        }
     }
 
     /**
@@ -222,8 +274,12 @@ object LoggingSession {
      * Begins a new session.
      */
     fun startSession() {
+        if (_status.value != LoggingSessionStatus.SESSION_TRIGGERABLE) {
+            return
+        }
         clear()
         startZonedDateTime = ZonedDateTime.now()
+        _status.postValue(LoggingSessionStatus.SESSION_ONGOING)
     }
 
     /**
@@ -231,8 +287,14 @@ object LoggingSession {
      * @return The file with the session data.
      */
     fun concludeSession(): File? {
+        if (_status.value != LoggingSessionStatus.SESSION_ONGOING) {
+            return null
+        }
         stopZonedDateTime = ZonedDateTime.now()
-        return saveSession()
+        _status.postValue(LoggingSessionStatus.SESSION_STOPPING)
+        val outFile = saveSession()
+        _status.postValue(LoggingSessionStatus.SESSION_TRIGGERABLE)
+        return outFile
     }
 
     /**

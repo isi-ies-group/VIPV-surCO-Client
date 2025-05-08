@@ -4,12 +4,10 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.ComponentCallbacks2
 import android.content.Intent
-import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,13 +20,13 @@ import es.upm.ies.surco.api.APIService
 import es.upm.ies.surco.api.ApiUserSession
 import es.upm.ies.surco.service.ForegroundBeaconScanService
 import es.upm.ies.surco.session_logging.LoggingSession
+import es.upm.ies.surco.session_logging.LoggingSessionStatus
 import es.upm.ies.surco.ui.ActMain
 import es.upm.ies.surco.workers.SessionFilesUploadWorker
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.Identifier
-import org.apache.commons.collections4.queue.CircularFifoQueue
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Instant
@@ -40,29 +38,17 @@ class AppMain : Application(), ComponentCallbacks2 {
     private lateinit var apiService: APIService
     lateinit var apiUserSession: ApiUserSession
 
-    val hasCompassSensor: Boolean by lazy {
-        val sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null
-    }
-
     // Beacons abstractions
     var loggingSession = LoggingSession
     lateinit var beaconManager: BeaconManager
 
-    // Ring buffer to store the last 5 numbers of beacons detected,
-    // to avoid reporting a lower number by mis-skipping them in scans
-    private val nRangedBeaconsBuffer = CircularFifoQueue<Int>(5)
-
     // -- for public use by UI --
-    val nRangedBeacons: MutableLiveData<Int> = MutableLiveData(0)
     val wasUploadedSuccessfully = MutableLiveData<Boolean>(false)  // set by the worker
 
     val minSensorAccuracy = MutableLiveData<Int>(SensorManager.SENSOR_STATUS_UNRELIABLE)
     val sensorAccuracyValue: LiveData<Int> get() = minSensorAccuracy
 
     // Data for the beacon session
-    val sessionRunning = MutableLiveData<Boolean>(false)
-    val isSessionActive: LiveData<Boolean> get() = sessionRunning
     var scanInterval: Long = DEFAULT_SCAN_WINDOW_INTERVAL
 
     // Status update handler
@@ -70,9 +56,7 @@ class AppMain : Application(), ComponentCallbacks2 {
     private val handler = Handler(Looper.getMainLooper())
     private val statusUpdateRunnable = object : Runnable {
         override fun run() {
-            loggingSession.beacons.value?.forEach { beacon ->
-                beacon.refreshStatus()
-            }
+            loggingSession.refreshBeaconStatuses()
             handler.postDelayed(this, STATUS_UPDATE_INTERVAL)
         }
     }
@@ -155,10 +139,6 @@ class AppMain : Application(), ComponentCallbacks2 {
             val analogReading = data[0].toShort()
             addSensorDataEntry(timestamp, id, analogReading, latitude, longitude, azimuth)
         }
-
-        // Update the number of beacons detected
-        nRangedBeaconsBuffer.add(beacons.size)
-        nRangedBeacons.value = nRangedBeaconsBuffer.maxOrNull() ?: 0
     }
 
     /**
@@ -241,8 +221,6 @@ class AppMain : Application(), ComponentCallbacks2 {
             return
         } else {
             Log.i(TAG, "Starting beacon scan service")
-            // Set the status of the session to running
-            sessionRunning.postValue(true)
             // Start the beacon scanning service
             thread {
                 loggingSession.startSession()
@@ -263,8 +241,6 @@ class AppMain : Application(), ComponentCallbacks2 {
             val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
             stopService(serviceIntent)
         }
-        // Set the status of the session to not running
-        sessionRunning.postValue(false)
         // Stop periodic status updates
         handler.removeCallbacks(statusUpdateRunnable)
     }
@@ -276,24 +252,9 @@ class AppMain : Application(), ComponentCallbacks2 {
      * Observe sessionRunning LiveData to get the current state of the session
      */
     fun toggleSession() {
-        if (sessionRunning.value == true) {
+        if (loggingSession.status.value == LoggingSessionStatus.SESSION_ONGOING) {
             concludeSession()
-            Toast.makeText(
-                this, getString(R.string.session_stopped), Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            startBeaconScanning()
-            Toast.makeText(
-                this, getString(R.string.session_started), Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-
-    /**
-     * Public facing start monitoring and ranging for beacons
-     */
-    fun startSession() {
-        if (sessionRunning.value != true) {
+        } else if (loggingSession.status.value == LoggingSessionStatus.SESSION_TRIGGERABLE) {
             startBeaconScanning()
         }
     }
@@ -302,8 +263,8 @@ class AppMain : Application(), ComponentCallbacks2 {
      * Public facing conclude the session and save it to a file
      */
     fun concludeSession() {
-        stopBeaconScanning()
         thread {
+            stopBeaconScanning()
             val file = loggingSession.concludeSession()
             if (file != null) {  // null means it was not valid session
                 // if the sharedPreference is set to upload files on metered network, schedule the upload
@@ -311,8 +272,8 @@ class AppMain : Application(), ComponentCallbacks2 {
                 val autoUploadBehaviour =
                     sharedPreferences.getString("auto_upload_behaviour", "auto_un_metered")
                 when (autoUploadBehaviour) {
-                    "auto_un_metered" -> scheduleFileUpload( now = false )
-                    "auto_always" -> scheduleFileUpload( now = true )
+                    "auto_un_metered" -> scheduleFileUpload(now = false)
+                    "auto_always" -> scheduleFileUpload(now = true)
                     // else, manual upload -> do nothing
                 }
             }
@@ -402,7 +363,7 @@ class AppMain : Application(), ComponentCallbacks2 {
         const val NOTIFICATION_NO_LOCATION_OR_BLUETOOTH_ID = 2
         const val ACTION_STOP_SESSION = "es.upm.ies.surco.STOP_SESSION"
         const val GPS_LOCATION_PERIOD_MILLIS = 1000L  // 1 second
-        const val STATUS_UPDATE_INTERVAL = 3000L  // 3 seconds
+        const val STATUS_UPDATE_INTERVAL = 2000L  // 2 seconds
         const val DEFAULT_SCAN_WINDOW_INTERVAL = 50L  // 50 milliseconds
     }  // companion object
 }
