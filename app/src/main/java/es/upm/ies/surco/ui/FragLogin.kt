@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentLoginBinding
@@ -21,7 +22,11 @@ class FragLogin : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: FragLoginViewModel by viewModels()
+    private val viewModel: FragLoginViewModel by viewModels(
+        factoryProducer = {
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        }
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

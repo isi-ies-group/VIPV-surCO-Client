@@ -1,5 +1,6 @@
 package es.upm.ies.surco.ui
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,17 +12,20 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.databinding.FragmentManageSessionsBinding
 import es.upm.ies.surco.databinding.RowItemSessionFileBinding
 import es.upm.ies.surco.R
-import es.upm.ies.surco.session_logging.LoggingSession
+import es.upm.ies.surco.session_logging.SessionFilesObserver
 import java.io.File
 
 class FragManageSessions : Fragment() {
 
     private lateinit var binding: FragmentManageSessionsBinding
     private lateinit var sessionFilesAdapter: SessionFilesAdapter
+    private lateinit var appMain: AppMain
+    private lateinit var sessionFilesObserver: SessionFilesObserver
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -30,20 +34,46 @@ class FragManageSessions : Fragment() {
         return binding.root
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        appMain = requireActivity().application as AppMain
+        sessionFilesObserver = SessionFilesObserver(appMain.cachedSessionsDir) { files ->
+            updateSessionFileList(files)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sessionFilesAdapter = SessionFilesAdapter(LoggingSession.getSessionFiles().asList())
+        sessionFilesObserver.start() // Start observing here
+
+        sessionFilesAdapter = SessionFilesAdapter(appMain.loggingSession.getSessionFiles().asList())
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = sessionFilesAdapter
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
+
+        updateStatusText()
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        sessionFilesObserver.stop()
+    }
+
+    private fun updateStatusText() {
         binding.sessionStatusTextView.text = if (sessionFilesAdapter.itemCount == 0) {
             getString(R.string.manage_sessions_no_sessions_available)
         } else {
             getString(R.string.manage_sessions_sessions_stored, sessionFilesAdapter.itemCount)
         }
+    }
+
+    private fun updateSessionFileList(files: List<File>) {
+        sessionFilesAdapter.updateFiles(files)
+        updateStatusText()
     }
 
     class SessionFilesAdapter(private var files: List<File>) :
@@ -53,9 +83,7 @@ class FragManageSessions : Fragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val binding = RowItemSessionFileBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
+                LayoutInflater.from(parent.context), parent, false
             )
             return ViewHolder(binding)
         }
@@ -71,8 +99,7 @@ class FragManageSessions : Fragment() {
         fun updateFiles(newFiles: List<File>) {
             files = newFiles
             selectedFiles.clear()
-            @Suppress("NotifyDataSetChanged")
-            notifyDataSetChanged()
+            @Suppress("NotifyDataSetChanged") notifyDataSetChanged()
         }
 
         inner class ViewHolder(private val binding: RowItemSessionFileBinding) :
@@ -83,9 +110,7 @@ class FragManageSessions : Fragment() {
 
                 binding.btnShare.setOnClickListener {
                     val uri = FileProvider.getUriForFile(
-                        binding.root.context,
-                        BuildConfig.APPLICATION_ID + ".fileProvider",
-                        file
+                        binding.root.context, BuildConfig.APPLICATION_ID + ".fileProvider", file
                     )
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "application/csv"
@@ -94,15 +119,15 @@ class FragManageSessions : Fragment() {
                     }
                     binding.root.context.startActivity(
                         Intent.createChooser(
-                            intent,
-                            "Share session file"
+                            intent, "Share session file"
                         )
                     )
                 }
                 binding.btnDelete.setOnClickListener {
                     file.delete()
                     updateFiles(files - file)
-                    Toast.makeText(binding.root.context, R.string.was_deleted, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(binding.root.context, R.string.was_deleted, Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }

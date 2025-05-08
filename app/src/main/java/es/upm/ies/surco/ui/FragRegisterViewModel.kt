@@ -1,15 +1,16 @@
 package es.upm.ies.surco.ui
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.api.ApiUserSession
 import es.upm.ies.surco.api.ApiUserSessionState
 import kotlinx.coroutines.launch
 
-class FragRegisterViewModel : ViewModel() {
-    private val appMain = AppMain.Companion.instance
+class FragRegisterViewModel(application: Application) : AndroidViewModel(application) {
+    private val appMain by lazy { getApplication<AppMain>() }
 
     // variables for the login form persistence between destroy and create
     var username: MutableLiveData<String> = MutableLiveData("")
