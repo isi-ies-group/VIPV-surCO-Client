@@ -149,7 +149,7 @@
     <string name="notification_no_bluetooth_text">Bluetooth disabled.</string>
     // Misc
     <string name="want_to_use_offline_question">Prefer to take measurements for yourself?</string>
-    <string name="use_offline">Use offline</string>
+    <string name="continue_offline">Continue without account</string>
     // Manage Sessions
     <string name="manage_sessions">Manage cached sessions</string>
     <string name="manage_sessions_no_sessions_available">No sessions are stored locally</string>

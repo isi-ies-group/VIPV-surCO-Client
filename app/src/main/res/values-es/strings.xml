@@ -120,7 +120,7 @@
         <item>Manualmente</item>
     </array>
     <string name="want_to_use_offline_question">¿Quieres tomar medidas solo para ti?</string>
-    <string name="use_offline">Usar sin cuenta</string>
+    <string name="continue_offline">Continuar sin cuenta</string>
     <string name="beacon_info_incomplete">Añada los campos de información requeridos.</string>
     <string name="beacon_detail_ok">Baliza configurada y comunicándose</string>
     <string name="beacon_detail_info_error">Faltan datos sobre la posición de la baliza</string>
