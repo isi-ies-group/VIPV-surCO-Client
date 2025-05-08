@@ -1,6 +1,7 @@
 package es.upm.ies.surco.ui
 
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentBeaconDetailsBinding
 import es.upm.ies.surco.AppMain
@@ -28,8 +30,8 @@ class FragBeaconDetails : Fragment() {
     private var _binding: FragmentBeaconDetailsBinding? = null
     private val binding get() = _binding!!
 
-    private val appMain = requireActivity().application as AppMain
-    private val positionMap: Map<String, String> = createPositionMap(appMain)
+    private lateinit var appMain: AppMain
+    private lateinit var positionMap: Map<String, String>
 
     private val descriptionTextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -69,6 +71,12 @@ class FragBeaconDetails : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.getString("beaconId")?.let { viewModel.loadBeacon(it) }
         activity?.title = getString(R.string.beacon_details)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        appMain = requireActivity().application as AppMain
+        positionMap = createPositionMap(appMain)
     }
 
     override fun onCreateView(

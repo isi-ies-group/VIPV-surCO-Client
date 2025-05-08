@@ -68,6 +68,13 @@ class AppMain : Application(), ComponentCallbacks2 {
     override fun onCreate() {
         super.onCreate()
 
+        // Assign the singleton instance
+        instance = this
+
+        // Create the cached sessions directory if it does not exist
+        if (!cachedSessionsDir.exists()) {
+            cachedSessionsDir.mkdirs()
+        }
         // Session initialization
         loggingSession.init(cachedSessionsDir)
 
@@ -368,6 +375,12 @@ class AppMain : Application(), ComponentCallbacks2 {
     }
 
     companion object {
+        private var instance: AppMain? = null
+
+        fun getInstance(): AppMain {
+            return instance ?: throw IllegalStateException("AppMain not initialized")
+        }
+
         const val TAG = "AppMain"
         const val SESSIONS_SUBDIR_IN_CACHE = "sessions"
         const val NOTIFICATION_ONGOING_SESSION_ID = 1
