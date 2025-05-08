@@ -2,6 +2,7 @@ package es.upm.ies.surco.session_logging
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import es.upm.ies.surco.formatAsPathSafeString
 import es.upm.ies.surco.notifyObservers
 import org.altbeacon.beacon.Identifier
 import java.io.File
@@ -239,7 +240,7 @@ object LoggingSession {
 
         var outFile = File(
             cacheDir,
-            "${SESSION_FILE_PREFIX}${startZonedDateTime!!.toInstant()}-${stopZonedDateTime!!.toInstant()}${SESSION_FILE_EXTENSION}"
+            "${SESSION_FILE_PREFIX}${startZonedDateTime!!.formatAsPathSafeString()}-${stopZonedDateTime!!.formatAsPathSafeString()}${SESSION_FILE_EXTENSION}"
         )
 
         outFile.outputStream().writer(Charsets.UTF_8).use {
