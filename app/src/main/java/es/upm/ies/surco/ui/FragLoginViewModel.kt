@@ -1,6 +1,7 @@
 package es.upm.ies.surco.ui
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -26,23 +27,21 @@ class FragLoginViewModel(application: Application) : AndroidViewModel(applicatio
     // mutable status for whether login button should be enabled
     val loginButtonEnabled = MutableLiveData<Boolean>()
 
-    // observer instance for text fields validation
-    private val onCredentialsChangedObserver = { _: String -> onCredentialsChanged() }
-
     init {
         // observe the email and password fields for changes
-        email.observeForever { onCredentialsChangedObserver }
-        password.observeForever { onCredentialsChangedObserver }
+        email.observeForever { onCredentialsChanged() }
+        password.observeForever { onCredentialsChanged() }
     }
 
     override fun onCleared() {
         super.onCleared()
-        email.removeObserver { onCredentialsChangedObserver }
-        password.removeObserver { onCredentialsChangedObserver }
+        email.removeObserver { onCredentialsChanged() }
+        password.removeObserver { onCredentialsChanged() }
     }
 
     fun onCredentialsChanged() {
         // enable the login button if both email and password are not empty
+        Log.i("FragLoginViewModel", "onCredentialsChanged: ${email.value} ${password.value}")
         val validEmail =
             email.value!!.isNotEmpty() and ApiUserSession.CredentialsValidator.isEmailValid(email.value!!)
         val validPassword =

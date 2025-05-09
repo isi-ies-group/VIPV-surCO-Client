@@ -37,8 +37,7 @@ class FragHome : Fragment() {
     private val viewModel: FragHomeViewModel by viewModels(
         factoryProducer = {
             ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
-        }
-    )
+        })
 
     // Adapter for the list view
     lateinit var adapter: ListAdapterBeacons
@@ -97,8 +96,7 @@ class FragHome : Fragment() {
 
         viewModel.nBeaconsOnline.observe(viewLifecycleOwner) { n ->
             updateBeaconCountTextView(
-                n,
-                viewModel.loggingSessionStatus.value == LoggingSessionStatus.SESSION_ONGOING
+                n, viewModel.loggingSessionStatus.value == LoggingSessionStatus.SESSION_ONGOING
             )
             adapter.updateData(viewModel.rangedBeacons.value!!)
         }
@@ -106,8 +104,7 @@ class FragHome : Fragment() {
         viewModel.loggingSessionStatus.observe(viewLifecycleOwner) { status ->
             updateStartStopButton(status)
             updateBeaconCountTextView(
-                viewModel.nBeaconsOnline.value!!,
-                status == LoggingSessionStatus.SESSION_ONGOING
+                viewModel.nBeaconsOnline.value!!, status == LoggingSessionStatus.SESSION_ONGOING
             )
         }
 
