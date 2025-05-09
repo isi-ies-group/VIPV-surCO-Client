@@ -15,18 +15,17 @@ import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import es.upm.ies.surco.R
-import es.upm.ies.surco.databinding.FragmentBeaconDetailsBinding
 import es.upm.ies.surco.AppMain
-import es.upm.ies.surco.session_logging.BeaconSimplifiedStatus
+import es.upm.ies.surco.R
 import es.upm.ies.surco.createPositionMap
+import es.upm.ies.surco.databinding.FragmentBeaconDetailsBinding
+import es.upm.ies.surco.session_logging.BeaconSimplifiedStatus
 
 class FragBeaconDetails : Fragment() {
     private val viewModel: FragBeaconDetailsViewModel by viewModels(
         factoryProducer = {
             ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
-        }
-    )
+        })
     private var _binding: FragmentBeaconDetailsBinding? = null
     private val binding get() = _binding!!
 
@@ -145,7 +144,21 @@ class FragBeaconDetails : Fragment() {
             AlertDialog.Builder(requireContext()).setTitle(getString(R.string.empty_all_data))
                 .setMessage(getString(R.string.empty_all_data_confirmation))
                 .setPositiveButton(getString(R.string.yes)) { _, _ -> viewModel.deleteBeacon() }
-                .setNegativeButton(getString(R.string.no), null).show()
+                .setNegativeButton(getString(R.string.no), null).create().apply {
+                    // Optional: Customize button colors
+                    setOnShowListener {
+                        getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(
+                            ContextCompat.getColor(
+                                requireContext(), R.color.warning_red
+                            )
+                        )
+                        getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(
+                            ContextCompat.getColor(
+                                requireContext(), R.color.grey
+                            )
+                        )
+                    }
+                }.show()
         }
 
         /** note listeners for editTexts and spinner are added in updateTextFields() */
