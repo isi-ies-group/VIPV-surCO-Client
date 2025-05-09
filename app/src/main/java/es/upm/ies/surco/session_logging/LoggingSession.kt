@@ -160,7 +160,7 @@ object LoggingSession {
         beaconMap.clear()
         (beacons as MutableLiveData).notifyObservers()
         beaconStatusMap.clear()
-        _nBeaconsOnline.postValue(0)
+        countOnlineBeacons()
         startZonedDateTime = null
         stopZonedDateTime = null
     }
@@ -173,6 +173,8 @@ object LoggingSession {
         beaconMap.remove(id)
         (beacons as MutableLiveData).value = ArrayList(beaconMap.values)
         beacons.notifyObservers()
+        beaconStatusMap.remove(id)
+        countOnlineBeacons()
     }
 
     /**
@@ -199,6 +201,13 @@ object LoggingSession {
         } else if (previousStatus == BeaconSimplifiedStatus.OFFLINE && newStatus != BeaconSimplifiedStatus.OFFLINE) {
             _nBeaconsOnline.postValue((_nBeaconsOnline.value ?: 0) + 1)
         }
+    }
+
+    /**
+     * Count the number of online beacons in the session.
+     */
+    fun countOnlineBeacons() {
+        _nBeaconsOnline.postValue(beaconStatusMap.values.count { it != BeaconSimplifiedStatus.OFFLINE })
     }
 
     /**
