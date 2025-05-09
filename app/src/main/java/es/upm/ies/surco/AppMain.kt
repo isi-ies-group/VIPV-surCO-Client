@@ -318,13 +318,17 @@ class AppMain : Application(), ComponentCallbacks2 {
         WorkManager.getInstance(this).enqueue(fileUploadWorkRequest)
     }
 
-    fun deleteAllSessions() {
+    fun deleteAllSessions(callback: (Boolean) -> Unit) {
         thread {
             val files = loggingSession.getSessionFiles()
-            for (file in files) {
-                if (file.exists()) {
-                    file.delete()
+            var success = true
+            files.forEach { file ->
+                if (file.exists() && !file.delete()) {
+                    success = false
                 }
+            }
+            Handler(Looper.getMainLooper()).post {
+                callback(success)
             }
         }
     }
