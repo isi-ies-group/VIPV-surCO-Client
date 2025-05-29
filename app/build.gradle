@@ -5,12 +5,13 @@ plugins {
 
 android {
     namespace 'es.upm.ies.surco'
-    compileSdk 35
+    compileSdk 36
+    buildToolsVersion "34.0.0"
 
     defaultConfig {
         applicationId 'es.upm.ies.surco'
         minSdk 26
-        targetSdk 35
+        targetSdk 36
         versionCode 4
         versionName "1.3"
 
