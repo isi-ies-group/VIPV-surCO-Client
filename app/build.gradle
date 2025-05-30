@@ -1,21 +1,20 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    id('com.android.application')
+    id('org.jetbrains.kotlin.android')
 }
 
 android {
-    namespace 'es.upm.ies.surco'
-    compileSdk 36
-    buildToolsVersion "34.0.0"
+    namespace = 'es.upm.ies.surco'
+    compileSdk = 36
 
     defaultConfig {
-        applicationId 'es.upm.ies.surco'
-        minSdk 26
-        targetSdk 36
-        versionCode 4
-        versionName "0.1.3"
+        applicationId = 'es.upm.ies.surco'
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 4
+        versionName = "0.1.4"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "GITHUB_URL", "\"https://github.com/isi-ies-group/VIPV-Data-Crowdsourcing-Client\"")
         buildConfigField("String", "CONTACT_EMAIL", "\"info@ies.upm.es\"")
@@ -23,34 +22,33 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled(true)
+            shrinkResources(true)
+            proguardFiles(
+                getDefaultProguardFile('proguard-android-optimize.txt'),
+                'proguard-rules.pro'
+            )
             // BuildConfigField for production server URL
-            buildConfigField "String", "SERVER_URL", "\"https://surco.ies.upm.es/\""
-            signingConfig signingConfigs.debug
+            buildConfigField("String", "SERVER_URL", "\"https://surco.ies.upm.es/\"")
+            signingConfig = signingConfigs.debug
         }
         debug {
             // BuildConfigField for debug server URL
-            buildConfigField "String", "SERVER_URL", "\"http://192.168.1.42:5000\""
+            buildConfigField("String", "SERVER_URL", "\"http://192.168.1.42:5000\"")
             // BuildConfigField for in-code debug flag
-            buildConfigField "Boolean", "DEBUG", "true"
+            buildConfigField("Boolean", "DEBUG", "true")
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = "17"
     }
-
     buildFeatures {
         buildConfig = true
-        viewBinding true
-    }
-
-    kotlin {
-        jvmToolchain(21)
+        viewBinding = true
     }
 }
 
