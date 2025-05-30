@@ -15,6 +15,7 @@ import retrofit2.HttpException
 import java.io.File
 import java.time.Instant
 import kotlin.random.Random
+import androidx.core.content.edit
 
 enum class ApiUserSessionState {
     LOGGED_IN,  // user has logged in successfully
@@ -84,17 +85,16 @@ class ApiUserSession {
     fun saveToSharedPreferences(state: ApiUserSessionState? = null) {
         val state = state?.toString() ?: "NEVER_LOGGED_IN"
         Log.i("ApiUserSession", "Saving state: $state")
-        with(this.sharedPrefs.edit()) {
+        this.sharedPrefs.edit {
             putString("username", username)
             putString("email", email)
             putString("passHash", passHash)
             putString("state", state)
-            apply()
         }
     }
 
     fun logout() {
-        with(this.sharedPrefs.edit()) {
+        this.sharedPrefs.edit {
             remove("username")
             remove("email")
             remove("passHash")
