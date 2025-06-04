@@ -119,16 +119,16 @@ class FragSettings : PreferenceFragmentCompat() {
             }
 
         // Get the API URI setting
-        val editTextPreference = findPreference<EditTextPreference>("api_uri")
-        if (editTextPreference == null) {
+        val serverUriTextPreference = findPreference<EditTextPreference>("api_uri")
+        if (serverUriTextPreference == null) {
             Log.w(TAG, "API URI setting not found")
         }
-        editTextPreference?.setOnBindEditTextListener {
+        serverUriTextPreference?.setOnBindEditTextListener {
             // set hint to default value
             it.hint = BuildConfig.SERVER_URL
         }
         // set callback to update the application API service when the value changes
-        editTextPreference?.onPreferenceChangeListener =
+        serverUriTextPreference?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _, newValue ->
                 appMain.setupApiService(newValue as String)
                 true
