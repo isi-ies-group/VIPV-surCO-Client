@@ -37,6 +37,7 @@ class AppMain : Application(), ComponentCallbacks2 {
     // API & user services
     private lateinit var apiService: APIService
     lateinit var apiUserSession: ApiUserSession
+    private var apiServerUri: String? = null
 
     // Beacons abstractions
     var loggingSession = LoggingSession
@@ -175,7 +176,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     fun setupApiService(newUri: String? = null) {
-        if (newUri.isNullOrBlank()) {
+        if (newUri.isNullOrBlank()) {  // If no new URI is provided, use the default from shared preferences
             // Get the API URI setting
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
             var endpoint = sharedPreferences.getString("api_uri", BuildConfig.SERVER_URL)
@@ -186,20 +187,28 @@ class AppMain : Application(), ComponentCallbacks2 {
             setupApiService(endpoint)
             return
         }
-        var endpoint = newUri
-        if (!endpoint.endsWith("/")) {
-            endpoint += "/"
+        if (newUri == apiServerUri) {  // If the new URI is the same as the current one, do nothing
+            Log.i(TAG, "API service already set to $newUri")
+            return
+        } else {  // If the new URI is different, set it up
+            // This must clean up the previous API service state
+            apiUserSession.logout()
+
+            apiServerUri = newUri
+            if (!apiServerUri!!.endsWith("/")) {
+                apiServerUri += "/"
+            }
+            if (!apiServerUri!!.startsWith("http://") && !apiServerUri!!.startsWith("https://")) {
+                apiServerUri = "http://${apiServerUri!!}"
+            }
+            val retrofit =
+                Retrofit.Builder().baseUrl(apiServerUri!!).addConverterFactory(GsonConverterFactory.create())
+                    .build()
+            this.apiService = retrofit.create(APIService::class.java)
+            // Load user session from shared preferences
+            apiUserSession =
+                ApiUserSession(PreferenceManager.getDefaultSharedPreferences(this), apiService)
         }
-        if (!endpoint.startsWith("http://") && !endpoint.startsWith("https://")) {
-            endpoint = "http://${endpoint}"
-        }
-        val retrofit =
-            Retrofit.Builder().baseUrl(endpoint).addConverterFactory(GsonConverterFactory.create())
-                .build()
-        this.apiService = retrofit.create(APIService::class.java)
-        // Load user session from shared preferences
-        apiUserSession =
-            ApiUserSession(PreferenceManager.getDefaultSharedPreferences(this), apiService)
     }
 
     /**
