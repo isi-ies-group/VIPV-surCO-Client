@@ -16,7 +16,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "GITHUB_URL", "\"https://github.com/isi-ies-group/VIPV-Data-Crowdsourcing-Client\"")
+        buildConfigField("String", "GITHUB_URL", "\"https://github.com/isi-ies-group/VIPV-surCO-Client\"")
         buildConfigField("String", "CONTACT_EMAIL", "\"info@ies.upm.es\"")
     }
 
