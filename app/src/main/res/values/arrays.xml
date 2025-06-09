@@ -17,5 +17,7 @@
         <item>puerta_derecha</item>
         <item>techo</item>
         <item>maletero</item>
+        <item>casco_bicicleta</item>
+        <item>otro</item>
     </string-array>
 </resources>

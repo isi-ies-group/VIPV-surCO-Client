@@ -65,4 +65,9 @@ class FragLoginViewModel(application: Application) : AndroidViewModel(applicatio
         // set the application to offline mode
         appMain.apiUserSession.setOfflineMode()
     }
+
+    fun requiresPrivacyPolicyAccept(): Boolean {
+        // Check if the privacy policy has been accepted
+        return !appMain.apiPrivacyPolicy.isAccepted()
+    }
 }

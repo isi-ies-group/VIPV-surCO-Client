@@ -9,13 +9,14 @@ import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Query
 
 
 const val APIv1_base = "api/v1/"
 
 interface APIService {
-    @GET(APIv1_base + "isUp")
-    suspend fun isUp(): ResponseBody
+    @GET(APIv1_base + "up")
+    suspend fun up(): ApiUserSession.UpResponse
 
     @GET(APIv1_base + "salt")
     @Headers("Content-type: application/json")
@@ -41,4 +42,9 @@ interface APIService {
         @Header("Authorization") token: String,
         @Part file: MultipartBody.Part,
     ): ResponseBody
+
+    @GET(APIv1_base + "privacy-policy")
+    suspend fun getPrivacyPolicy(
+        @Query("lang") lang: String = "en",
+    ): ApiUserSession.PrivacyPolicyResponse
 }

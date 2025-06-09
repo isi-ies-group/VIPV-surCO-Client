@@ -23,6 +23,17 @@ class SessionFilesUploadWorker(appContext: Context, workerParams: WorkerParamete
     override suspend fun doWork(): Result {
         Log.i(TAG, "Uploading session files")
         return try {
+            // Check Privacy Policy is accepted before proceeding
+            if (!appMain.apiPrivacyPolicy.isAccepted()) {
+                Log.w(TAG, "Privacy Policy not accepted, cannot upload session files")
+                return Result.failure(Data.Builder().putBoolean("privacy_policy_not_accepted", true).build())
+            }
+
+            // Ensure the user is logged in
+            if (appMain.apiUserSession.lastKnownState.value != ApiUserSessionState.LOGGED_IN) {
+                Log.w(TAG, "User is not logged in, cannot upload session files")
+                return Result.failure(Data.Builder().putBoolean("not_logged_in", true).build())
+            }
             val files = LoggingSession.getSessionFiles()
             if (files.isEmpty()) {
                 return Result.success(Data.Builder().putBoolean("no_files", true).build())

@@ -69,6 +69,8 @@
     <string name="settings_bluetooth_scan_interval_summary">Milliseconds</string>
     <string name="settings_manage_sessions">Manage saved session files</string>
     <string name="settings_open_battery_optimization_settings">Open battery optimization settings</string>
+    <string name="settings_api_uri_change_title">Confirm action</string>
+    <string name="settings_api_uri_change_message">This will log you out and your personal data will be shared to another endpoint. Privacy Policy and other legal claims won\'t apply.</string>
     // About view
     <string name="version">Version: %1$s (%2$d)</string>
     <string name="credits">App developed by the ISI-IES research group at Universidad Politécnica de Madrid.</string>
@@ -110,6 +112,8 @@
         <item>Right Door</item>
         <item>Roof</item>
         <item>Trunk</item>
+        <item>Helmet (bicycle)</item>
+        <item>Other (set in description)</item>
     </array>
     <string name="beacon_detail_ok">Beacon configured and online</string>
     <string name="beacon_detail_info_error">Missing required position data</string>
@@ -159,4 +163,10 @@
     <string name="confirm_undonable_action">Are you sure? This action cannot be undone.</string>
     <string name="all_sessions_deleted">Deleted all cached sessions</string>
     <string name="deletion_failed">Can\'t delete all sessions</string>
+    // Privacy Policy view
+    <string name="privacy_policy_accept">Accept</string>
+    <string name="privacy_policy_reject">Reject (use offline)</string>
+    <string name="privacy_policy_fetching">Fetching latest Privacy Policy…</string>
+    <string name="error_loading_privacy_policy">Error loading Privacy Policy.</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
 </resources>

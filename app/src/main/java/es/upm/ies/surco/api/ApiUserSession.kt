@@ -16,17 +16,23 @@ import java.io.File
 import java.time.Instant
 import kotlin.random.Random
 import androidx.core.content.edit
+import es.upm.ies.surco.BuildConfig
 
 enum class ApiUserSessionState {
     LOGGED_IN,  // user has logged in successfully
-    NOT_LOGGED_IN,  // user logged out
+    NOT_LOGGED_IN,  // user logged out (may not want to be prompted to log in again)
     NEVER_LOGGED_IN,  // user has never logged in
 
     // errors
-    ERROR_BAD_IDENTITY, ERROR_BAD_PASSWORD, ERROR_BAD_TOKEN, CONNECTION_ERROR,
+    ERROR_BAD_IDENTITY,
+    ERROR_BAD_PASSWORD,
+    ERROR_BAD_TOKEN,
+    CONNECTION_ERROR,
 }
 
 class ApiUserSession {
+    var apiService: APIService
+    var sharedPrefs: SharedPreferences
     // members
     var username: String? = null
     var email: String? = null
@@ -35,50 +41,20 @@ class ApiUserSession {
     private val _knownState =
         MutableLiveData<ApiUserSessionState>(ApiUserSessionState.NEVER_LOGGED_IN)
     val lastKnownState: LiveData<ApiUserSessionState> get() = _knownState
-    var apiService: APIService
-    var sharedPrefs: SharedPreferences
 
     var accessToken: String? = null
     var accessTokenRx: Instant? = null
     var accessTokenValidity: Int? = null
 
-    // constructors
-    // default
-    constructor(
-        username: String,
-        email: String,
-        passHash: String,
-        passSalt: String,
-        apiService: APIService,
-        sharedPrefs: SharedPreferences
-    ) {
-        this.username = username
-        this.email = email
-        this.passHash = passHash
-        this.passSalt = passSalt
-        this.apiService = apiService
-        this.sharedPrefs = sharedPrefs
-    }
-
-    // copy
-    constructor(user: ApiUserSession) {
-        this.username = user.username
-        this.email = user.email
-        this.passHash = user.passHash
-        this.passSalt = user.passSalt
-        this.apiService = user.apiService
-        this.sharedPrefs = user.sharedPrefs
-    }
-
-    // constructor from shared preferences
     constructor(sharedPrefs: SharedPreferences, apiService: APIService) {
+        this.sharedPrefs = sharedPrefs
+        this.apiService = apiService
+
         this.username = sharedPrefs.getString("username", null)
         this.email = sharedPrefs.getString("email", null)
         this.passHash = sharedPrefs.getString("passHash", null)
-        this.apiService = apiService
         this._knownState.value = sharedPrefs.getString("state", "NEVER_LOGGED_IN")
             ?.let { ApiUserSessionState.valueOf(it) } ?: ApiUserSessionState.NEVER_LOGGED_IN
-        this.sharedPrefs = sharedPrefs
     }
 
     // methods
@@ -90,6 +66,7 @@ class ApiUserSession {
             putString("email", email)
             putString("passHash", passHash)
             putString("state", state)
+            apply()
         }
     }
 
@@ -101,12 +78,6 @@ class ApiUserSession {
             remove("state")
             apply()
         }
-        clear()
-        _knownState.value = ApiUserSessionState.NOT_LOGGED_IN
-        saveToSharedPreferences()
-    }
-
-    fun clear() {
         this.username = null
         this.email = null
         this.passHash = null
@@ -114,6 +85,8 @@ class ApiUserSession {
         this.accessToken = null
         this.accessTokenRx = null
         this.accessTokenValidity = null
+        _knownState.value = ApiUserSessionState.NOT_LOGGED_IN
+        saveToSharedPreferences()
     }
 
     /**
@@ -305,20 +278,28 @@ class ApiUserSession {
     }
 
     // sub classes and factories from root class
-    class SaltResponse {
-        var passSalt: String? = null
-    }
+    @Suppress("PropertyName")  // linter hates snake_case
+    data class UpResponse(
+        var message: String? = null,
+        var privacy_policy_last_updated: String? = null,
+        var apiVersion: String? = null
+    )
 
-    data class LoginRequest(val email: String, val passHash: String)
+    data class SaltResponse (
+        var passSalt: String? = null
+    )
+
+    @Suppress("PropertyName")  // linter hates snake_case
+    data class LoginRequest(val email: String, val passHash: String, val app_build_number: Int = BuildConfig.VERSION_CODE)
 
     fun loginRequest() = LoginRequest(this.email!!, this.passHash!!)
 
-    @Suppress("PropertyName")
-    class LoginResponse {
-        var username: String? = null
-        var access_token: String? = null  // Linter does not like snake_case
+    @Suppress("PropertyName")  // linter hates snake_case
+    data class LoginResponse (
+        var username: String? = null,
+        var access_token: String? = null,
         var validity: Int? = null
-    }
+    )
 
     data class RegisterRequest(
         val username: String, val email: String, val passHash: String, val passSalt: String
@@ -327,6 +308,13 @@ class ApiUserSession {
     fun registerRequest() =
         RegisterRequest(this.username!!, this.email!!, this.passHash!!, this.passSalt!!)
 
+    @Suppress("PropertyName")  // linter hates snake_case
+    data class PrivacyPolicyResponse(
+        var content: String? = null,
+        var last_updated: String? = null,
+        var language: String? = null,
+    )
+    // helper object for credentials validation
     object CredentialsValidator {
         // regex validators
         val emailValidator =

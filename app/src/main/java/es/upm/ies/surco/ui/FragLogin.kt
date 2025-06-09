@@ -38,6 +38,11 @@ class FragLogin : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // if privacy policy is not accepted, navigate to the privacy policy fragment
+        if (viewModel.requiresPrivacyPolicyAccept()) {
+            findNavController().navigate(R.id.action_fragLogin_to_privacyPolicyFragment)
+        }
+
         // observe the login status to show the user any errors or return to the main activity
         viewModel.loginStatus.observe(viewLifecycleOwner) { status ->
             if (status == ApiUserSessionState.LOGGED_IN) {

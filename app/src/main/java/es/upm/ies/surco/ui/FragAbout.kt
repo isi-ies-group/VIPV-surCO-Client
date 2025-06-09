@@ -12,7 +12,7 @@ import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentAboutBinding
 
-class AboutFragment : Fragment() {
+class FragAbout : Fragment() {
     private var _binding: FragmentAboutBinding? = null
     private val binding get() = _binding!!
 

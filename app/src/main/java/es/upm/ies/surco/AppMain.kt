@@ -17,6 +17,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import es.upm.ies.surco.api.APIService
+import es.upm.ies.surco.api.ApiPrivacyPolicy
 import es.upm.ies.surco.api.ApiUserSession
 import es.upm.ies.surco.service.ForegroundBeaconScanService
 import es.upm.ies.surco.session_logging.LoggingSession
@@ -36,7 +37,11 @@ import kotlin.concurrent.thread
 class AppMain : Application(), ComponentCallbacks2 {
     // API & user services
     private lateinit var apiService: APIService
+    private var apiServerUri: String? = null
+
+    // API wrappers for user session and privacy policy
     lateinit var apiUserSession: ApiUserSession
+    lateinit var apiPrivacyPolicy: ApiPrivacyPolicy
 
     // Beacons abstractions
     var loggingSession = LoggingSession
@@ -71,6 +76,9 @@ class AppMain : Application(), ComponentCallbacks2 {
         // Assign the singleton instance
         instance = this
 
+        // Initialize the shared preferences
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+
         // Create the cached sessions directory if it does not exist
         if (!cachedSessionsDir.exists()) {
             cachedSessionsDir.mkdirs()
@@ -78,8 +86,12 @@ class AppMain : Application(), ComponentCallbacks2 {
         // Session initialization
         loggingSession.init(cachedSessionsDir)
 
-        // Initialize the shared preferences
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        // Initialize the API user session before initializing the API user wrapper
+        setupApiService()
+        // Load user session from shared preferences and inject the API service
+        this.apiUserSession = ApiUserSession(sharedPreferences, apiService)
+        this.apiPrivacyPolicy = ApiPrivacyPolicy(sharedPreferences, apiService)
+
         // Set the theme
         val theme = sharedPreferences.getString("color_theme", "system-default") ?: "system-default"
         setupTheme(theme)
@@ -104,9 +116,6 @@ class AppMain : Application(), ComponentCallbacks2 {
 
         // Activate debug mode only if build variant is debug
         BeaconManager.setDebug(BuildConfig.DEBUG)
-
-        // Set API service
-        setupApiService()
     }
 
     @Suppress("OVERRIDE_DEPRECATION")
@@ -171,11 +180,15 @@ class AppMain : Application(), ComponentCallbacks2 {
      * Setup the API service endpoint (callback for configuration changes)
      * If the endpoint is not set in PreferenceManager.getDefaultSharedPreferences,
      * the default value is used (from BuildConfig)
+     *
+     * Note you must call the logout function before changing the API service endpoint
+     * to ensure the user session is reset.
+     *
      * @param newUri: String, new URI to set for the API service if known, else it is read from shared preferences
      * @return void
      */
     fun setupApiService(newUri: String? = null) {
-        if (newUri.isNullOrBlank()) {
+        if (newUri.isNullOrBlank()) {  // If no new URI is provided, use the default from shared preferences
             // Get the API URI setting
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
             var endpoint = sharedPreferences.getString("api_uri", BuildConfig.SERVER_URL)
@@ -186,20 +199,21 @@ class AppMain : Application(), ComponentCallbacks2 {
             setupApiService(endpoint)
             return
         }
-        var endpoint = newUri
-        if (!endpoint.endsWith("/")) {
-            endpoint += "/"
+        if (newUri == apiServerUri) {  // If the new URI is the same as the current one, do nothing
+            Log.i(TAG, "API service already set to $newUri")
+            return
+        } else {  // If the new URI is different, set it up
+                        apiServerUri = newUri
+            if (!apiServerUri!!.endsWith("/")) {
+                apiServerUri += "/"
+            }
+            if (!apiServerUri!!.startsWith("http://") && !apiServerUri!!.startsWith("https://")) {
+                apiServerUri = "http://${apiServerUri!!}"
+            }
+            val retrofit = Retrofit.Builder().baseUrl(apiServerUri!!)
+                .addConverterFactory(GsonConverterFactory.create()).build()
+            this.apiService = retrofit.create(APIService::class.java)
         }
-        if (!endpoint.startsWith("http://") && !endpoint.startsWith("https://")) {
-            endpoint = "http://${endpoint}"
-        }
-        val retrofit =
-            Retrofit.Builder().baseUrl(endpoint).addConverterFactory(GsonConverterFactory.create())
-                .build()
-        this.apiService = retrofit.create(APIService::class.java)
-        // Load user session from shared preferences
-        apiUserSession =
-            ApiUserSession(PreferenceManager.getDefaultSharedPreferences(this), apiService)
     }
 
     /**
@@ -207,7 +221,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      */
     suspend fun testApiEndpoint(): Boolean {
         try {
-            val response = apiService.isUp()
+            val response = apiService.up()
             Log.i(TAG, "API is up: $response")
             return true
         } catch (e: Exception) {

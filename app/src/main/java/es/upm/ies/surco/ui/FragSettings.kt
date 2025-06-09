@@ -119,19 +119,29 @@ class FragSettings : PreferenceFragmentCompat() {
             }
 
         // Get the API URI setting
-        val editTextPreference = findPreference<EditTextPreference>("api_uri")
-        if (editTextPreference == null) {
+        val serverUriTextPreference = findPreference<EditTextPreference>("api_uri")
+        if (serverUriTextPreference == null) {
             Log.w(TAG, "API URI setting not found")
         }
-        editTextPreference?.setOnBindEditTextListener {
+        serverUriTextPreference?.setOnBindEditTextListener {
             // set hint to default value
             it.hint = BuildConfig.SERVER_URL
         }
         // set callback to update the application API service when the value changes
-        editTextPreference?.onPreferenceChangeListener =
+        serverUriTextPreference?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _, newValue ->
-                appMain.setupApiService(newValue as String)
-                true
+                val context = requireContext()
+                androidx.appcompat.app.AlertDialog.Builder(context)
+                    .setTitle(R.string.settings_api_uri_change_title)
+                    .setMessage(R.string.settings_api_uri_change_message)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        appMain.apiUserSession.logout()
+                        appMain.setupApiService(newValue as String)
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+                // Returning false prevents the preference from updating until confirmed
+                false
             }
 
         // Get test api endpoint button preference
@@ -161,6 +171,17 @@ class FragSettings : PreferenceFragmentCompat() {
                     Toast.LENGTH_LONG
                 ).show()
             }
+            true
+        }
+
+        // Get the privacy policy preference
+        val privacyPolicyPreference = findPreference<Preference>("privacy_policy")
+        if (privacyPolicyPreference == null) {
+            Log.w(TAG, "Privacy policy setting not found")
+        }
+        // set the callback to open the privacy policy fragment
+        privacyPolicyPreference?.setOnPreferenceClickListener {
+            findNavController().navigate(R.id.action_settingsFragment_to_privacyPolicyFragment)
             true
         }
     }

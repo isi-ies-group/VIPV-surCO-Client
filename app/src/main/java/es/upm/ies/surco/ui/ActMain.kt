@@ -15,13 +15,13 @@ import androidx.core.net.toUri
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.R
+import es.upm.ies.surco.api.ApiPrivacyPolicyState
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.databinding.ActivityMainBinding
 import es.upm.ies.surco.session_logging.LoggingSessionStatus
@@ -31,7 +31,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
     private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
     private lateinit var navController: NavController
 
-    private val app by lazy { application as AppMain }
+    private val appMain by lazy { application as AppMain }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,13 +58,11 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
         }
 
-        checkNeedFirstLogin()
-
-        app.apiUserSession.lastKnownState.observe(this) { state ->
+        appMain.apiUserSession.lastKnownState.observe(this) { state ->
             updateDrawerOptionsMenu()
         }
 
-        app.wasUploadedSuccessfully.observe(this) { wasUploadedSuccessfully ->
+        appMain.wasUploadedSuccessfully.observe(this) { wasUploadedSuccessfully ->
             if (wasUploadedSuccessfully) {  // If the data was uploaded successfully, show a message
                 Toast.makeText(this, getString(R.string.upload_successful), Toast.LENGTH_SHORT)
                     .show()
@@ -74,7 +72,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         // Observe the session state to keep the screen on during a session on Android 14 and higher
         // until we fix this issue in the future
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            app.loggingSession.status.observe(this) { status ->
+            appMain.loggingSession.status.observe(this) { status ->
                 when (status) {
                     LoggingSessionStatus.SESSION_ONGOING -> {
                         // Set screen to never turn off
@@ -93,7 +91,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
 
-        app.loggingSession.status.observe(this) {
+        appMain.loggingSession.status.observe(this) {
             when (it) {
                 LoggingSessionStatus.SESSION_ONGOING -> {
                     Toast.makeText(
@@ -111,21 +109,6 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
                     // Do nothing
                 }
             }
-        }
-    }
-
-    /**
-     * Check if this is the first time the user opens the app and transfer to login in that case
-     */
-    private fun checkNeedFirstLogin() {
-        // loading of the user session from shared preferences may change the state of the user session
-        // NEVER_LOGGED_IN is the default state
-        val userMayWantToLogin =
-            app.apiUserSession.lastKnownState.value == ApiUserSessionState.NEVER_LOGGED_IN
-        if (userMayWantToLogin) {
-            // Navigate to login fragment
-            supportFragmentManager.findFragmentById(R.id.fragment_main)?.findNavController()
-                ?.navigate(R.id.fragLogin)
         }
     }
 
@@ -152,7 +135,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
 
             R.id.nav_logout -> {
                 binding.mainDrawerLayout.closeDrawers()
-                app.apiUserSession.logout()
+                appMain.apiUserSession.logout()
                 Toast.makeText(this, getString(R.string.logged_out), Toast.LENGTH_SHORT).show()
                 true
             }
@@ -210,7 +193,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             val menuBtnLogin = binding.navViewHost.menu.findItem(R.id.nav_login)
             val menuBtnLogout = binding.navViewHost.menu.findItem(R.id.nav_logout)
             val isUserLoggedIn =
-                app.apiUserSession.lastKnownState.value == ApiUserSessionState.LOGGED_IN
+                appMain.apiUserSession.lastKnownState.value == ApiUserSessionState.LOGGED_IN
             menuBtnLogin.isVisible = isUserLoggedIn != true
             menuBtnLogout.isVisible = !menuBtnLogin.isVisible
             binding.navViewHost.invalidate()

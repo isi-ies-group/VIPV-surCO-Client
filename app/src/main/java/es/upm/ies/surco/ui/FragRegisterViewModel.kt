@@ -76,4 +76,9 @@ class FragRegisterViewModel(application: Application) : AndroidViewModel(applica
         )
         registerStatus.postValue(result)
     }
+
+    fun requiresPrivacyPolicyAccept(): Boolean {
+        // Check if the privacy policy has been accepted
+        return !appMain.apiPrivacyPolicy.isAccepted()
+    }
 }

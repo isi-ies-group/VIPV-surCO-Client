@@ -12,6 +12,7 @@
     <string name="settings_bluetooth_scan_interval">Intervalo de escáner Bluetooth</string>
     <string name="settings_bluetooth_scan_interval_invalid">Debe ser un número natural</string>
     <string name="settings_open_battery_optimization_settings">Abrir configuración del optimizador de batería</string>
+    <string name="settings_api_uri_change_message">Cerrarás sesión y tu información personal se compartirá a otro servicio. La Política de Privacidad y otras afirmaciones legales no serán de aplicación.</string>
     <string name="version">Versión: %1$s (%2$d)</string>
     <string name="delete">Eliminar</string>
     <string name="was_deleted">Elemento eliminado</string>
@@ -131,6 +132,8 @@
         <item>Right Door</item>
         <item>Roof</item>
         <item>Trunk</item>
+        <item>Casco (bicicleta)</item>
+        <item>Otro (indicar en descripción)</item>
     </array>
     <string name="uploading_session_data">Subiendo sesiones guardadas…</string>
     <string name="upload_successful">Sesiones subidas</string>
@@ -147,4 +150,10 @@
     <string name="confirm_undonable_action">¿Estás segur@? Esta acción no se puede deshacer.</string>
     <string name="all_sessions_deleted">Se eliminaron todas las sesiones guardadas</string>
     <string name="deletion_failed">No se pudieron eliminar todas las sesiones</string>
+    <string name="privacy_policy_accept">Acepto</string>
+    <string name="privacy_policy_reject">No acepto (usar offline)</string>
+    <string name="privacy_policy_fetching">Obteniendo última Política de Privacidad…</string>
+    <string name="error_loading_privacy_policy">Error al cargar la Política de Privacidad.</string>
+    <string name="privacy_policy_title">Política de Privacidad</string>
+    <string name="settings_api_uri_change_title">Confirma acción</string>
 </resources>

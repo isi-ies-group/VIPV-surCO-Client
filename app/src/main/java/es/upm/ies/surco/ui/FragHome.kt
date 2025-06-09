@@ -25,6 +25,7 @@ import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentHomeBinding
 import es.upm.ies.surco.AppMain
+import es.upm.ies.surco.api.ApiPrivacyPolicyState
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.hideKeyboard
 import es.upm.ies.surco.session_logging.BeaconSimplified
@@ -114,6 +115,15 @@ class FragHome : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         hideKeyboard() // Close the virtual keyboard
+
+        privacyPolicyCheckAndNavigation()
+
+        // If the user has never logged in and privacy policy is accepted, navigate to the login fragment
+        if (appMain.apiUserSession.lastKnownState.value == ApiUserSessionState.NEVER_LOGGED_IN &&
+            appMain.apiPrivacyPolicy.privacyPolicyState.value == ApiPrivacyPolicyState.ACCEPTED) {
+            findNavController().navigate(R.id.action_homeFragment_to_fragLogin)
+        }
+
         // Set click listeners for the buttons
         binding.startStopSessionButton.setOnClickListener {
             if (viewModel.loggingSessionStatus.value == LoggingSessionStatus.SESSION_TRIGGERABLE) {
@@ -153,6 +163,35 @@ class FragHome : Fragment() {
         }
 
         binding.beaconCountTextView.text = getString(R.string.beacons_detected_zero)
+    }
+
+    private fun privacyPolicyCheckAndNavigation() {
+        // Privacy policy management
+        when (appMain.apiPrivacyPolicy.privacyPolicyState.value) {
+            ApiPrivacyPolicyState.NEVER_PROMPTED -> {
+                // Begin fragment transaction to prompt the user to accept the privacy policy
+                findNavController().navigate(R.id.action_homeFragment_to_privacyPolicyFragment)
+            }
+
+            ApiPrivacyPolicyState.ACCEPTED -> {
+                // The user has accepted the privacy policy, start a coroutine to verify if the privacy policy has been updated
+                appMain.apiPrivacyPolicy.refreshPrivacyPolicyForOutdated()
+            }
+
+            ApiPrivacyPolicyState.OUTDATED -> {
+                // The user has accepted the privacy policy, but it has been updated since then
+                findNavController().navigate(R.id.action_homeFragment_to_privacyPolicyFragment)
+            }
+
+            ApiPrivacyPolicyState.REJECTED -> {
+                // The user has rejected the privacy policy, we must not access the API unless requested
+            }
+
+            ApiPrivacyPolicyState.CONNECTION_ERROR -> {
+                // An error occurred while checking the privacy policy earlier, so let's not navigate anywhere, but refresh for OUTDATED state in case it has been fixed
+                appMain.apiPrivacyPolicy.refreshPrivacyPolicyForOutdated()
+            }
+        }
     }
 
     override fun onDestroyView() {

@@ -51,5 +51,10 @@
 
     </PreferenceCategory>
 
+    <Preference
+        android:key="privacy_policy"
+        android:title="@string/privacy_policy_title"
+        android:icon="@drawable/info"
+        android:fragment="es.upm.ies.surco.ui.FragPrivacyPolicy" />
 
 </androidx.preference.PreferenceScreen>

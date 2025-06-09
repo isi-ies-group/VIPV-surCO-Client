@@ -34,6 +34,11 @@ class FragRegister : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // if privacy policy is not accepted, navigate to the privacy policy fragment
+        if (viewModel.requiresPrivacyPolicyAccept()) {
+            findNavController().navigate(R.id.action_fragRegister_to_privacyPolicyFragment)
+        }
+
         // observe the register status to show the user any errors or return to the main activity
         viewModel.registerStatus.observe(viewLifecycleOwner) { status ->
             if (status == ApiUserSessionState.LOGGED_IN) {
