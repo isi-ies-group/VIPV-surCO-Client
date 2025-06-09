@@ -147,10 +147,6 @@ class ApiPrivacyPolicy {
         }
     }
 
-    fun requiresPrompt(): Boolean {
-        return this._privacyPolicyState.value == ApiPrivacyPolicyState.NEVER_PROMPTED || this._privacyPolicyState.value == ApiPrivacyPolicyState.OUTDATED
-    }
-
     fun isAccepted(): Boolean {
         return this._privacyPolicyState.value == ApiPrivacyPolicyState.ACCEPTED
     }

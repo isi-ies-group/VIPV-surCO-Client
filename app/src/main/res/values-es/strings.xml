@@ -127,11 +127,11 @@
     <string name="beacon_detail_info_error">Faltan datos sobre la posición de la baliza</string>
     <array name="beacon_positions">
         <item>Seleccione la posición de la baliza</item>
-        <item>Hood</item>
-        <item>Left Door</item>
-        <item>Right Door</item>
+        <item>Capó</item>
+        <item>Puerta izquierda</item>
+        <item>Puerta derecha</item>
         <item>Roof</item>
-        <item>Trunk</item>
+        <item>Maletero</item>
         <item>Casco (bicicleta)</item>
         <item>Otro (indicar en descripción)</item>
     </array>

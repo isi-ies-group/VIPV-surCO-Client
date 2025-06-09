@@ -108,14 +108,16 @@
         android:label="@string/privacy_policy_title"
         tools:layout="@layout/fragment_privacy_policy" >
         <action
+            android:id="@+id/action_privacyPolicyFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
+        <action
             android:id="@+id/action_privacyPolicyFragment_to_fragLogin"
             app:destination="@id/fragLogin" />
         <action
             android:id="@+id/action_privacyPolicyFragment_to_fragRegister"
             app:destination="@id/fragRegister" />
-        <action
-            android:id="@+id/action_privacyPolicyFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
         <action
             android:id="@+id/action_privacyPolicyFragment_to_fragSettings"
             app:destination="@id/fragSettings" />

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentPrivacyPolicyBinding
@@ -75,7 +76,7 @@ class FragPrivacyPolicy : Fragment() {
         binding.btnReject.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
                 appMain.apiPrivacyPolicy.reject()
-                parentFragmentManager.popBackStack()
+                findNavController().navigate(R.id.action_privacyPolicyFragment_to_homeFragment)
             }
         }
     }
@@ -88,7 +89,7 @@ class FragPrivacyPolicy : Fragment() {
             Toast.LENGTH_LONG
         ).show()
         appMain.apiPrivacyPolicy.setConnectionError()
-        parentFragmentManager.popBackStack()
+        findNavController().navigate(R.id.action_privacyPolicyFragment_to_homeFragment)
     }
 
     override fun onDestroyView() {

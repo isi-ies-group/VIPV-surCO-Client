@@ -24,9 +24,10 @@ enum class ApiUserSessionState {
     NEVER_LOGGED_IN,  // user has never logged in
 
     // errors
+    CLIENT_DEPRECATED_WARNING,
+    CLIENT_TOO_OLD_ERROR,
     ERROR_BAD_IDENTITY,
     ERROR_BAD_PASSWORD,
-    ERROR_BAD_TOKEN,
     CONNECTION_ERROR,
 }
 
@@ -228,7 +229,7 @@ class ApiUserSession {
      * @return The state of the user session after the upload.
      * If the server responds with a successful upload, the function will return LOGGED_IN.
      * If the server responds with an error, the function will return CONNECTION_ERROR.
-     * If the access token is expired, the function will return ERROR_BAD_TOKEN.
+     * If the access token is expired, the function will log in again.
      */
     suspend fun upload(file: File): ApiUserSessionState {
         if (accessToken == null || accessTokenRx == null || accessTokenValidity == null || accessTokenRx!!.plusSeconds(
@@ -282,7 +283,8 @@ class ApiUserSession {
     data class UpResponse(
         var message: String? = null,
         var privacy_policy_last_updated: String? = null,
-        var apiVersion: String? = null
+        var client_build_number_minimal: String? = null,
+        var client_build_number_deprecated: String? = null,
     )
 
     data class SaltResponse (

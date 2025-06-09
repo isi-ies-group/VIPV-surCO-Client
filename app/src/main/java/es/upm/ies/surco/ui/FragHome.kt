@@ -170,7 +170,7 @@ class FragHome : Fragment() {
         when (appMain.apiPrivacyPolicy.privacyPolicyState.value) {
             ApiPrivacyPolicyState.NEVER_PROMPTED -> {
                 // Begin fragment transaction to prompt the user to accept the privacy policy
-                findNavController().navigate(R.id.action_homeFragment_to_privacyPolicyFragment)
+                //findNavController().navigate(R.id.action_homeFragment_to_privacyPolicyFragment)
             }
 
             ApiPrivacyPolicyState.ACCEPTED -> {
