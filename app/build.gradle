@@ -17,7 +17,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "GITHUB_URL", "\"https://github.com/isi-ies-group/VIPV-surCO-Client\"")
-        buildConfigField("String", "CONTACT_EMAIL", "\"ies@upm.es\"")
+        buildConfigField("String", "CONTACT_EMAIL", "\"ies+apps+surco@upm.es\"")
 
         resConfigs "en", "es"
     }
