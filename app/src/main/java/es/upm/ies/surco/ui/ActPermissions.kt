@@ -234,7 +234,7 @@ class ActPermissions : AppCompatActivity() {
             "Location" to arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
             // BLUETOOTH_CONNECT to obtain additional information
             "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) arrayOf(
-                Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT
+                Manifest.permission.BLUETOOTH_SCAN
             ) else null),
             "Notifications" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(
                 Manifest.permission.POST_NOTIFICATIONS

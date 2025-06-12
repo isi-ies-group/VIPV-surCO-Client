@@ -10,6 +10,12 @@ import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+/**
+ * WARNING
+ * THIS TESTS HAVE BEEN BROKEN AFTER SEVERAL CHANGES IN THE API.
+ * SHOULD BE EASY TO FIX, BUT IT IS NOT A PRIORITY RIGHT NOW (sry, June 2025)
+ */
+
 class ApiInterfaceUT {
     companion object {
         const val ENDPOINT = "http://127.0.0.1:5000/"
@@ -20,18 +26,14 @@ class ApiInterfaceUT {
         @BeforeClass
         @JvmStatic
         fun setup() {
-            val retrofit = Retrofit.Builder()
-                .baseUrl(ENDPOINT)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
+            val retrofit = Retrofit.Builder().baseUrl(ENDPOINT)
+                .addConverterFactory(GsonConverterFactory.create()).build()
             apiService = retrofit.create(APIService::class.java)
+            sharedPreferences.edit().clear().apply()  // Clear shared preferences before each test
+            // TODO: Initialize sharedPreferences with a mock or real SharedPreferences instance
             user = ApiUserSession(
-                "test",
-                "example@example.example",
-                "whateverHash",
-                "whateverSalt",
+                sharedPreferences,
                 apiService,
-                sharedPreferences
             )
         }
     }
@@ -64,7 +66,7 @@ class ApiInterfaceUT {
         }
 
         // login user with bad password
-        val bad_password_user = ApiUserSession(user)
+        val bad_password_user = ApiUserSession(sharedPreferences, apiService)
         bad_password_user.passHash = "badHash"
 
         val bad_password_request = bad_password_user.loginRequest()
@@ -83,7 +85,7 @@ class ApiInterfaceUT {
         }
 
         // login user with bad username
-        val bad_username_user = ApiUserSession(user)
+        val bad_username_user = ApiUserSession(sharedPreferences, apiService)
         bad_username_user.username = "badUsername"
 
         val bad_username_request = bad_username_user.loginRequest()
