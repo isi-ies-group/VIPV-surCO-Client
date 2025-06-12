@@ -88,9 +88,6 @@ class AppMain : Application(), ComponentCallbacks2 {
 
         // Initialize the API user session before initializing the API user wrapper
         setupApiService()
-        // Load user session from shared preferences and inject the API service
-        this.apiUserSession = ApiUserSession(sharedPreferences, apiService)
-        this.apiPrivacyPolicy = ApiPrivacyPolicy(sharedPreferences, apiService)
 
         // Set the theme
         val theme = sharedPreferences.getString("color_theme", "system-default") ?: "system-default"
@@ -203,7 +200,7 @@ class AppMain : Application(), ComponentCallbacks2 {
             Log.i(TAG, "API service already set to $newUri")
             return
         } else {  // If the new URI is different, set it up
-                        apiServerUri = newUri
+            apiServerUri = newUri
             if (!apiServerUri!!.endsWith("/")) {
                 apiServerUri += "/"
             }
@@ -213,6 +210,10 @@ class AppMain : Application(), ComponentCallbacks2 {
             val retrofit = Retrofit.Builder().baseUrl(apiServerUri!!)
                 .addConverterFactory(GsonConverterFactory.create()).build()
             this.apiService = retrofit.create(APIService::class.java)
+            // Load user session from shared preferences and inject the API service
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+            this.apiUserSession = ApiUserSession(sharedPreferences, apiService)
+            this.apiPrivacyPolicy = ApiPrivacyPolicy(sharedPreferences, apiService)
         }
     }
 

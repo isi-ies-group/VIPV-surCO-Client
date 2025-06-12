@@ -39,9 +39,9 @@ class ApiUserSession {
     var email: String? = null
     var passHash: String? = null
     var passSalt: String? = null
-    private val _knownState =
+    private val _state =
         MutableLiveData<ApiUserSessionState>(ApiUserSessionState.NEVER_LOGGED_IN)
-    val lastKnownState: LiveData<ApiUserSessionState> get() = _knownState
+    val state: LiveData<ApiUserSessionState> get() = _state
 
     var accessToken: String? = null
     var accessTokenRx: Instant? = null
@@ -54,19 +54,18 @@ class ApiUserSession {
         this.username = sharedPrefs.getString("username", null)
         this.email = sharedPrefs.getString("email", null)
         this.passHash = sharedPrefs.getString("passHash", null)
-        this._knownState.value = sharedPrefs.getString("state", "NEVER_LOGGED_IN")
+        this._state.value = sharedPrefs.getString("state", "NEVER_LOGGED_IN")
             ?.let { ApiUserSessionState.valueOf(it) } ?: ApiUserSessionState.NEVER_LOGGED_IN
     }
 
     // methods
-    fun saveToSharedPreferences(state: ApiUserSessionState? = null) {
-        val state = state?.toString() ?: "NEVER_LOGGED_IN"
+    fun saveToSharedPreferences(state: ApiUserSessionState) {
         Log.i("ApiUserSession", "Saving state: $state")
         this.sharedPrefs.edit {
             putString("username", username)
             putString("email", email)
             putString("passHash", passHash)
-            putString("state", state)
+            putString("state", state.toString())
             apply()
         }
     }
@@ -86,8 +85,8 @@ class ApiUserSession {
         this.accessToken = null
         this.accessTokenRx = null
         this.accessTokenValidity = null
-        _knownState.value = ApiUserSessionState.NOT_LOGGED_IN
-        saveToSharedPreferences()
+        _state.value = ApiUserSessionState.NOT_LOGGED_IN
+        saveToSharedPreferences(ApiUserSessionState.NOT_LOGGED_IN)
     }
 
     /**
@@ -122,7 +121,7 @@ class ApiUserSession {
         }
 
         if (this.passSalt == null) {
-            this._knownState.value = knownState
+            this._state.value = knownState
             return knownState
         }
 
@@ -157,9 +156,9 @@ class ApiUserSession {
             Log.e("ApiUserSession", "Exception logging in user: ${e.message}")
             knownState = ApiUserSessionState.CONNECTION_ERROR
         }
-        this._knownState.value = knownState
+        this._state.value = knownState
         // persist state between runs
-        saveToSharedPreferences()
+        saveToSharedPreferences(knownState)
         return knownState
     }
 
@@ -215,9 +214,9 @@ class ApiUserSession {
             Log.e("ApiUserSession", "Exception registering user: ${e.message}")
             knownState = ApiUserSessionState.CONNECTION_ERROR
         }
-        this._knownState.value = knownState
+        this._state.value = knownState
         // persist state between runs
-        saveToSharedPreferences()
+        saveToSharedPreferences(knownState)
         return knownState
     }
 
@@ -245,13 +244,13 @@ class ApiUserSession {
                 this.accessToken = "Bearer ${loginResponse.access_token}"
                 this.accessTokenRx = Instant.now()
                 this.accessTokenValidity = loginResponse.validity
-                this._knownState.value = (ApiUserSessionState.LOGGED_IN)
+                this._state.value = (ApiUserSessionState.LOGGED_IN)
             } catch (e: HttpException) {
                 Log.e("ApiUserSession", "HttpException logging in user: ${e.message}")
-                this._knownState.value = (ApiUserSessionState.ERROR_BAD_PASSWORD)
+                this._state.value = (ApiUserSessionState.ERROR_BAD_PASSWORD)
             } catch (e: Exception) {
                 Log.e("ApiUserSession", "Exception logging in user: ${e.message}")
-                this._knownState.value = (ApiUserSessionState.CONNECTION_ERROR)
+                this._state.value = (ApiUserSessionState.CONNECTION_ERROR)
             }
         }
 
@@ -274,8 +273,8 @@ class ApiUserSession {
     }
 
     fun setOfflineMode() {
-        this._knownState.value = ApiUserSessionState.NOT_LOGGED_IN
-        saveToSharedPreferences()
+        this._state.value = ApiUserSessionState.NOT_LOGGED_IN
+        saveToSharedPreferences(ApiUserSessionState.NOT_LOGGED_IN)
     }
 
     // sub classes and factories from root class

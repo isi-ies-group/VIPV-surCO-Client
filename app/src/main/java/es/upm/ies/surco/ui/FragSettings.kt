@@ -13,6 +13,7 @@ import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.R
@@ -126,20 +127,26 @@ class FragSettings : PreferenceFragmentCompat() {
         serverUriTextPreference?.setOnBindEditTextListener {
             // set hint to default value
             it.hint = BuildConfig.SERVER_URL
+            val sharedPreference = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            val currentUri = sharedPreference.getString("api_uri", BuildConfig.SERVER_URL)
+            it.setText(currentUri)
         }
         // set callback to update the application API service when the value changes
         serverUriTextPreference?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _, newValue ->
-                val context = requireContext()
-                androidx.appcompat.app.AlertDialog.Builder(context)
-                    .setTitle(R.string.settings_api_uri_change_title)
-                    .setMessage(R.string.settings_api_uri_change_message)
-                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                        appMain.apiUserSession.logout()
-                        appMain.setupApiService(newValue as String)
-                    }
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show()
+                if (newValue !is String || newValue.isBlank() || newValue == BuildConfig.SERVER_URL) {
+                    appMain.apiUserSession.logout()
+                    appMain.setupApiService(newValue as String)
+                } else {
+                    val context = requireContext()
+                    androidx.appcompat.app.AlertDialog.Builder(context)
+                        .setTitle(R.string.settings_api_uri_change_title)
+                        .setMessage(R.string.settings_api_uri_change_message)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            appMain.apiUserSession.logout()
+                            appMain.setupApiService(newValue)
+                        }.setNegativeButton(android.R.string.cancel, null).show()
+                }
                 // Returning false prevents the preference from updating until confirmed
                 false
             }
@@ -186,8 +193,7 @@ class FragSettings : PreferenceFragmentCompat() {
         }
     }
 
-    companion object {
-        /*@SuppressLint("BatteryLife")
+    companion object {/*@SuppressLint("BatteryLife")
         fun canHandleBatteryOptimizationIntent(context: Context): Boolean {
             val packageName = context.packageName
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {

@@ -21,7 +21,6 @@ import com.google.android.material.navigation.NavigationView
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.R
-import es.upm.ies.surco.api.ApiPrivacyPolicyState
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.databinding.ActivityMainBinding
 import es.upm.ies.surco.session_logging.LoggingSessionStatus
@@ -58,7 +57,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
         }
 
-        appMain.apiUserSession.lastKnownState.observe(this) { state ->
+        appMain.apiUserSession.state.observe(this) { state ->
             updateDrawerOptionsMenu()
         }
 
@@ -193,7 +192,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             val menuBtnLogin = binding.navViewHost.menu.findItem(R.id.nav_login)
             val menuBtnLogout = binding.navViewHost.menu.findItem(R.id.nav_logout)
             val isUserLoggedIn =
-                appMain.apiUserSession.lastKnownState.value == ApiUserSessionState.LOGGED_IN
+                appMain.apiUserSession.state.value == ApiUserSessionState.LOGGED_IN
             menuBtnLogin.isVisible = isUserLoggedIn != true
             menuBtnLogout.isVisible = !menuBtnLogin.isVisible
             binding.navViewHost.invalidate()

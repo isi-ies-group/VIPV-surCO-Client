@@ -80,7 +80,7 @@ class FragManageSessions : Fragment() {
                 Toast.makeText(
                     requireContext(), getString(R.string.no_data_to_upload), Toast.LENGTH_SHORT
                 ).show()
-            } else if (appMain.apiUserSession.lastKnownState.value == ApiUserSessionState.NOT_LOGGED_IN || appMain.apiUserSession.lastKnownState.value == ApiUserSessionState.NEVER_LOGGED_IN) {
+            } else if (appMain.apiUserSession.state.value == ApiUserSessionState.NOT_LOGGED_IN || appMain.apiUserSession.state.value == ApiUserSessionState.NEVER_LOGGED_IN) {
                 // If the user is not logged in, show a toast message and return
                 Toast.makeText(
                     requireContext(), getString(R.string.session_not_active), Toast.LENGTH_SHORT

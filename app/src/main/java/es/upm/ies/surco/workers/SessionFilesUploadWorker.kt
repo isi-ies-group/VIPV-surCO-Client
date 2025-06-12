@@ -30,7 +30,7 @@ class SessionFilesUploadWorker(appContext: Context, workerParams: WorkerParamete
             }
 
             // Ensure the user is logged in
-            if (appMain.apiUserSession.lastKnownState.value != ApiUserSessionState.LOGGED_IN) {
+            if (appMain.apiUserSession.state.value != ApiUserSessionState.LOGGED_IN) {
                 Log.w(TAG, "User is not logged in, cannot upload session files")
                 return Result.failure(Data.Builder().putBoolean("not_logged_in", true).build())
             }
