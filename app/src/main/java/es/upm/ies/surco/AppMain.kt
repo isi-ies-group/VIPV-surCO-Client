@@ -37,7 +37,8 @@ import kotlin.concurrent.thread
 class AppMain : Application(), ComponentCallbacks2 {
     // API & user services
     private lateinit var apiService: APIService
-    private var apiServerUri: String? = null
+    var apiServerUri: String? = null
+        private set  // modification to endpoint URI must be done through setupApiService()
 
     // API wrappers for user session and privacy policy
     lateinit var apiUserSession: ApiUserSession
@@ -200,7 +201,7 @@ class AppMain : Application(), ComponentCallbacks2 {
             Log.i(TAG, "API service already set to $newUri")
             return
         } else {  // If the new URI is different, set it up
-            apiServerUri = newUri
+            this.apiServerUri = newUri
             if (!apiServerUri!!.endsWith("/")) {
                 apiServerUri += "/"
             }

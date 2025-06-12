@@ -127,9 +127,7 @@ class FragSettings : PreferenceFragmentCompat() {
         serverUriTextPreference?.setOnBindEditTextListener {
             // set hint to default value
             it.hint = BuildConfig.SERVER_URL
-            val sharedPreference = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            val currentUri = sharedPreference.getString("api_uri", BuildConfig.SERVER_URL)
-            it.setText(currentUri)
+            it.setText(appMain.apiServerUri)
         }
         // set callback to update the application API service when the value changes
         serverUriTextPreference?.onPreferenceChangeListener =

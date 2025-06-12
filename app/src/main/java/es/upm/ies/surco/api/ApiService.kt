@@ -1,5 +1,6 @@
 package es.upm.ies.surco.api
 
+import es.upm.ies.surco.api.ApiModels.Companion.API_BASE
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.http.Body
@@ -11,40 +12,37 @@ import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Query
 
-
-const val APIv1_base = "api/v1/"
-
 interface APIService {
-    @GET(APIv1_base + "up")
-    suspend fun up(): ApiUserSession.UpResponse
+    @GET(API_BASE + "up")
+    suspend fun up(): ApiModels.UpResponse
 
-    @GET(APIv1_base + "salt")
+    @GET(API_BASE + "salt")
     @Headers("Content-type: application/json")
     suspend fun getUserSalt(
         @Header("email") email: String,
-    ): ApiUserSession.SaltResponse
+    ): ApiModels.SaltResponse
 
-    @POST(APIv1_base + "register")
+    @POST(API_BASE + "register")
     @Headers("Content-type: application/json")
     suspend fun registerUser(
-        @Body request: ApiUserSession.RegisterRequest,
+        @Body request: ApiModels.RegisterRequest,
     ): ResponseBody
 
-    @POST(APIv1_base + "login")
+    @POST(API_BASE + "login")
     @Headers("Content-type: application/json")
     suspend fun loginUser(
-        @Body request: ApiUserSession.LoginRequest,
-    ): ApiUserSession.LoginResponse
+        @Body request: ApiModels.LoginRequest,
+    ): ApiModels.LoginResponse
 
     @Multipart
-    @POST(APIv1_base + "session/upload")
+    @POST(API_BASE + "session/upload")
     suspend fun uploadBeacons(
         @Header("Authorization") token: String,
         @Part file: MultipartBody.Part,
     ): ResponseBody
 
-    @GET(APIv1_base + "privacy-policy")
+    @GET(API_BASE + "privacy-policy")
     suspend fun getPrivacyPolicy(
         @Query("lang") lang: String = "en",
-    ): ApiUserSession.PrivacyPolicyResponse
+    ): ApiModels.PrivacyPolicyResponse
 }

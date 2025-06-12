@@ -117,7 +117,7 @@ class ApiPrivacyPolicy {
     fun refreshPrivacyPolicyForOutdated() {
         thread {
             runBlocking {
-                var upResponse: ApiUserSession.UpResponse? = null
+                var upResponse: ApiModels.UpResponse? = null
                 try {
                     upResponse = apiService.up()
                 } catch (_: Exception) {
@@ -130,7 +130,7 @@ class ApiPrivacyPolicy {
                     _privacyPolicyState.postValue(ApiPrivacyPolicyState.ACCEPTED)
                 }
                 if (privacyPolicyLastUpdated != upResponse.privacy_policy_last_updated) {
-                    var ppResponse: ApiUserSession.PrivacyPolicyResponse? = null
+                    var ppResponse: ApiModels.PrivacyPolicyResponse? = null
                     try {
                         ppResponse = apiService.getPrivacyPolicy(Locale.getDefault().language)
                     } catch (_: Exception) {

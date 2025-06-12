@@ -16,7 +16,8 @@ import java.io.File
 import java.time.Instant
 import kotlin.random.Random
 import androidx.core.content.edit
-import es.upm.ies.surco.BuildConfig
+import es.upm.ies.surco.api.ApiModels.LoginRequest
+import es.upm.ies.surco.api.ApiModels.RegisterRequest
 
 enum class ApiUserSessionState {
     LOGGED_IN,  // user has logged in successfully
@@ -24,23 +25,19 @@ enum class ApiUserSessionState {
     NEVER_LOGGED_IN,  // user has never logged in
 
     // errors
-    CLIENT_DEPRECATED_WARNING,
-    CLIENT_TOO_OLD_ERROR,
-    ERROR_BAD_IDENTITY,
-    ERROR_BAD_PASSWORD,
-    CONNECTION_ERROR,
+    CLIENT_DEPRECATED_WARNING, CLIENT_TOO_OLD_ERROR, ERROR_BAD_IDENTITY, ERROR_BAD_PASSWORD, CONNECTION_ERROR,
 }
 
 class ApiUserSession {
     var apiService: APIService
     var sharedPrefs: SharedPreferences
+
     // members
     var username: String? = null
     var email: String? = null
     var passHash: String? = null
     var passSalt: String? = null
-    private val _state =
-        MutableLiveData<ApiUserSessionState>(ApiUserSessionState.NEVER_LOGGED_IN)
+    private val _state = MutableLiveData<ApiUserSessionState>(ApiUserSessionState.NEVER_LOGGED_IN)
     val state: LiveData<ApiUserSessionState> get() = _state
 
     var accessToken: String? = null
@@ -278,43 +275,14 @@ class ApiUserSession {
     }
 
     // sub classes and factories from root class
-    @Suppress("PropertyName")  // linter hates snake_case
-    data class UpResponse(
-        var message: String? = null,
-        var privacy_policy_last_updated: String? = null,
-        var client_build_number_minimal: String? = null,
-        var client_build_number_deprecated: String? = null,
-    )
-
-    data class SaltResponse (
-        var passSalt: String? = null
-    )
-
-    @Suppress("PropertyName")  // linter hates snake_case
-    data class LoginRequest(val email: String, val passHash: String, val app_build_number: Int = BuildConfig.VERSION_CODE)
 
     fun loginRequest() = LoginRequest(this.email!!, this.passHash!!)
 
-    @Suppress("PropertyName")  // linter hates snake_case
-    data class LoginResponse (
-        var username: String? = null,
-        var access_token: String? = null,
-        var validity: Int? = null
-    )
-
-    data class RegisterRequest(
-        val username: String, val email: String, val passHash: String, val passSalt: String
-    )
 
     fun registerRequest() =
         RegisterRequest(this.username!!, this.email!!, this.passHash!!, this.passSalt!!)
 
-    @Suppress("PropertyName")  // linter hates snake_case
-    data class PrivacyPolicyResponse(
-        var content: String? = null,
-        var last_updated: String? = null,
-        var language: String? = null,
-    )
+
     // helper object for credentials validation
     object CredentialsValidator {
         // regex validators
