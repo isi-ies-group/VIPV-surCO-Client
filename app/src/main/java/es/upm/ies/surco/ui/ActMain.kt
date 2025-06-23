@@ -21,6 +21,7 @@ import com.google.android.material.navigation.NavigationView
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.R
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.databinding.ActivityMainBinding
 import es.upm.ies.surco.session_logging.LoggingSessionStatus
@@ -57,7 +58,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
         }
 
-        appMain.apiUserSession.state.observe(this) { state ->
+        ApiActions.User.state.observe(this) { state ->
             updateDrawerOptionsMenu()
         }
 
@@ -134,7 +135,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
 
             R.id.nav_logout -> {
                 binding.mainDrawerLayout.closeDrawers()
-                appMain.apiUserSession.logout()
+                ApiActions.User.logout()
                 Toast.makeText(this, getString(R.string.logged_out), Toast.LENGTH_SHORT).show()
                 true
             }
@@ -192,7 +193,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             val menuBtnLogin = binding.navViewHost.menu.findItem(R.id.nav_login)
             val menuBtnLogout = binding.navViewHost.menu.findItem(R.id.nav_logout)
             val isUserLoggedIn =
-                appMain.apiUserSession.state.value == ApiUserSessionState.LOGGED_IN
+                ApiActions.User.state.value == ApiUserSessionState.LOGGED_IN
             menuBtnLogin.isVisible = isUserLoggedIn != true
             menuBtnLogout.isVisible = !menuBtnLogin.isVisible
             binding.navViewHost.invalidate()

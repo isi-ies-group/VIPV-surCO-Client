@@ -7,6 +7,7 @@ import androidx.work.Data
 import androidx.work.WorkerParameters
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.AppMain
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.session_logging.LoggingSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,13 +25,13 @@ class SessionFilesUploadWorker(appContext: Context, workerParams: WorkerParamete
         Log.i(TAG, "Uploading session files")
         return try {
             // Check Privacy Policy is accepted before proceeding
-            if (!appMain.apiPrivacyPolicy.isAccepted()) {
+            if (!ApiActions.PrivacyPolicy.isAccepted()) {
                 Log.w(TAG, "Privacy Policy not accepted, cannot upload session files")
                 return Result.failure(Data.Builder().putBoolean("privacy_policy_not_accepted", true).build())
             }
 
             // Ensure the user is logged in
-            if (appMain.apiUserSession.state.value != ApiUserSessionState.LOGGED_IN) {
+            if (ApiActions.User.state.value != ApiUserSessionState.LOGGED_IN) {
                 Log.w(TAG, "User is not logged in, cannot upload session files")
                 return Result.failure(Data.Builder().putBoolean("not_logged_in", true).build())
             }
@@ -56,7 +57,7 @@ class SessionFilesUploadWorker(appContext: Context, workerParams: WorkerParamete
     }
 
     suspend fun uploadFile(file: File): Boolean {
-        val sessionState = appMain.apiUserSession.upload(file)
+        val sessionState = ApiActions.User.upload(file)
         // delete file if upload was successful
         val success = sessionState == ApiUserSessionState.LOGGED_IN
         if (success) {

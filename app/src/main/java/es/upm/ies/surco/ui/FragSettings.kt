@@ -13,10 +13,10 @@ import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.R
+import es.upm.ies.surco.api.ApiActions
 import kotlinx.coroutines.launch
 
 class FragSettings : PreferenceFragmentCompat() {
@@ -133,7 +133,7 @@ class FragSettings : PreferenceFragmentCompat() {
         serverUriTextPreference?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _, newValue ->
                 if (newValue !is String || newValue.isBlank() || newValue == BuildConfig.SERVER_URL) {
-                    appMain.apiUserSession.logout()
+                    ApiActions.User.logout()
                     appMain.setupApiService(newValue as String)
                 } else {
                     val context = requireContext()
@@ -141,7 +141,7 @@ class FragSettings : PreferenceFragmentCompat() {
                         .setTitle(R.string.settings_api_uri_change_title)
                         .setMessage(R.string.settings_api_uri_change_message)
                         .setPositiveButton(android.R.string.ok) { _, _ ->
-                            appMain.apiUserSession.logout()
+                            ApiActions.User.logout()
                             appMain.setupApiService(newValue)
                         }.setNegativeButton(android.R.string.cancel, null).show()
                 }

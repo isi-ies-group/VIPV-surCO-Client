@@ -240,7 +240,5 @@ class ActPermissions : AppCompatActivity() {
                 Manifest.permission.POST_NOTIFICATIONS
             ) else null),
         )
-
-        val TAG: String = ActPermissions::class.java.simpleName
     }  // companion object
 }

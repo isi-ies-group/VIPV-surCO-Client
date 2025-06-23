@@ -25,6 +25,7 @@ import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentHomeBinding
 import es.upm.ies.surco.AppMain
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.api.ApiPrivacyPolicyState
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.hideKeyboard
@@ -119,8 +120,8 @@ class FragHome : Fragment() {
         privacyPolicyCheckAndNavigation()
 
         // If the user has never logged in and privacy policy is accepted, navigate to the login fragment
-        if (appMain.apiUserSession.state.value == ApiUserSessionState.NEVER_LOGGED_IN &&
-            appMain.apiPrivacyPolicy.privacyPolicyState.value == ApiPrivacyPolicyState.ACCEPTED) {
+        if (ApiActions.User.state.value == ApiUserSessionState.NEVER_LOGGED_IN &&
+            ApiActions.PrivacyPolicy.state.value == ApiPrivacyPolicyState.ACCEPTED) {
             findNavController().navigate(R.id.action_homeFragment_to_fragLogin)
         }
 
@@ -142,7 +143,7 @@ class FragHome : Fragment() {
                 Toast.makeText(
                     requireContext(), getString(R.string.no_data_to_upload), Toast.LENGTH_SHORT
                 ).show()
-            } else if (appMain.apiUserSession.state.value == ApiUserSessionState.NOT_LOGGED_IN || appMain.apiUserSession.state.value == ApiUserSessionState.NEVER_LOGGED_IN) {
+            } else if (ApiActions.User.state.value == ApiUserSessionState.NOT_LOGGED_IN || ApiActions.User.state.value == ApiUserSessionState.NEVER_LOGGED_IN) {
                 // If the user is not logged in, show a toast message and return
                 Toast.makeText(
                     requireContext(), getString(R.string.session_not_active), Toast.LENGTH_SHORT
@@ -167,7 +168,7 @@ class FragHome : Fragment() {
 
     private fun privacyPolicyCheckAndNavigation() {
         // Privacy policy management
-        when (appMain.apiPrivacyPolicy.privacyPolicyState.value) {
+        when (ApiActions.PrivacyPolicy.state.value) {
             ApiPrivacyPolicyState.NEVER_PROMPTED -> {
                 // Begin fragment transaction to prompt the user to accept the privacy policy
                 //findNavController().navigate(R.id.action_homeFragment_to_privacyPolicyFragment)
@@ -175,7 +176,7 @@ class FragHome : Fragment() {
 
             ApiPrivacyPolicyState.ACCEPTED -> {
                 // The user has accepted the privacy policy, start a coroutine to verify if the privacy policy has been updated
-                appMain.apiPrivacyPolicy.refreshPrivacyPolicyForOutdated()
+                ApiActions.PrivacyPolicy.refreshPrivacyPolicyForOutdated()
             }
 
             ApiPrivacyPolicyState.OUTDATED -> {
@@ -189,7 +190,7 @@ class FragHome : Fragment() {
 
             ApiPrivacyPolicyState.CONNECTION_ERROR -> {
                 // An error occurred while checking the privacy policy earlier, so let's not navigate anywhere, but refresh for OUTDATED state in case it has been fixed
-                appMain.apiPrivacyPolicy.refreshPrivacyPolicyForOutdated()
+                ApiActions.PrivacyPolicy.refreshPrivacyPolicyForOutdated()
             }
         }
     }

@@ -102,7 +102,7 @@ class ListAdapterBeacons(
     }
 
     companion object {
-        val timestampFormatter =
+        val timestampFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.systemDefault())
     }
 }

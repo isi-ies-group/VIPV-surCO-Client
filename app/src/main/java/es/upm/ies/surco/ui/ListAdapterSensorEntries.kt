@@ -61,7 +61,7 @@ class ListAdapterSensorEntries(activityContext: Context, beaconsList: List<Senso
         /**
          * Formatter for the timestamp, from Instant to local time.
          */
-        val timestampFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+        val timestampFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
             .withZone(ZoneId.systemDefault())
     }
 }

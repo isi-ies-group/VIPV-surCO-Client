@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.R
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.databinding.FragmentPrivacyPolicyBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,7 +46,7 @@ class FragPrivacyPolicy : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val content = withContext(Dispatchers.IO) {
-                    appMain.apiPrivacyPolicy.getContent()
+                    ApiActions.PrivacyPolicy.getContent()
                 }
 
                 if (!isAdded) return@launch // Check if fragment is still attached
@@ -68,14 +69,14 @@ class FragPrivacyPolicy : Fragment() {
 
         binding.btnAccept.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
-                appMain.apiPrivacyPolicy.accept()
+                ApiActions.PrivacyPolicy.accept()
                 parentFragmentManager.popBackStack()
             }
         }
 
         binding.btnReject.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
-                appMain.apiPrivacyPolicy.reject()
+                ApiActions.PrivacyPolicy.reject()
                 findNavController().navigate(R.id.action_privacyPolicyFragment_to_homeFragment)
             }
         }
@@ -88,7 +89,7 @@ class FragPrivacyPolicy : Fragment() {
             getString(R.string.error_loading_privacy_policy),
             Toast.LENGTH_LONG
         ).show()
-        appMain.apiPrivacyPolicy.setConnectionError()
+        ApiActions.PrivacyPolicy.setConnectionError()
         findNavController().navigate(R.id.action_privacyPolicyFragment_to_homeFragment)
     }
 
