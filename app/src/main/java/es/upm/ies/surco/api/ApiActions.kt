@@ -472,7 +472,7 @@ object ApiActions {
             val deprecatedBuildNumber = upResponse.client_build_number_deprecated?.toIntOrNull()
             if (minimalBuildNumber != null && BuildConfig.VERSION_CODE < minimalBuildNumber) {
                 flags.add(PingFlag.CLIENT_OBSOLETE_ERROR)
-            } else if (deprecatedBuildNumber != null && BuildConfig.VERSION_CODE < deprecatedBuildNumber) {
+            } else if (deprecatedBuildNumber != null && BuildConfig.VERSION_CODE <= deprecatedBuildNumber) {
                 flags.add(PingFlag.CLIENT_DEPRECATED_WARNING)
             }
             // Return flags
