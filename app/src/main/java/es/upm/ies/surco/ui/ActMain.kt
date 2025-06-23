@@ -10,8 +10,10 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -21,9 +23,14 @@ import com.google.android.material.navigation.NavigationView
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.R
+import es.upm.ies.surco.api.ApiActions
+import es.upm.ies.surco.api.ApiPrivacyPolicyState
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.databinding.ActivityMainBinding
 import es.upm.ies.surco.session_logging.LoggingSessionStatus
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
@@ -57,7 +64,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             getAllPermissionsGranted.launch(Intent(this, ActPermissions::class.java))
         }
 
-        appMain.apiUserSession.state.observe(this) { state ->
+        ApiActions.User.state.observe(this) { state ->
             updateDrawerOptionsMenu()
         }
 
@@ -109,6 +116,8 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
                 }
             }
         }
+
+        checkPrivacyPolicy()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -134,7 +143,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
 
             R.id.nav_logout -> {
                 binding.mainDrawerLayout.closeDrawers()
-                appMain.apiUserSession.logout()
+                ApiActions.User.logout()
                 Toast.makeText(this, getString(R.string.logged_out), Toast.LENGTH_SHORT).show()
                 true
             }
@@ -191,8 +200,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             // Login and logout buttons in the drawer
             val menuBtnLogin = binding.navViewHost.menu.findItem(R.id.nav_login)
             val menuBtnLogout = binding.navViewHost.menu.findItem(R.id.nav_logout)
-            val isUserLoggedIn =
-                appMain.apiUserSession.state.value == ApiUserSessionState.LOGGED_IN
+            val isUserLoggedIn = ApiActions.User.state.value == ApiUserSessionState.LOGGED_IN
             menuBtnLogin.isVisible = isUserLoggedIn != true
             menuBtnLogout.isVisible = !menuBtnLogin.isVisible
             binding.navViewHost.invalidate()
@@ -206,6 +214,74 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         } catch (e: Exception) {
             Log.e(TAG, "Error opening link: $url; ${e.message}")
             Toast.makeText(this, "Could not open: $url", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun checkPrivacyPolicy() {
+        // Privacy policy management
+        when (ApiActions.PrivacyPolicy.state.value) {
+            ApiPrivacyPolicyState.NEVER_PROMPTED -> {
+                // Begin fragment transaction to prompt the user to accept the privacy policy
+                // Handled by FragHome
+            }
+
+            ApiPrivacyPolicyState.ACCEPTED -> {
+                // The user has accepted the privacy policy, start a coroutine to verify if the privacy policy has been updated
+                pingServerAndTakeActions()
+            }
+
+            ApiPrivacyPolicyState.OUTDATED -> {
+                // The user has accepted the privacy policy, but it has been updated since then
+                // Handled by FragHome
+            }
+
+            ApiPrivacyPolicyState.REJECTED -> {
+                // The user has rejected the privacy policy, we must not access the API unless requested
+            }
+
+            ApiPrivacyPolicyState.CONNECTION_ERROR -> {
+                // An error occurred while checking the privacy policy earlier, so let's not navigate anywhere, but refresh for OUTDATED state in case it has been fixed
+                pingServerAndTakeActions()
+            }
+        }
+    }
+
+    private fun pingServerAndTakeActions() {
+        lifecycleScope.launch(Dispatchers.Default) {
+            val actionFlags = ApiActions.Common.ping()
+            if (ApiActions.Common.PingFlag.PRIVACY_POLICY_OUTDATED in actionFlags) {
+                // Keep the latest status except for when it was updated
+                if (ApiActions.PrivacyPolicy.state.value != ApiPrivacyPolicyState.REJECTED) {
+                    // Unless explicitly rejected the privacy policy, update it
+                    Log.i("ApiPrivacyPolicy", "Updating privacy policy due to new revision")
+                    ApiActions.PrivacyPolicy.state_.postValue(ApiPrivacyPolicyState.OUTDATED)
+                    ApiActions.PrivacyPolicy.updatePrivacyPolicy()
+                }
+            }
+            if (ApiActions.Common.PingFlag.CLIENT_DEPRECATED_WARNING in actionFlags) {
+                withContext(Dispatchers.Main) {
+                    AlertDialog.Builder(applicationContext).apply {
+                        setTitle(getString(R.string.client_deprecated_warning_title))
+                        setMessage(getString(R.string.client_deprecated_warning_message))
+                        setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        create().show()
+                    }
+                }
+            }
+            if (ApiActions.Common.PingFlag.CLIENT_OBSOLETE_ERROR in actionFlags) {
+                withContext(Dispatchers.Main) {
+                    AlertDialog.Builder(applicationContext).apply {
+                        setTitle(getString(R.string.client_obsolete_error_title))
+                        setMessage(getString(R.string.client_obsolete_error_message))
+                        setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        create().show()
+                    }
+                }
+            }
         }
     }
 

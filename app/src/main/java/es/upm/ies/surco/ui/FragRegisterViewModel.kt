@@ -5,14 +5,11 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import es.upm.ies.surco.AppMain
-import es.upm.ies.surco.api.ApiUserSession
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.api.ApiUserSessionState
 import kotlinx.coroutines.launch
 
 class FragRegisterViewModel(application: Application) : AndroidViewModel(application) {
-    private val appMain by lazy { getApplication<AppMain>() }
-
     // variables for the login form persistence between destroy and create
     var username: MutableLiveData<String> = MutableLiveData("")
     var email: MutableLiveData<String> = MutableLiveData("")
@@ -54,9 +51,7 @@ class FragRegisterViewModel(application: Application) : AndroidViewModel(applica
             "onCredentialsChanged: ${username.value} ${email.value} ${password.value} ${password2.value}"
         )
         val validUsername =
-            username.value!!.isNotEmpty() and ApiUserSession.CredentialsValidator.isUsernameValid(
-                username.value!!
-            )
+            username.value!!.isNotEmpty() and ApiActions.User.CredentialsValidator.isUsernameValid(username.value!!)
         val validEmail = email.value!!.isNotEmpty()
         val validPassword = password.value!!.isNotEmpty()
         val samePasswords = password.value == password2.value
@@ -71,7 +66,7 @@ class FragRegisterViewModel(application: Application) : AndroidViewModel(applica
         // call login method from the application and return the result
         // if successful, the user will be redirected to the main activity
         // else, update the loginStatus variable with the error message
-        val result = appMain.apiUserSession.register(
+        val result = ApiActions.User.register(
             username.value!!, email.value!!, password.value!!
         )
         registerStatus.postValue(result)
@@ -79,6 +74,6 @@ class FragRegisterViewModel(application: Application) : AndroidViewModel(applica
 
     fun requiresPrivacyPolicyAccept(): Boolean {
         // Check if the privacy policy has been accepted
-        return !appMain.apiPrivacyPolicy.isAccepted()
+        return !ApiActions.PrivacyPolicy.isAccepted()
     }
 }

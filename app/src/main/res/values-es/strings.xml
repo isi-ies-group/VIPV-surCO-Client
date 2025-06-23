@@ -63,6 +63,9 @@
     <string name="low_compass_precision_title">Baja precisión de la brújula</string>
     <string name="low_compass_precision_message">Por favor, mueva suavemente el télefono en círculos para recalibrar la brújala.</string>
     <string name="session_not_active">Primero debes iniciar sesión con tu cuenta.</string>
+    <string name="client_deprecated_warning_message">El servidor recomienda actualizar.\n¡Tal vez encuentres nuevas súper-mejoras en la última versión!\nTodavía puedes iniciar sesión y subir sesiones.</string>
+    <string name="client_obsolete_error_title">Versión obsoleta</string>
+    <string name="client_obsolete_error_message">Por favor, actualice la app.\nEsta versión no está admitida por el servidor.\nNo se puede iniciar sesión.</string>
     <string name="beacon_details">Detalles de la baliza</string>
     <string name="beacon_detail_description_hint">Descripción opcional de la baliza</string>
     <string name="beacon_detail_tilt">Inclinación</string>
@@ -130,7 +133,7 @@
         <item>Capó</item>
         <item>Puerta izquierda</item>
         <item>Puerta derecha</item>
-        <item>Roof</item>
+        <item>Techo</item>
         <item>Maletero</item>
         <item>Casco (bicicleta)</item>
         <item>Otro (indicar en descripción)</item>
@@ -156,4 +159,5 @@
     <string name="error_loading_privacy_policy">Error al cargar la Política de Privacidad.</string>
     <string name="privacy_policy_title">Política de Privacidad</string>
     <string name="settings_api_uri_change_title">Confirma acción</string>
+    <string name="client_deprecated_warning_title">¡Es momento de actualizar!</string>
 </resources>

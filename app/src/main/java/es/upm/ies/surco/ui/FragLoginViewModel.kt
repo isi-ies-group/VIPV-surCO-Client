@@ -5,14 +5,11 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import es.upm.ies.surco.AppMain
-import es.upm.ies.surco.api.ApiUserSession
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.api.ApiUserSessionState
 import kotlinx.coroutines.launch
 
 class FragLoginViewModel(application: Application) : AndroidViewModel(application) {
-    private val appMain by lazy { getApplication<AppMain>() }
-
     // variables for the login form persistence between destroy and create
     var email: MutableLiveData<String> = MutableLiveData("")
     var password: MutableLiveData<String> = MutableLiveData("")
@@ -43,9 +40,9 @@ class FragLoginViewModel(application: Application) : AndroidViewModel(applicatio
         // enable the login button if both email and password are not empty
         Log.i("FragLoginViewModel", "onCredentialsChanged: ${email.value} ${password.value}")
         val validEmail =
-            email.value!!.isNotEmpty() and ApiUserSession.CredentialsValidator.isEmailValid(email.value!!)
+            email.value!!.isNotEmpty() and ApiActions.User.CredentialsValidator.isEmailValid(email.value!!)
         val validPassword =
-            password.value!!.isNotEmpty() and ApiUserSession.CredentialsValidator.isPasswordValid(
+            password.value!!.isNotEmpty() and ApiActions.User.CredentialsValidator.isPasswordValid(
                 password.value!!
             )
         loginButtonEnabled.postValue(validEmail && validPassword)
@@ -57,17 +54,17 @@ class FragLoginViewModel(application: Application) : AndroidViewModel(applicatio
         // call login method from the application and return the result
         // if successful, the user will be redirected to the main activity
         // else, update the loginStatus variable with the error message
-        val result = appMain.apiUserSession.login(email.value!!, password.value!!)
+        val result = ApiActions.User.login(email.value!!, password.value!!)
         loginStatus.postValue(result)
     }
 
     fun setOffLineMode() {
         // set the application to offline mode
-        appMain.apiUserSession.setOfflineMode()
+        ApiActions.User.setOfflineMode()
     }
 
     fun requiresPrivacyPolicyAccept(): Boolean {
         // Check if the privacy policy has been accepted
-        return !appMain.apiPrivacyPolicy.isAccepted()
+        return !ApiActions.PrivacyPolicy.isAccepted()
     }
 }

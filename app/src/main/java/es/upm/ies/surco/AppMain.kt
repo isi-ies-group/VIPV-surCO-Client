@@ -17,8 +17,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import es.upm.ies.surco.api.APIService
-import es.upm.ies.surco.api.ApiPrivacyPolicy
-import es.upm.ies.surco.api.ApiUserSession
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.service.ForegroundBeaconScanService
 import es.upm.ies.surco.session_logging.LoggingSession
 import es.upm.ies.surco.session_logging.LoggingSessionStatus
@@ -39,10 +38,6 @@ class AppMain : Application(), ComponentCallbacks2 {
     private lateinit var apiService: APIService
     var apiServerUri: String? = null
         private set  // modification to endpoint URI must be done through setupApiService()
-
-    // API wrappers for user session and privacy policy
-    lateinit var apiUserSession: ApiUserSession
-    lateinit var apiPrivacyPolicy: ApiPrivacyPolicy
 
     // Beacons abstractions
     var loggingSession = LoggingSession
@@ -211,10 +206,8 @@ class AppMain : Application(), ComponentCallbacks2 {
             val retrofit = Retrofit.Builder().baseUrl(apiServerUri!!)
                 .addConverterFactory(GsonConverterFactory.create()).build()
             this.apiService = retrofit.create(APIService::class.java)
-            // Load user session from shared preferences and inject the API service
-            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-            this.apiUserSession = ApiUserSession(sharedPreferences, apiService)
-            this.apiPrivacyPolicy = ApiPrivacyPolicy(sharedPreferences, apiService)
+            // Inject new API service into ApiActions
+            ApiActions.initialize(PreferenceManager.getDefaultSharedPreferences(this), apiService)
         }
     }
 

@@ -3,11 +3,18 @@
 
     <Preference
         android:key="manage_sessions"
-        android:title="@string/settings_manage_sessions" />
+        android:title="@string/settings_manage_sessions"
+        android:icon="@drawable/file_open" />
 
     <Preference
         android:key="open_battery_optimization_settings"
         android:title="@string/settings_open_battery_optimization_settings" />
+
+    <Preference
+        android:key="privacy_policy"
+        android:title="@string/privacy_policy_title"
+        android:icon="@drawable/info"
+        android:fragment="es.upm.ies.surco.ui.FragPrivacyPolicy" />
 
     <PreferenceCategory
         android:icon="@drawable/settings_gear"
@@ -50,11 +57,5 @@
             android:title="@string/settings_api_test" />
 
     </PreferenceCategory>
-
-    <Preference
-        android:key="privacy_policy"
-        android:title="@string/privacy_policy_title"
-        android:icon="@drawable/info"
-        android:fragment="es.upm.ies.surco.ui.FragPrivacyPolicy" />
 
 </androidx.preference.PreferenceScreen>
