@@ -413,7 +413,7 @@ object ApiActions {
             return sharedPrefs.getString("privacy_policy_content", null)!!
         }
 
-        fun refreshPrivacyPolicyForOutdated() {
+        fun pollForOutdatedPrivacyPolicy() {
             thread {
                 runBlocking {
                     var upResponse: ApiModels.UpResponse? = null

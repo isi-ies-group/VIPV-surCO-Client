@@ -176,7 +176,7 @@ class FragHome : Fragment() {
 
             ApiPrivacyPolicyState.ACCEPTED -> {
                 // The user has accepted the privacy policy, start a coroutine to verify if the privacy policy has been updated
-                ApiActions.PrivacyPolicy.refreshPrivacyPolicyForOutdated()
+                ApiActions.PrivacyPolicy.pollForOutdatedPrivacyPolicy()
             }
 
             ApiPrivacyPolicyState.OUTDATED -> {
@@ -190,7 +190,7 @@ class FragHome : Fragment() {
 
             ApiPrivacyPolicyState.CONNECTION_ERROR -> {
                 // An error occurred while checking the privacy policy earlier, so let's not navigate anywhere, but refresh for OUTDATED state in case it has been fixed
-                ApiActions.PrivacyPolicy.refreshPrivacyPolicyForOutdated()
+                ApiActions.PrivacyPolicy.pollForOutdatedPrivacyPolicy()
             }
         }
     }
