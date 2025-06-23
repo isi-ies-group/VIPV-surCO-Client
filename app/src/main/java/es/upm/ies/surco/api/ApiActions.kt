@@ -294,13 +294,6 @@ object ApiActions {
             saveToSharedPreferences(ApiUserSessionState.NOT_LOGGED_IN)
         }
 
-        // sub classes and factories from root class
-
-        fun loginRequest() = LoginRequest(this.email!!, this.passHash!!)
-        
-        fun registerRequest() =
-            RegisterRequest(this.username!!, this.email!!, this.passHash!!, this.passSalt!!)
-
         // helper object for credentials validation
         object CredentialsValidator {
             // regex validators
