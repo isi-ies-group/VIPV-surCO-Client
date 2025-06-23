@@ -21,7 +21,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.R
 import es.upm.ies.surco.databinding.FragmentHomeBinding
@@ -32,9 +31,6 @@ import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.hideKeyboard
 import es.upm.ies.surco.session_logging.BeaconSimplified
 import es.upm.ies.surco.session_logging.LoggingSessionStatus
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class FragHome : Fragment() {
     private var _binding: FragmentHomeBinding? = null
@@ -174,12 +170,12 @@ class FragHome : Fragment() {
         when (ApiActions.PrivacyPolicy.state.value) {
             ApiPrivacyPolicyState.NEVER_PROMPTED -> {
                 // Begin fragment transaction to prompt the user to accept the privacy policy
-                //findNavController().navigate(R.id.action_homeFragment_to_privacyPolicyFragment)
+                findNavController().navigate(R.id.action_homeFragment_to_privacyPolicyFragment)
             }
 
             ApiPrivacyPolicyState.ACCEPTED -> {
                 // The user has accepted the privacy policy, start a coroutine to verify if the privacy policy has been updated
-                pingServerAndTakeActions()
+                // Handled by ActMain
             }
 
             ApiPrivacyPolicyState.OUTDATED -> {
@@ -193,7 +189,7 @@ class FragHome : Fragment() {
 
             ApiPrivacyPolicyState.CONNECTION_ERROR -> {
                 // An error occurred while checking the privacy policy earlier, so let's not navigate anywhere, but refresh for OUTDATED state in case it has been fixed
-                pingServerAndTakeActions()
+                // Handled by ActMain
             }
         }
     }
@@ -290,45 +286,6 @@ class FragHome : Fragment() {
                     dialog.dismiss()
                 }
                 builder.create().show()
-            }
-        }
-    }
-
-    private fun pingServerAndTakeActions() {
-        lifecycleScope.launch(Dispatchers.Default) {
-            val actionFlags = ApiActions.Common.ping()
-            if (ApiActions.Common.PingFlag.PRIVACY_POLICY_OUTDATED in actionFlags) {
-                // Keep the latest status except for when it was updated
-                if (ApiActions.PrivacyPolicy.state.value != ApiPrivacyPolicyState.REJECTED) {
-                    // Unless explicitly rejected the privacy policy, update it
-                    Log.i("ApiPrivacyPolicy", "Updating privacy policy due to new revision")
-                    ApiActions.PrivacyPolicy.state_.postValue(ApiPrivacyPolicyState.OUTDATED)
-                    ApiActions.PrivacyPolicy.updatePrivacyPolicy()
-                }
-            }
-            if (ApiActions.Common.PingFlag.CLIENT_DEPRECATED_WARNING in actionFlags) {
-                withContext(Dispatchers.Main) {
-                    AlertDialog.Builder(requireContext()).apply {
-                        setTitle(getString(R.string.client_deprecated_warning_title))
-                        setMessage(getString(R.string.client_deprecated_warning_message))
-                        setPositiveButton(getString(R.string.ok)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        create().show()
-                    }
-                }
-            }
-            if (ApiActions.Common.PingFlag.CLIENT_OBSOLETE_ERROR in actionFlags) {
-                withContext(Dispatchers.Main) {
-                    AlertDialog.Builder(requireContext()).apply {
-                        setTitle(getString(R.string.client_obsolete_error_title))
-                        setMessage(getString(R.string.client_obsolete_error_message))
-                        setPositiveButton(getString(R.string.ok)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        create().show()
-                    }
-                }
             }
         }
     }
