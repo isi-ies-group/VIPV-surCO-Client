@@ -52,7 +52,7 @@ object ApiActions {
         User.initialize()
 
         // Initialize the privacy policy state
-        
+        PrivacyPolicy.initialize()
     }
 
     object User {
