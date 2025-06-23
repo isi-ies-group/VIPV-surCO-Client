@@ -9,9 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
+import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.api.ApiModels.LoginRequest
 import es.upm.ies.surco.api.ApiModels.RegisterRequest
-import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -19,7 +19,6 @@ import retrofit2.HttpException
 import java.io.File
 import java.time.Instant
 import java.util.Locale
-import kotlin.concurrent.thread
 import kotlin.random.Random
 
 enum class ApiUserSessionState {
@@ -47,7 +46,7 @@ object ApiActions {
     fun initialize(sharedPrefs: SharedPreferences, apiService: APIService) {
         this.sharedPrefs = sharedPrefs
         this.apiService = apiService
-        
+
         // Initialize the user session
         User.initialize()
 
@@ -60,22 +59,23 @@ object ApiActions {
         var email: String? = null
         var passHash: String? = null
         var passSalt: String? = null
-        private val _state = MutableLiveData<ApiUserSessionState>(ApiUserSessionState.NEVER_LOGGED_IN)
-        val state: LiveData<ApiUserSessionState> get() = _state
+        internal val state_ =
+            MutableLiveData<ApiUserSessionState>(ApiUserSessionState.NEVER_LOGGED_IN)
+        val state: LiveData<ApiUserSessionState> get() = state_
 
         var accessToken: String? = null
         var accessTokenRx: Instant? = null
         var accessTokenValidity: Int? = null
-        
+
         fun initialize() {
             // Load the user session state from shared preferences
             this.username = sharedPrefs.getString("username", null)
             this.email = sharedPrefs.getString("email", null)
             this.passHash = sharedPrefs.getString("passHash", null)
-            this._state.value = sharedPrefs.getString("state", "NEVER_LOGGED_IN")
+            this.state_.value = sharedPrefs.getString("state", "NEVER_LOGGED_IN")
                 ?.let { ApiUserSessionState.valueOf(it) } ?: ApiUserSessionState.NEVER_LOGGED_IN
         }
-        
+
         fun saveToSharedPreferences(state: ApiUserSessionState) {
             Log.i("ApiUserSession", "Saving state: $state")
             sharedPrefs.edit {
@@ -102,7 +102,7 @@ object ApiActions {
             this.accessToken = null
             this.accessTokenRx = null
             this.accessTokenValidity = null
-            _state.value = ApiUserSessionState.NOT_LOGGED_IN
+            state_.value = ApiUserSessionState.NOT_LOGGED_IN
             saveToSharedPreferences(ApiUserSessionState.NOT_LOGGED_IN)
         }
 
@@ -138,7 +138,7 @@ object ApiActions {
             }
 
             if (this.passSalt == null) {
-                this._state.value = knownState
+                this.state_.value = knownState
                 return knownState
             }
 
@@ -173,7 +173,7 @@ object ApiActions {
                 Log.e("ApiUserSession", "Exception logging in user: ${e.message}")
                 knownState = ApiUserSessionState.CONNECTION_ERROR
             }
-            this._state.value = knownState
+            this.state_.value = knownState
             // persist state between runs
             saveToSharedPreferences(knownState)
             return knownState
@@ -191,7 +191,9 @@ object ApiActions {
          * If the server responds with a successful registration, the function will return REGISTERED.
          * If the server responds with an error, the function will return ERROR_BAD_PASSWORD or CONNECTION_ERROR.
          */
-        suspend fun register(username: String, email: String, passWord: String): ApiUserSessionState {
+        suspend fun register(
+            username: String, email: String, passWord: String
+        ): ApiUserSessionState {
             this.username = username
             this.email = email
 
@@ -231,7 +233,7 @@ object ApiActions {
                 Log.e("ApiUserSession", "Exception registering user: ${e.message}")
                 knownState = ApiUserSessionState.CONNECTION_ERROR
             }
-            this._state.value = knownState
+            this.state_.value = knownState
             // persist state between runs
             saveToSharedPreferences(knownState)
             return knownState
@@ -261,13 +263,13 @@ object ApiActions {
                     this.accessToken = "Bearer ${loginResponse.access_token}"
                     this.accessTokenRx = Instant.now()
                     this.accessTokenValidity = loginResponse.validity
-                    this._state.value = (ApiUserSessionState.LOGGED_IN)
+                    this.state_.value = (ApiUserSessionState.LOGGED_IN)
                 } catch (e: HttpException) {
                     Log.e("ApiUserSession", "HttpException logging in user: ${e.message}")
-                    this._state.value = (ApiUserSessionState.ERROR_BAD_PASSWORD)
+                    this.state_.value = (ApiUserSessionState.ERROR_BAD_PASSWORD)
                 } catch (e: Exception) {
                     Log.e("ApiUserSession", "Exception logging in user: ${e.message}")
-                    this._state.value = (ApiUserSessionState.CONNECTION_ERROR)
+                    this.state_.value = (ApiUserSessionState.CONNECTION_ERROR)
                 }
             }
 
@@ -290,7 +292,7 @@ object ApiActions {
         }
 
         fun setOfflineMode() {
-            this._state.value = ApiUserSessionState.NOT_LOGGED_IN
+            this.state_.value = ApiUserSessionState.NOT_LOGGED_IN
             saveToSharedPreferences(ApiUserSessionState.NOT_LOGGED_IN)
         }
 
@@ -316,9 +318,9 @@ object ApiActions {
     }
 
     object PrivacyPolicy {
-        private val _state =
+        internal val state_ =
             MutableLiveData<ApiPrivacyPolicyState>(ApiPrivacyPolicyState.NEVER_PROMPTED)
-        val state: LiveData<ApiPrivacyPolicyState> get() = _state
+        val state: LiveData<ApiPrivacyPolicyState> get() = state_
 
         var privacyPolicyLastUpdated: String = ""
         var privacyPolicyConsentedRevision: String = ""
@@ -328,10 +330,11 @@ object ApiActions {
             val state = sharedPrefs.getString(
                 "privacy_policy_state", ApiPrivacyPolicyState.NEVER_PROMPTED.toString()
             )?.let { ApiPrivacyPolicyState.valueOf(it) } ?: ApiPrivacyPolicyState.NEVER_PROMPTED
-            _state.postValue(state)
+            state_.postValue(state)
 
             // Load the last updated date from shared preferences
-            privacyPolicyLastUpdated = sharedPrefs.getString("privacy_policy_last_updated", "") ?: ""
+            privacyPolicyLastUpdated =
+                sharedPrefs.getString("privacy_policy_last_updated", "") ?: ""
             // Load the consented revision from shared preferences
             privacyPolicyConsentedRevision =
                 sharedPrefs.getString("privacy_policy_consented_revision", "") ?: ""
@@ -340,15 +343,16 @@ object ApiActions {
             // this ensures newer versions of the app will require the user to accept the privacy policy again
             if (state == ApiPrivacyPolicyState.ACCEPTED) {
                 if (privacyPolicyLastUpdated != privacyPolicyConsentedRevision) {
-                    _state.postValue(ApiPrivacyPolicyState.OUTDATED)
+                    state_.postValue(ApiPrivacyPolicyState.OUTDATED)
                 }
             }
         }
+
         /**
          * Accept the privacy policy and save the state to shared preferences.
          */
         fun accept() {
-            _state.postValue(ApiPrivacyPolicyState.ACCEPTED)
+            state_.postValue(ApiPrivacyPolicyState.ACCEPTED)
             privacyPolicyConsentedRevision = privacyPolicyLastUpdated
             sharedPrefs.edit {
                 putString("privacy_policy_state", ApiPrivacyPolicyState.ACCEPTED.toString())
@@ -361,7 +365,7 @@ object ApiActions {
          * Reject the privacy policy and save the state to shared preferences.
          */
         fun reject() {
-            _state.postValue(ApiPrivacyPolicyState.REJECTED)
+            state_.postValue(ApiPrivacyPolicyState.REJECTED)
             sharedPrefs.edit {
                 putString("privacy_policy_state", ApiPrivacyPolicyState.REJECTED.toString())
                 remove("privacy_policy_consented_revision")
@@ -373,7 +377,7 @@ object ApiActions {
          * Sets connection error state.
          */
         fun setConnectionError() {
-            _state.postValue(ApiPrivacyPolicyState.CONNECTION_ERROR)
+            state_.postValue(ApiPrivacyPolicyState.CONNECTION_ERROR)
             sharedPrefs.edit {
                 putString("privacy_policy_state", ApiPrivacyPolicyState.CONNECTION_ERROR.toString())
                 apply()
@@ -406,43 +410,73 @@ object ApiActions {
             return sharedPrefs.getString("privacy_policy_content", null)!!
         }
 
-        fun pollForOutdatedPrivacyPolicy() {
-            thread {
-                runBlocking {
-                    var upResponse: ApiModels.UpResponse? = null
-                    try {
-                        upResponse = apiService.up()
-                    } catch (_: Exception) {
-                        return@runBlocking
-                    }
-                    // Keep the latest status except for when it was updated
-                    if (privacyPolicyConsentedRevision != upResponse.privacy_policy_last_updated) {
-                        _state.postValue(ApiPrivacyPolicyState.OUTDATED)
-                    } else {
-                        _state.postValue(ApiPrivacyPolicyState.ACCEPTED)
-                    }
-                    if (privacyPolicyLastUpdated != upResponse.privacy_policy_last_updated) {
-                        var ppResponse: ApiModels.PrivacyPolicyResponse? = null
-                        try {
-                            ppResponse = apiService.getPrivacyPolicy(Locale.getDefault().language)
-                        } catch (_: Exception) {
-                            return@runBlocking
-                        }
-                        privacyPolicyLastUpdated =
-                            ppResponse.last_updated ?: privacyPolicyLastUpdated
-                        sharedPrefs.edit {
-                            putString("privacy_policy_last_updated", ppResponse.last_updated)
-                            putString("privacy_policy_content", ppResponse.content)
-                            apply()
-                        }
-                    }
-                }
+        suspend fun updatePrivacyPolicy() {
+            var ppResponse: ApiModels.PrivacyPolicyResponse? = null
+            try {
+                ppResponse = apiService.getPrivacyPolicy(Locale.getDefault().language)
+            } catch (_: Exception) {
+                return
+            }
+            if (ppResponse.last_updated == null || ppResponse.content == null) {
+                Log.e("ApiPrivacyPolicy", "Failed to fetch privacy policy content")
+                return
+            }
+            if (ppResponse.last_updated == privacyPolicyLastUpdated) {
+                Log.i("ApiPrivacyPolicy", "Privacy policy is already up to date")
+                return
+            }
+            privacyPolicyLastUpdated = ppResponse.last_updated ?: privacyPolicyLastUpdated
+            sharedPrefs.edit {
+                putString("privacy_policy_last_updated", ppResponse.last_updated)
+                putString("privacy_policy_content", ppResponse.content)
+                apply()
             }
         }
 
         fun isAccepted(): Boolean {
-            return _state.value == ApiPrivacyPolicyState.ACCEPTED
+            return state_.value == ApiPrivacyPolicyState.ACCEPTED
         }
 
+    }
+
+    object Common {
+        enum class PingFlag {
+            PRIVACY_POLICY_OUTDATED, CLIENT_DEPRECATED_WARNING, CLIENT_OBSOLETE_ERROR,
+        }
+
+        /**
+         * Returns a set of flags indicating required actions after a ping.
+         *
+         * Won't return any flags if the server is unreachable or the response is invalid.
+         */
+        suspend fun ping(): Set<PingFlag> {
+            val flags = mutableSetOf<PingFlag>()
+            var upResponse: ApiModels.UpResponse? = null
+            try {
+                upResponse = apiService.up()
+            } catch (_: Exception) {
+                return emptySet()
+            }
+            @Suppress("SENSELESS_COMPARISON") if (upResponse == null) {
+                return emptySet()
+            }
+
+            // Check if the privacy policy is outdated
+            val privacyPolicyLastUpdated = upResponse.privacy_policy_last_updated
+            val consentedRevision = PrivacyPolicy.privacyPolicyConsentedRevision
+            if (privacyPolicyLastUpdated != null && privacyPolicyLastUpdated != consentedRevision) {
+                flags.add(PingFlag.PRIVACY_POLICY_OUTDATED)
+            }
+            // Check if the client build number is deprecated or obsolete
+            val minimalBuildNumber = upResponse.client_build_number_minimal?.toIntOrNull()
+            val deprecatedBuildNumber = upResponse.client_build_number_deprecated?.toIntOrNull()
+            if (minimalBuildNumber != null && BuildConfig.VERSION_CODE < minimalBuildNumber) {
+                flags.add(PingFlag.CLIENT_OBSOLETE_ERROR)
+            } else if (deprecatedBuildNumber != null && BuildConfig.VERSION_CODE < deprecatedBuildNumber) {
+                flags.add(PingFlag.CLIENT_DEPRECATED_WARNING)
+            }
+            // Return flags
+            return flags
+        }
     }
 }

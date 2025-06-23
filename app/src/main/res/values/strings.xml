@@ -100,6 +100,10 @@
     <string name="low_compass_precision_title">Low Compass Precision</string>
     <string name="low_compass_precision_message">Please move your phone gently in circles to recalibrate the compass.</string>
     <string name="session_not_active">You must log in to your account first.</string>
+    <string name="client_deprecated_warning_title">Updating is recommended</string>
+    <string name="client_deprecated_warning_message">Please update the app.\nThis version is deprecated by the server.\nYou can still log in and upload sessions.</string>
+    <string name="client_obsolete_error_title">Obsolete version</string>
+    <string name="client_obsolete_error_message">Please update the app.\nThis application version is not allowed by the server.\nYou can\'t to log in.</string>
     // Beacon details view
     <string name="beacon_details">Beacon details</string>
     <string name="beacon_detail_description_hint">Optional beacon description</string>

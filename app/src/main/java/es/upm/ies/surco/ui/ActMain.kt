@@ -192,8 +192,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             // Login and logout buttons in the drawer
             val menuBtnLogin = binding.navViewHost.menu.findItem(R.id.nav_login)
             val menuBtnLogout = binding.navViewHost.menu.findItem(R.id.nav_logout)
-            val isUserLoggedIn =
-                ApiActions.User.state.value == ApiUserSessionState.LOGGED_IN
+            val isUserLoggedIn = ApiActions.User.state.value == ApiUserSessionState.LOGGED_IN
             menuBtnLogin.isVisible = isUserLoggedIn != true
             menuBtnLogout.isVisible = !menuBtnLogin.isVisible
             binding.navViewHost.invalidate()
