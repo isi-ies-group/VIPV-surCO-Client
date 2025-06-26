@@ -46,14 +46,14 @@ class BeaconSimplified(val id: Identifier) {
     val positionValue get() = position
     private var direction: Float? = null
     val directionValue get() = direction
-    private var tilt: Float? = null
+    private var tilt: Float? = 0.0f  // Default value is 0.0f, can be null if not set
     val tiltValue get() = tilt
     private val status: MutableLiveData<BeaconSimplifiedStatus> =
         MutableLiveData(BeaconSimplifiedStatus.INFO_MISSING)
     val statusValue: LiveData<BeaconSimplifiedStatus> get() = status
 
     /**
-     * Set the description, tilt, direction and position of the beacon, and refresh the status.
+     * Set the description, tilt, and position of the beacon, and refresh the status.
      */
     fun setDescription(description: String) {
         this.description = description
@@ -62,11 +62,6 @@ class BeaconSimplified(val id: Identifier) {
 
     fun setTilt(tilt: Float?) {
         this.tilt = tilt
-        refreshStatus()
-    }
-
-    fun setDirection(direction: Float?) {
-        this.direction = direction
         refreshStatus()
     }
 
@@ -82,7 +77,7 @@ class BeaconSimplified(val id: Identifier) {
      * Refreshes the status of the beacon.
      *
      * If the last data entry is older than the maximum offset, the status is set to OFFLINE.
-     * If the info fields (position, direction, or tilt) are empty, the status is set to INFO_MISSING.
+     * If the info fields (position, or tilt) are empty, the status is set to INFO_MISSING.
      * Else, the status is set to OK.
      * @return The new status of the beacon.
      */
@@ -93,7 +88,7 @@ class BeaconSimplified(val id: Identifier) {
         val newStatus = when {
             // Ordered by what is most important to report
             lastEntry == null || (now.epochSecond - lastEntry.timestamp.epochSecond > MAX_SECONDS_OFFSET_UNTIL_OUT_OF_RANGE) -> BeaconSimplifiedStatus.OFFLINE
-            position.isEmpty() || direction == null || tilt == null -> BeaconSimplifiedStatus.INFO_MISSING
+            position.isEmpty() || tilt == null -> BeaconSimplifiedStatus.INFO_MISSING
             else -> BeaconSimplifiedStatus.OK
         }
 
@@ -111,8 +106,6 @@ class BeaconSimplified(val id: Identifier) {
         copiedSensorData.addAll(originalSensorData)
         copy.sensorData = MutableLiveData(copiedSensorData)
         copy.description = description
-        copy.direction = direction
-        copy.tilt = tilt
         return copy
     }
 
@@ -122,15 +115,14 @@ class BeaconSimplified(val id: Identifier) {
     fun clear() {
         sensorData.value?.clear()
         description = ""
-        direction = null
-        tilt = null
+        tilt = 0.0f
     }
 
     /**
      * toString representation of the beacon.
      */
     override fun toString(): String {
-        return "BeaconSimplified(id=$id, position='$position', direction=$direction, tilt=$tilt, status=${status.value}, description='$description')"
+        return "BeaconSimplified(id=$id, position='$position', tilt=$tilt, status=${status.value}, description='$description')"
     }
 
     /**

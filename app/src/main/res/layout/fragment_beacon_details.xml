@@ -54,7 +54,7 @@
         app:layout_constraintTop_toBottomOf="@+id/headerIdentifier" />
 
     <TableLayout
-        android:id="@+id/tableLayoutTiltDirection"
+        android:id="@+id/tableLayoutTilt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30sp"
@@ -118,41 +118,6 @@
                 android:textSize="28sp" />
         </TableRow>
 
-        <TableRow
-            android:id="@+id/tableRowDirection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="30sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <TextView
-                android:id="@+id/textViewDirection"
-                android:labelFor="@id/editTextDirection"
-                android:text="@string/beacon_detail_direction"
-                android:textSize="16sp" />
-
-            <Space
-                android:layout_width="0sp"
-                android:layout_height="wrap_content" />
-
-            <EditText
-                android:id="@+id/editTextDirection"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:autofillHints=""
-                android:ems="5"
-                android:inputType="number"
-                android:minHeight="48sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/degree_symbol"
-                android:textSize="28sp" />
-
-        </TableRow>
-
     </TableLayout>
 
     <EditText
@@ -170,7 +135,7 @@
         android:minHeight="48sp"
         android:minLines="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayoutTiltDirection" />
+        app:layout_constraintTop_toBottomOf="@+id/tableLayoutTilt" />
 
     <LinearLayout
         android:layout_width="match_parent"

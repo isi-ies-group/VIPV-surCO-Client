@@ -46,13 +46,6 @@ class FragBeaconDetails : Fragment() {
             viewModel.beacon.value?.setTilt(s.toString().toFloatOrNull())
         }
     }
-    private val directionTextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-        override fun afterTextChanged(s: Editable?) {
-            viewModel.beacon.value?.setDirection(s.toString().toFloatOrNull())
-        }
-    }
     private val positionSpinnerOnItemSelectedListener =
         object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -184,15 +177,12 @@ class FragBeaconDetails : Fragment() {
             // Remove listeners to avoid triggering the updateBeaconInfo method
             binding.editTextDescription.removeTextChangedListener(descriptionTextWatcher)
             binding.editTextTilt.removeTextChangedListener(tiltTextWatcher)
-            binding.editTextDirection.removeTextChangedListener(directionTextWatcher)
             binding.spinnerPosition.onItemSelectedListener = null
 
             binding.tvBeaconIdentifier.text = viewModel.beacon.value?.id.toString()
             binding.editTextDescription.setText(viewModel.beacon.value?.descriptionValue)
             val tilt = viewModel.beacon.value?.tiltValue?.toInt()?.toString()
             binding.editTextTilt.setText(tilt ?: "")
-            val direction = viewModel.beacon.value?.directionValue?.toInt()?.toString()
-            binding.editTextDirection.setText(direction ?: "")
 
             val positionKey =
                 positionMap.entries.find { it.value == viewModel.beacon.value?.positionValue }?.key
@@ -205,7 +195,6 @@ class FragBeaconDetails : Fragment() {
             // Reattach TextWatchers and OnItemSelectedListener
             binding.editTextDescription.addTextChangedListener(descriptionTextWatcher)
             binding.editTextTilt.addTextChangedListener(tiltTextWatcher)
-            binding.editTextDirection.addTextChangedListener(directionTextWatcher)
             binding.spinnerPosition.onItemSelectedListener = positionSpinnerOnItemSelectedListener
         }
     }
