@@ -88,12 +88,19 @@ class BeaconSimplified(val id: Identifier) {
         val newStatus = when {
             // Ordered by what is most important to report
             lastEntry == null || (now.epochSecond - lastEntry.timestamp.epochSecond > MAX_SECONDS_OFFSET_UNTIL_OUT_OF_RANGE) -> BeaconSimplifiedStatus.OFFLINE
-            position.isEmpty() || tilt == null -> BeaconSimplifiedStatus.INFO_MISSING
+            !isValidInfo() -> BeaconSimplifiedStatus.INFO_MISSING
             else -> BeaconSimplifiedStatus.OK
         }
 
         status.postValue(newStatus)
         return newStatus
+    }
+
+    /**
+     * Checks if the beacon has valid information.
+     */
+    fun isValidInfo(): Boolean {
+        return !(position.isEmpty() || tilt == null)
     }
 
     /**

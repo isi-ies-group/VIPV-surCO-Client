@@ -80,6 +80,10 @@ object SessionWriter {
         bufferedOutputStreamWriter.append("},")
         bufferedOutputStreamWriter.append("\"beacons\":[")  // Open "beacons"
         for ((index, beacon) in beacons.withIndex()) {
+            // Skip non-configured beacons.
+            if (!beacon.isValidInfo()) {
+                continue
+            }
             // Add a comma before the next element, as JSON does not allow trailing commas.
             // https://stackoverflow.com/questions/201782/can-you-use-a-trailing-comma-in-a-json-object
             if (index > 0) {
@@ -139,6 +143,11 @@ object SessionWriter {
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
 
         for (beacon in beacons) {
+            // Skip non-configured beacons.
+            if (!beacon.isValidInfo()) {
+                continue
+            }
+            // Dump to CSV the data of the beacon.
             for (entry in beacon.sensorData.value!!) {
                 val localizedTimestamp = ZonedDateTime.ofInstant(entry.timestamp, zoneId)
                 result.setLength(0)  // Clear the StringBuilder
