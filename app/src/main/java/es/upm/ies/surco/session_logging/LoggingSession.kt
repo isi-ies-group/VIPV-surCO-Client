@@ -224,7 +224,7 @@ object LoggingSession {
 
         // append the latest data to the temporary files
         dataCacheFile!!.outputStream().writer(Charsets.US_ASCII).use {
-            SessionWriter.V3.appendCsvBodyFromData(it, zone, beacons.value!!)
+            SessionWriter.appendCsvBodyFromData(it, zone, beacons.value!!)
             it.close()
         }
         // clear the data from the beacons to free memory
@@ -256,7 +256,7 @@ object LoggingSession {
 
         outFile.outputStream().writer(Charsets.UTF_8).use {
             // write the header
-            SessionWriter.V3.createJSONHeader(
+            SessionWriter.createJSONHeader(
                 it,
                 TimeZone.getDefault(),
                 temporaryBeacons,
@@ -265,13 +265,13 @@ object LoggingSession {
             )
             it.write("\n\n")  // separate the header from the bodies
             // write the beacon CSV header
-            SessionWriter.V3.appendCsvHeader(it)
+            SessionWriter.appendCsvHeader(it)
             // write the beacon body from the cached file
             if (dataCacheFile != null) {
-                SessionWriter.V3.appendCsvBodyFromTempFile(it, dataCacheFile!!)
+                SessionWriter.appendCsvBodyFromTempFile(it, dataCacheFile!!)
             }
             // write the beacons body from the beacons list
-            SessionWriter.V3.appendCsvBodyFromData(it, zone, temporaryBeacons)
+            SessionWriter.appendCsvBodyFromData(it, zone, temporaryBeacons)
             it.close()
         }
 

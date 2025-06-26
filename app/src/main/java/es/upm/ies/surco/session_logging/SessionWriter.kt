@@ -9,7 +9,6 @@ import java.util.Base64
 import java.util.TimeZone
 
 object SessionWriter {
-    object V3 {
         const val VERSION_SCHEME = 4
         /**
          * Creates the JSON line for the beacons static data (ID, tilt, orientation, description).
@@ -161,7 +160,6 @@ object SessionWriter {
         ) {
             tempFile.reader(Charsets.UTF_8).use { reader ->
                 reader.copyTo(outputStreamWriter)
-            }
         }
     }
 }
