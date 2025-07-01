@@ -28,7 +28,6 @@ class SessionWriterUT {
         val beacon0 = BeaconSimplified(Identifier.parse("0x010203040506"))
         beacon0.apply {
             setTilt(0.0f)
-            setDirection(0.0f)
             setDescription("Soy la cosita más linda y mona de este mundo.")
             setPosition("trunk")
         }
@@ -37,7 +36,6 @@ class SessionWriterUT {
         val beacon1 = BeaconSimplified(Identifier.parse("0x010203040507"))
         beacon1.apply {
             setTilt(10.0f)
-            setDirection(180.0f)
             setDescription("Soy la cosita más linda y mona de este mundo.")
             setPosition("roof")
         }
@@ -49,7 +47,7 @@ class SessionWriterUT {
 
         var body = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = body.outputStream().writer()
-        SessionWriter.V3.createJSONHeader(
+        SessionWriter.createJSONHeader(
             outputStreamWriter,
             TimeZone.getTimeZone("UTC"),
             beacons,
@@ -68,14 +66,12 @@ class SessionWriterUT {
             {
               "id": "0x010203040506",
               "tilt": 0.0,
-              "orientation": 0.0,
               "position": "trunk",
               "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
             },
             {
               "id": "0x010203040507",
               "tilt": 10.0,
-              "orientation": 180.0,
               "position": "roof",
               "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
             }
@@ -160,8 +156,8 @@ class SessionWriterUT {
 
         val file = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = file.outputStream().writer()
-        SessionWriter.V3.appendCsvHeader(outputStreamWriter)
-        SessionWriter.V3.appendCsvBodyFromData(outputStreamWriter, TimeZone.getTimeZone("UTC"), beacons)
+        SessionWriter.appendCsvHeader(outputStreamWriter)
+        SessionWriter.appendCsvBodyFromData(outputStreamWriter, TimeZone.getTimeZone("UTC"), beacons)
         outputStreamWriter.flush()
 
         val expected = """
