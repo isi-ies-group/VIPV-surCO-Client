@@ -124,16 +124,11 @@ object LoggingSession {
                 timestamp, data, latitude, longitude, azimuth
             )
             beaconMap[id] = newBeacon
-            beaconStatusMap[id] =
-                BeaconSimplifiedStatus.OFFLINE  // Required so it detects the first online
         }
         (beacons as MutableLiveData).value = ArrayList(beaconMap.values)
         // Notify observers of the updated beaconsData
         beacons.notifyObservers()
-
-        // Update the beacon's status
-        val currentStatus = beaconMap[id]?.statusValue?.value ?: BeaconSimplifiedStatus.OFFLINE
-        updateBeaconStatus(id, currentStatus)
+        updateBeaconCount()
     }
 
     /**
@@ -181,26 +176,18 @@ object LoggingSession {
      * Update the status of all beacons.
      */
     fun refreshBeaconStatuses() {
-        beaconMap.forEach { (id, beacon) ->
-            val newStatus = beacon.refreshStatus()
-            updateBeaconStatus(id, newStatus)
+        beaconMap.forEach { (_, beacon) ->
+            beacon.refreshStatus()
         }
     }
 
     /**
-     * Update the status of a beacon.
-     * @param id The identifier of the beacon.
-     * @param newStatus The new status of the beacon.
+     * Update the count of online beacons in the session.
      */
-    private fun updateBeaconStatus(id: Identifier, newStatus: BeaconSimplifiedStatus) {
-        val previousStatus = beaconStatusMap[id]
-        beaconStatusMap[id] = newStatus
-
-        if (previousStatus != BeaconSimplifiedStatus.OFFLINE && newStatus == BeaconSimplifiedStatus.OFFLINE) {
-            _nBeaconsOnline.postValue((_nBeaconsOnline.value ?: 0) - 1)
-        } else if (previousStatus == BeaconSimplifiedStatus.OFFLINE && newStatus != BeaconSimplifiedStatus.OFFLINE) {
-            _nBeaconsOnline.postValue((_nBeaconsOnline.value ?: 0) + 1)
-        }
+    private fun updateBeaconCount() {
+        _nBeaconsOnline.postValue(beaconMap.values.count { beacon ->
+            beacon.statusValue.value != BeaconSimplifiedStatus.OFFLINE
+        })
     }
 
     /**
