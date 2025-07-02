@@ -53,59 +53,51 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headerIdentifier" />
 
-    <TableLayout
-        android:id="@+id/tableLayoutTilt"
+    <LinearLayout
+        android:id="@+id/layoutTiltSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30sp"
         android:layout_marginVertical="5sp"
-        android:shrinkColumns="0,2"
+        android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@+id/tvBeaconStatusMessage">
 
-        <TableRow
-            android:id="@+id/tableRowPosition"
+        <!-- Spinner row -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="30sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            android:orientation="horizontal">
 
             <Spinner
                 android:id="@+id/spinnerPosition"
-                android:layout_width="235dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_span="5"
                 android:entries="@array/beacon_positions"
-                android:minHeight="48sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvBeaconStatusMessage" />
+                android:minHeight="48sp" />
+        </LinearLayout>
 
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/tableRowTilt"
+        <!-- Tilt row -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="30sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/textViewTilt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:labelFor="@id/editTextTilt"
                 android:text="@string/beacon_detail_tilt"
                 android:textSize="16sp" />
 
-            <Space
-                android:layout_width="80sp"
-                android:layout_height="wrap_content" />
-
             <EditText
                 android:id="@+id/editTextTilt"
-                android:layout_width="wrap_content"
+                android:layout_width="60dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:autofillHints=""
                 android:ems="5"
                 android:inputType="number"
@@ -116,9 +108,29 @@
                 android:layout_height="wrap_content"
                 android:text="@string/degree_symbol"
                 android:textSize="28sp" />
-        </TableRow>
 
-    </TableLayout>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/btnMeasureTilt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/measure_tilt" />
+
+            <TextView
+                android:id="@+id/tvTiltCurrentValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="3"
+                android:textAlignment="textEnd"
+                android:text="@string/no_degrees"
+                />
+        </LinearLayout>
+    </LinearLayout>
 
     <EditText
         android:id="@+id/editTextDescription"
@@ -135,7 +147,7 @@
         android:minHeight="48sp"
         android:minLines="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayoutTilt" />
+        app:layout_constraintTop_toBottomOf="@+id/layoutTiltSection" />
 
     <LinearLayout
         android:layout_width="match_parent"

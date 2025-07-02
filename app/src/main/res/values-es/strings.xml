@@ -76,6 +76,7 @@
     <string name="no_data_to_upload">No hay sesiones pasadas pendientes de subir</string>
     <string name="session_started">Sesión de medida iniciada</string>
     <string name="beacon_detail_out_of_range_error">No se ha visto la baliza últimamente</string>
+    <string name="measure_tilt">Medir</string>
     <string name="bad_email">Este correo no está registrado</string>
     <string name="bad_password">Contraseña incorrecta</string>
     <string name="prompt_email">Correo electrónico</string>

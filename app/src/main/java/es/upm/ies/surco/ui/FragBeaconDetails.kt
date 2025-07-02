@@ -130,9 +130,15 @@ class FragBeaconDetails : Fragment() {
             )
             binding.tvBeaconStatusMessage.text = contentDescription
         }
+
+        viewModel.tiltAngle.observe(viewLifecycleOwner) { tilt ->
+            binding.tvTiltCurrentValue.text =
+                getString(R.string.any_degrees_format, tilt?.toInt()?.toString() ?: "-")
+        }
     }
 
     private fun setupListeners() {
+        /** note listeners for editTexts and spinner are added in updateTextFields() */
         binding.imBtnDeleteBeacon.setOnClickListener {
             AlertDialog.Builder(requireContext()).setTitle(getString(R.string.empty_all_data))
                 .setMessage(getString(R.string.empty_all_data_confirmation))
@@ -154,7 +160,16 @@ class FragBeaconDetails : Fragment() {
                 }.show()
         }
 
-        /** note listeners for editTexts and spinner are added in updateTextFields() */
+        binding.btnMeasureTilt.setOnClickListener {
+            // get the current tilt value from the sensor and assign it to the beacon and textview
+            val tilt = viewModel.tiltAngle.value
+            if (tilt != null) {
+                viewModel.beacon.value?.setTilt(tilt)
+                binding.editTextTilt.removeTextChangedListener(tiltTextWatcher)
+                binding.editTextTilt.setText(tilt.toInt().toString())
+                binding.editTextTilt.addTextChangedListener(tiltTextWatcher)
+            }
+        }
     }
 
     private fun setupSpinner() {

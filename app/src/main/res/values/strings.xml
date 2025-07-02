@@ -16,6 +16,8 @@
     <string name="logo">Logo</string>
     <string name="NaN" translatable="false">NaN</string>
     <string name="degree_symbol" translatable="false">°</string>
+    <string name="no_degrees" translatable="false">-°</string>
+    <string name="any_degrees_format" translatable="false">%1$s</string>
     <string name="delete">Delete</string>
     <string name="was_deleted">Item deleted</string>
     <string name="share">Share</string>
@@ -122,6 +124,7 @@
     <string name="beacon_detail_ok">Beacon configured and online</string>
     <string name="beacon_detail_info_error">Missing required position data</string>
     <string name="beacon_detail_out_of_range_error">Could not see beacon during the last seconds</string>
+    <string name="measure_tilt">Measure</string>
     // Login view
     <string name="bad_email">This email is not registered</string>
     <string name="bad_password">Incorrect password</string>
