@@ -87,6 +87,7 @@
     <string name="beacons_detected_paused">Monitoring is disabled</string>
     <string name="beacon_last_read">Last read:</string>
     <string name="beacon_info_incomplete">Click to add missing required info fields.</string>
+    <string name="beacon_detail_position_unknown">Not set</string>
     <string name="empty_all_data">Delete all data?</string>
     <string name="empty_all_data_confirmation">This action can\'t be undone.</string>
     <string name="empty_session_nothing_to_do">Session cleared</string>

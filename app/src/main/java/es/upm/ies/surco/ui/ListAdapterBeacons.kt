@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import es.upm.ies.surco.R
+import es.upm.ies.surco.createPositionMap
 import es.upm.ies.surco.databinding.RowItemBeaconBinding
 import es.upm.ies.surco.session_logging.BeaconSimplified
 import es.upm.ies.surco.session_logging.BeaconSimplifiedStatus
@@ -24,6 +25,8 @@ class ListAdapterBeacons(
 ) : ArrayAdapter<BeaconSimplified>(activityContext, R.layout.row_item_beacon, beaconsList) {
 
     private val observers = mutableMapOf<String, Observer<BeaconSimplifiedStatus>>()
+
+    private val positionMap = createPositionMap(context)
 
     override fun getCount(): Int = beaconsList.size
 
@@ -45,16 +48,30 @@ class ListAdapterBeacons(
             view = convertView
         }
 
-        binding.tvBeaconIdentifier.text = beacon?.id.toString()
-        binding.tvBeaconLastReading.text = beacon?.sensorData?.value?.lastOrNull()?.data.toString()
-        binding.tvBeaconLastSeen.text = beacon?.sensorData?.value?.lastOrNull()?.timestamp?.let {
+        val beaconVal = beacon ?: return view // If beacon is null, return the view without updating
+        // Update the UI elements with beacon data
+        binding.tvBeaconIdentifier.text = beaconVal.id.toString()
+        binding.tvBeaconLastReading.text = beaconVal.sensorData.value?.lastOrNull()?.data.toString()
+        binding.tvBeaconLastSeen.text = beaconVal.sensorData.value?.lastOrNull()?.timestamp?.let {
             timestampFormatter.format(it)  // to local time
         }.orEmpty()
+        binding.tvBeaconPosition.text = beaconVal.positionValue.let { unlocalized ->
+            // Find key for where value is the unlocalized position string
+            positionMap.entries.find { it.value == unlocalized }?.key
+                ?: context.getString(R.string.beacon_detail_position_unknown)
+        }
+        binding.tvBeaconTilt.text = beaconVal.tiltValue.let {
+            if (it == null) {
+                context.getString(R.string.no_degrees)
+            } else {
+                context.getString(R.string.any_degrees_format, it.toInt().toString())
+                }
+        }
         binding.tvBeaconInfoIncomplete.visibility =
-            if (beacon?.statusValue?.value != BeaconSimplifiedStatus.INFO_MISSING) View.GONE else View.VISIBLE
+            if (beaconVal.statusValue.value != BeaconSimplifiedStatus.INFO_MISSING) View.GONE else View.VISIBLE
 
         // Remove existing observer if any
-        observers[beacon!!.id.toString()]?.let {
+        observers[beaconVal.id.toString()]?.let {
             beacon.statusValue.removeObserver(it)
         }
 
