@@ -17,7 +17,7 @@
     <string name="NaN" translatable="false">NaN</string>
     <string name="degree_symbol" translatable="false">°</string>
     <string name="no_degrees" translatable="false">-°</string>
-    <string name="any_degrees_format" translatable="false">%1$s</string>
+    <string name="any_degrees_format" translatable="false">∠%1$s°</string>
     <string name="delete">Delete</string>
     <string name="was_deleted">Item deleted</string>
     <string name="share">Share</string>
