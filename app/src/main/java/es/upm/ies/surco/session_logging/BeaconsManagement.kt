@@ -44,8 +44,6 @@ class BeaconSimplified(val id: Identifier) {
     val descriptionValue get() = description
     private var position: String = ""
     val positionValue get() = position
-    private var direction: Float? = null
-    val directionValue get() = direction
     private var tilt: Float? = 0.0f  // Default value is 0.0f, can be null if not set
     val tiltValue get() = tilt
     private val status: MutableLiveData<BeaconSimplifiedStatus> =

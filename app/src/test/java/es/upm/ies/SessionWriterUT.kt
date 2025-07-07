@@ -1,5 +1,6 @@
 package es.upm.ies
 
+import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.session_logging.SessionWriter
 import es.upm.ies.surco.session_logging.BeaconSimplified
 import es.upm.ies.surco.session_logging.LoggingSession
@@ -58,10 +59,18 @@ class SessionWriterUT {
 
         val expected = """
         {
-          "version_scheme": 3,
+          "version_scheme": ${SessionWriter.VERSION_SCHEME},
+          "app_version": "${BuildConfig.VERSION_CODE}",
           "timezone": "UTC",
           "start_localized_instant": "2021-10-01T12:00:00Z",
           "finish_localized_instant": "2021-10-01T12:30:00Z",
+          "device_info": {
+            "manufacturer": "unknown",
+            "model": "robolectric",
+            "device": "robolectric",
+            "android_version": "9",
+            "sdk_int": 28
+          },
           "beacons": [
             {
               "id": "0x010203040506",
@@ -95,7 +104,8 @@ class SessionWriterUT {
 
         // add two example beacons
         val beacon0 = BeaconSimplified(Identifier.parse("0x010203040506"))
-        beacons.add(beacon0)
+        beacon0.setTilt(1.0f)
+        beacon0.setPosition("trunk")
         beacon0.sensorData.value?.add(
             SensorEntry(
                 Instant.parse("2021-10-01T12:00:00Z"),
@@ -123,9 +133,11 @@ class SessionWriterUT {
                 65.2f,
             )
         )
+        beacons.add(beacon0)
 
         val beacon1 = BeaconSimplified(Identifier.parse("0x010203040507"))
-        beacons.add(beacon1)
+        beacon1.setTilt(2.0f)
+        beacon1.setPosition("roof")
         beacon1.sensorData.value?.add(
             SensorEntry(
                 Instant.parse("2021-10-01T12:00:00Z"),
@@ -153,6 +165,7 @@ class SessionWriterUT {
                 65.2f,
             )
         )
+        beacons.add(beacon1)
 
         val file = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = file.outputStream().writer()
