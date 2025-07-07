@@ -226,8 +226,7 @@ object LoggingSession {
     fun saveSession(): File? {
         // deep copy all beacons and their data to a temporary variable, and empty them later
         val temporaryBeacons =
-            beacons.value!!.filter { it.statusValue.value != BeaconSimplifiedStatus.INFO_MISSING }
-                .map { it.copy() }
+            beacons.value!!.filter { beacon -> beacon.isValidInfo() }.map { it.copy() }
         beacons.value!!.map { it.clear() }
         // exit if there is no data to save
         if ((temporaryBeacons.isEmpty() == true)  // no beacons
