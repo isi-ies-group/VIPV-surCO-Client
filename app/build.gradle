@@ -11,8 +11,8 @@ android {
         applicationId = 'es.upm.ies.surco'
         minSdk = 26
         targetSdk = 36
-        versionCode = 12
-        versionName = "0.3.1"
+        versionCode = 13
+        versionName = "0.3.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -26,10 +26,8 @@ android {
         release {
             minifyEnabled(true)
             shrinkResources(true)
-            proguardFiles(
-                getDefaultProguardFile('proguard-android-optimize.txt'),
-                'proguard-rules.pro'
-            )
+            proguardFiles(getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.pro')
             // BuildConfigField for production server URL
             buildConfigField("String", "SERVER_URL", "\"https://surco.ies.upm.es/\"")
             signingConfig = signingConfigs.debug
