@@ -71,7 +71,7 @@
     <string name="beacon_detail_tilt">Inclinación</string>
     <string name="beacon_detail_direction">Orientación</string>
     <string name="yes">Sí</string>
-    <string name="beacon_detail_position_unknown">No establecida</string>
+    <string name="beacon_detail_position_unknown">Posición desconocida</string>
     <string name="empty_all_data">¿Eliminar todo?</string>
     <string name="settings_api_address_hint">http:// o https://</string>
     <string name="no_data_to_upload">No hay sesiones pasadas pendientes de subir</string>
