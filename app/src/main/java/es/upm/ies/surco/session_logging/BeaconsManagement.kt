@@ -38,6 +38,7 @@ class BeaconSimplified(val id: Identifier) {
      * "The ADC data is of 16-bit in 2’s complement format."
      * Set initial capacity of 360.
      */
+    // IMPORTANT: Consider updating the copy method if you add properties to this class.
     var sensorData: MutableLiveData<ArrayList<SensorEntry>> =
         MutableLiveData<ArrayList<SensorEntry>>(ArrayList(360))
     private var description: String = ""
@@ -111,6 +112,8 @@ class BeaconSimplified(val id: Identifier) {
         copiedSensorData.addAll(originalSensorData)
         copy.sensorData = MutableLiveData(copiedSensorData)
         copy.description = description
+        copy.tilt = tilt
+        copy.position = position
         return copy
     }
 

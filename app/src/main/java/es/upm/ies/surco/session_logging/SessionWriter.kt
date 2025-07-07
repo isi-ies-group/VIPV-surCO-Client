@@ -142,10 +142,6 @@ object SessionWriter {
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
 
         for (beacon in beacons) {
-            // Skip non-configured beacons.
-            if (!beacon.isValidInfo()) {
-                continue
-            }
             // Dump to CSV the data of the beacon.
             for (entry in beacon.sensorData.value!!) {
                 val localizedTimestamp = ZonedDateTime.ofInstant(entry.timestamp, zoneId)
