@@ -161,7 +161,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             }
 
             R.id.nav_help -> {
-                openURL("${BuildConfig.SERVER_URL}/contact")
+                openURL("${BuildConfig.SERVER_URL}/#instructions")
                 true
             }
 

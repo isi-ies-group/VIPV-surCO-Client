@@ -30,13 +30,18 @@ class FragAbout : Fragment() {
         // Get the version name from the manifest
         val versionInfo =
             requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
-        // Set the version name and version code in the text view as: "Version: 1.0-1"
+        // Set the version name and version code in the text view as: "Version: 1.0.0 (1)"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {  // versionInfo.versionCode was deprecated in API level 28. Use versionCodeLong instead.
             binding.versionTextview.text =
                 getString(R.string.version, versionInfo.versionName, versionInfo.longVersionCode)
         } else {
             binding.versionTextview.text =
                 getString(R.string.version, versionInfo.versionName, versionInfo.versionCode)
+        }
+        // if not release, append the build type to the version text
+        @Suppress("SENSELESS_COMPARISON")
+        if (BuildConfig.BUILD_TYPE != "release") {
+            binding.versionTextview.append(" - ${BuildConfig.BUILD_TYPE}")
         }
 
         // Set the onClickListener for the buttons

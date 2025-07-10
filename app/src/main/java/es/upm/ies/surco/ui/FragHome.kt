@@ -121,6 +121,7 @@ class FragHome : Fragment() {
 
         // If the user has never logged in and privacy policy is accepted, navigate to the login fragment
         if (ApiActions.User.state.value == ApiUserSessionState.NEVER_LOGGED_IN && ApiActions.PrivacyPolicy.state.value == ApiPrivacyPolicyState.ACCEPTED) {
+            ApiActions.User.setOfflineMode()  // Avoid returning to login screen on loop by back pressing
             findNavController().navigate(R.id.action_homeFragment_to_fragLogin)
         }
 
