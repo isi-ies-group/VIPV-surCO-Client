@@ -34,7 +34,7 @@ android {
         }
         debug {
             // BuildConfigField for debug server URL
-            buildConfigField("String", "SERVER_URL", "\"http://192.168.1.42:5000\"")
+            buildConfigField("String", "SERVER_URL", "\"http://192.168.137.1:5000\"")
             // BuildConfigField for in-code debug flag
             buildConfigField("Boolean", "DEBUG", "true")
         }
