@@ -2,8 +2,6 @@ package es.upm.ies.surco.ui
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,8 +13,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.R
-import es.upm.ies.surco.databinding.FragmentLoginBinding
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.api.ApiUserSessionState
+import es.upm.ies.surco.databinding.FragmentLoginBinding
 
 class FragLogin : Fragment() {
     private var _binding: FragmentLoginBinding? = null
@@ -68,77 +67,41 @@ class FragLogin : Fragment() {
             binding.pbLogin.visibility = View.INVISIBLE
         }
 
-        // observe the login button enabled status
-        viewModel.loginButtonEnabled.observe(viewLifecycleOwner) { enabled ->
-            binding.btnLogin.isEnabled = enabled
-        }
-
-        // observe the email and password invalid flags and set the error messages accordingly
-        viewModel.emailInvalid.observe(viewLifecycleOwner) { invalid ->
-            if (invalid) {
-                binding.etEmail.error = getString(R.string.invalid_email)
-            } else {
-                binding.etEmail.error = null
-            }
-        }
-
-        viewModel.passwordInvalid.observe(viewLifecycleOwner) { invalid ->
-            if (invalid) {
-                binding.etPassword.error = getString(R.string.invalid_password)
-            } else {
-                binding.etPassword.error = null
-            }
-        }
-
-        binding.etEmail.setText(viewModel.email.value, TextView.BufferType.EDITABLE)
-        binding.etPassword.setText(viewModel.password.value, TextView.BufferType.EDITABLE)
-
-        binding.etEmail.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                viewModel.email.value = s.toString()
-            }
-
-            override fun beforeTextChanged(
-                s: CharSequence?, start: Int, count: Int, after: Int
-            ) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            }
-        })
-        binding.etPassword.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                viewModel.password.value = s.toString()
-            }
-
-            override fun beforeTextChanged(
-                s: CharSequence?, start: Int, count: Int, after: Int
-            ) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            }
-        })
+        binding.etEmail.setText(viewModel.email, TextView.BufferType.EDITABLE)
+        binding.etPassword.setText(viewModel.password, TextView.BufferType.EDITABLE)
 
         binding.btnLogin.setOnClickListener {
             // close the keyboard
-            // Only runs if there is a view that is currently focused
             activity?.currentFocus?.let { view ->
                 val imm =
                     requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
 
-            // clear errors on editTexts
+            // clear previous errors
             binding.etEmail.error = null
             binding.etPassword.error = null
 
-            // show the user the login is in progress
-            binding.btnLogin.isEnabled = false
+            val email = binding.etEmail.text.toString()
+            val password = binding.etPassword.text.toString()
+            var valid = true
+
+            if (!ApiActions.User.CredentialsValidator.isEmailValid(email)) {
+                binding.etEmail.error = getString(R.string.invalid_email)
+                valid = false
+            }
+            if (!ApiActions.User.CredentialsValidator.isPasswordValid(password)) {
+                binding.etPassword.error = getString(R.string.invalid_password)
+                valid = false
+            }
+
+            if (!valid) return@setOnClickListener
+
+            // show progress
             binding.pbLogin.visibility = View.VISIBLE
 
-            viewModel.email.value = binding.etEmail.text.toString()
-            viewModel.password.value = binding.etPassword.text.toString()
+            viewModel.email = email
+            viewModel.password = password
             viewModel.doLogin()
         }
 

@@ -125,7 +125,8 @@
         <item>Automáticamente al conectar a WiFi y redes no itinerantes</item>
         <item>Manualmente</item>
     </array>
-    <string name="want_to_use_offline_question">¿Quieres tomar medidas solo para ti?</string>
+    <string name="want_to_use_offline_question">¿Prefieres tomar medidas solo para ti?</string>
+    <string name="want_to_use_offline_description">Puedes usar la aplicación sin cuenta, pero no se compartirán datos para investigación científica.</string>
     <string name="continue_offline">Continuar sin cuenta</string>
     <string name="beacon_info_incomplete">Añada los campos de información requeridos.</string>
     <string name="beacon_detail_ok">Baliza configurada y comunicándose</string>

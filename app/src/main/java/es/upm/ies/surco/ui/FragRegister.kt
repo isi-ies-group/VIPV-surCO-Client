@@ -2,8 +2,6 @@ package es.upm.ies.surco.ui
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import es.upm.ies.surco.api.ApiUserSessionState
 import es.upm.ies.surco.R
+import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.databinding.FragmentRegisterBinding
 
 class FragRegister : Fragment() {
@@ -24,8 +23,7 @@ class FragRegister : Fragment() {
     private val viewModel: FragRegisterViewModel by viewModels()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentRegisterBinding.inflate(inflater, container, false)
         return binding.root
@@ -62,11 +60,6 @@ class FragRegister : Fragment() {
             binding.pbLogin.visibility = View.INVISIBLE
         }
 
-        // observe the login button enabled status
-        viewModel.registerButtonEnabled.observe(viewLifecycleOwner) { enabled ->
-            binding.btnRegister.isEnabled = enabled
-        }
-
         // observe the username, email, password, and password2 invalid flags
         // and set the error messages accordingly
         viewModel.usernameInvalid.observe(viewLifecycleOwner) { invalid ->
@@ -85,77 +78,54 @@ class FragRegister : Fragment() {
             }
         }
 
-        viewModel.passwordInvalid.observe(viewLifecycleOwner) { invalid ->
-            if (invalid) {
-                binding.etPassword.error = getString(R.string.invalid_password)
-            } else {
-                binding.etPassword.error = null
-            }
-        }
-
-        viewModel.password2Invalid.observe(viewLifecycleOwner) { invalid ->
-            if (invalid) {
-                binding.etPassword2.error = getString(R.string.invalid_password_equals)
-            } else {
-                binding.etPassword2.error = null
-            }
-        }
-
         // set the text fields to the values in the view model
         binding.etUsername.setText(viewModel.username.value, TextView.BufferType.EDITABLE)
         binding.etEmail.setText(viewModel.email.value, TextView.BufferType.EDITABLE)
         binding.etPassword.setText(viewModel.password.value, TextView.BufferType.EDITABLE)
         binding.etPassword2.setText(viewModel.password2.value, TextView.BufferType.EDITABLE)
 
-        // assign viewmodel text fields to the actual text fields on text changes
-        binding.etUsername.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                viewModel.username.value = s.toString()
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-        binding.etEmail.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                viewModel.email.value = s.toString()
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-        binding.etPassword.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                viewModel.password.value = s.toString()
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-        binding.etPassword2.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                viewModel.password2.value = s.toString()
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-
         binding.btnRegister.setOnClickListener {
-            // close the keyboard
-            // Only runs if there is a view that is currently focused
+            // Hide keyboard
             activity?.currentFocus?.let { view ->
                 val imm =
                     requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
 
-            // show the user the login is in progress
-            binding.btnRegister.isEnabled = false
-            binding.pbLogin.visibility = View.VISIBLE
+            // Clear previous errors
+            binding.etUsername.error = null
+            binding.etEmail.error = null
+            binding.etPassword.error = null
+            binding.etPassword2.error = null
 
-            viewModel.email.value = binding.etEmail.text.toString()
-            viewModel.password.value = binding.etPassword.text.toString()
+            val username = binding.etUsername.text.toString()
+            val email = binding.etEmail.text.toString()
+            val password = binding.etPassword.text.toString()
+            val password2 = binding.etPassword2.text.toString()
+            var valid = true
+
+            if (!ApiActions.User.CredentialsValidator.isUsernameValid(username)) {
+                binding.etUsername.error = getString(R.string.invalid_username)
+                valid = false
+            } else if (!ApiActions.User.CredentialsValidator.isEmailValid(email)) {
+                binding.etEmail.error = getString(R.string.invalid_email)
+                valid = false
+            } else if (!ApiActions.User.CredentialsValidator.isPasswordValid(password)) {
+                binding.etPassword.error = getString(R.string.invalid_password)
+                valid = false
+            } else if (password2 != password) {
+                binding.etPassword2.error = getString(R.string.invalid_password_equals)
+                valid = false
+            }
+
+            if (!valid) return@setOnClickListener
+
+            // Show progress and proceed with registration
+            binding.pbLogin.visibility = View.VISIBLE
+            viewModel.username.value = username
+            viewModel.email.value = email
+            viewModel.password.value = password
+            viewModel.password2.value = password2
             viewModel.doRegister()
         }
     }

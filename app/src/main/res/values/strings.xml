@@ -160,7 +160,8 @@
     <string name="notification_no_location_text">Location disabled.</string>
     <string name="notification_no_bluetooth_text">Bluetooth disabled.</string>
     // Misc
-    <string name="want_to_use_offline_question">Prefer to take measurements for yourself?</string>
+    <string name="want_to_use_offline_question">Prefer taking measurements for yourself?</string>
+    <string name="want_to_use_offline_description">You can use the app without an account, but you won\'t be able to upload data for scientific research.</string>
     <string name="continue_offline">Continue without account</string>
     // Manage Sessions
     <string name="manage_sessions">Manage cached sessions</string>
