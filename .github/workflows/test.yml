@@ -1,13 +1,9 @@
-name: Publish Release
-
-# This workflow builds the Android APK and publishes it as a release on GitHub.
-# It is triggered on tag pushes that match the pattern 'v*' or manually via workflow_dispatch.
-# Tags are expected to follow semantic versioning, e.g., v1.0.0, v1.0.1-alpha, etc.
+name: Run test suite
 
 on:
   push:
-    tags:
-      - 'v*.*.*'  # Matches tags like v1.0.0, v1.0.1-alpha, etc.
+    - [main]
+  pull:
   workflow_dispatch:
 
 jobs:
