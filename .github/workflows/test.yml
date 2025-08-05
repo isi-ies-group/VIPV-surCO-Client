@@ -2,12 +2,11 @@ name: Run test suite
 
 on:
   push:
-    - [main]
-  pull:
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  publish:
+  test:
     runs-on: [ubuntu-latest]
     environment: release  # has the secrets defined
 
@@ -38,70 +37,3 @@ jobs:
       - name: Run Tests
         run: |
           ./gradlew --no-daemon test
-
-      - name: Build Release APK
-        run: |
-          ./gradlew --no-daemon assembleRelease
-
-      - name: Run Zipalign
-        run: |
-          $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools | sort -r | head -1)/zipalign -v 4 \
-            app/build/outputs/apk/release/app-release.apk \
-            app/build/outputs/apk/release/app-release-aligned.apk
-
-      - name: Sign APK
-        shell: bash
-        run: |
-          # Decode Keystore
-          echo "${{ secrets.KEYSTORE_FILE }}" > keystore.b64
-          base64 -d keystore.b64 > app/keystore.jks
-          apksigner sign \
-            --ks app/keystore.jks \
-            --ks-key-alias ${{ secrets.KEY_ALIAS }} \
-            --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-            --key-pass pass:${{ secrets.KEY_PASSWORD }} \
-            --out app/build/outputs/apk/release/app-release-signed.apk \
-            app/build/outputs/apk/release/app-release-aligned.apk
-
-      - name: Verify APK Signature
-        run: |
-          apksigner verify --verbose app/build/outputs/apk/release/app-release-signed.apk
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: app/build/outputs/apk/release/app-release-signed.apk
-          if-no-files-found: error
-          overwrite: true
-
-      - name: Check if release is prerelease
-        id: check_prerelease
-        run: |
-          if [[ "${{ github.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
-            echo "prerelease=true" >> $GITHUB_ENV
-          else
-            echo "prerelease=false" >> $GITHUB_ENV
-          fi
-          echo "prerelease = ${{ env.prerelease }}"
-
-      - name: Sanitize and form release information
-        run: |
-          # Remove 'refs/tags/' prefix from the tag name
-          sanitized_tag="${GITHUB_REF#refs/tags/}"
-          echo "sanitized_tag=${sanitized_tag}" >> $GITHUB_ENV
-          echo "Sanitized tag: $sanitized_tag"
-
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ env.sanitized_tag }}
-          files: |
-            app/build/outputs/apk/release/app-release-signed.apk
-          draft: false
-          prerelease: ${{ env.prerelease == 'true' }}
-          # TODO: Add release notes in body
