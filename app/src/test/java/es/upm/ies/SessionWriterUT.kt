@@ -5,9 +5,9 @@ import es.upm.ies.surco.session_logging.SessionWriter
 import es.upm.ies.surco.session_logging.BeaconSimplified
 import es.upm.ies.surco.session_logging.LoggingSession
 import es.upm.ies.surco.session_logging.SensorEntry
-import org.altbeacon.beacon.Identifier
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.Assert.assertEquals
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLooper
@@ -21,12 +21,10 @@ import java.util.TimeZone
 class SessionWriterUT {
     @Test
     fun createJSONHeader() {
-        val beaconsCollectionRef = LoggingSession
-
-        val beacons = beaconsCollectionRef.beacons.value!!
+        val beacons = arrayListOf<BeaconSimplified>()
 
         // add two example beacons
-        val beacon0 = BeaconSimplified(Identifier.parse("0x010203040506"))
+        val beacon0 = BeaconSimplified("01:02:03:04:05:06")
         beacon0.apply {
             setTilt(0.0f)
             setDescription("Soy la cosita más linda y mona de este mundo.")
@@ -34,7 +32,7 @@ class SessionWriterUT {
         }
         beacons.add(beacon0)
 
-        val beacon1 = BeaconSimplified(Identifier.parse("0x010203040507"))
+        val beacon1 = BeaconSimplified("01:02:03:04:05:07")
         beacon1.apply {
             setTilt(10.0f)
             setDescription("Soy la cosita más linda y mona de este mundo.")
@@ -73,13 +71,13 @@ class SessionWriterUT {
           },
           "beacons": [
             {
-              "id": "0x010203040506",
+              "id": "01:02:03:04:05:06",
               "tilt": 0.0,
               "position": "trunk",
               "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
             },
             {
-              "id": "0x010203040507",
+              "id": "01:02:03:04:05:07",
               "tilt": 10.0,
               "position": "roof",
               "description": "U295IGxhIGNvc2l0YSBtw6FzIGxpbmRhIHkgbW9uYSBkZSBlc3RlIG11bmRvLg=="
@@ -90,7 +88,7 @@ class SessionWriterUT {
 
         val jsonHeaderFormatted = body.readText().replace("\n", "").replace(" ", "")
 
-        assert(jsonHeaderFormatted == expected)
+        assertEquals(expected, jsonHeaderFormatted)
 
         // Ensure all tasks on the main looper are executed
         ShadowLooper.idleMainLooper()
@@ -103,7 +101,7 @@ class SessionWriterUT {
         val beacons = beaconsCollectionRef.beacons.value!!
 
         // add two example beacons
-        val beacon0 = BeaconSimplified(Identifier.parse("0x010203040506"))
+        val beacon0 = BeaconSimplified("01:02:03:04:05:06")
         beacon0.setTilt(1.0f)
         beacon0.setPosition("trunk")
         beacon0.sensorData.value?.add(
@@ -135,7 +133,7 @@ class SessionWriterUT {
         )
         beacons.add(beacon0)
 
-        val beacon1 = BeaconSimplified(Identifier.parse("0x010203040507"))
+        val beacon1 = BeaconSimplified("01:02:03:04:05:07")
         beacon1.setTilt(2.0f)
         beacon1.setPosition("roof")
         beacon1.sensorData.value?.add(
@@ -175,17 +173,17 @@ class SessionWriterUT {
 
         val expected = """
         beacon_id,localized_timestamp,data,latitude,longitude,azimuth
-        0x010203040506,12:00:00.000,127,14.0,15.0,65.0
-        0x010203040506,12:00:01.000,126,14.1,15.1,65.1
-        0x010203040506,12:00:02.000,125,14.2,15.2,65.2
-        0x010203040507,12:00:00.000,127,14.0,15.0,65.0
-        0x010203040507,12:00:01.000,128,14.1,15.1,65.1
-        0x010203040507,12:00:02.000,129,14.2,15.2,65.2
+        01:02:03:04:05:06,12:00:00.000,127,14.0,15.0,65.0
+        01:02:03:04:05:06,12:00:01.000,126,14.1,15.1,65.1
+        01:02:03:04:05:06,12:00:02.000,125,14.2,15.2,65.2
+        01:02:03:04:05:07,12:00:00.000,127,14.0,15.0,65.0
+        01:02:03:04:05:07,12:00:01.000,128,14.1,15.1,65.1
+        01:02:03:04:05:07,12:00:02.000,129,14.2,15.2,65.2
         
         """.trimIndent()  // remove leading whitespaces; last line is the trailing newline
 
         val csvBodyFormatted = file.readText().replace(" ", "")
 
-        assert(csvBodyFormatted == expected)
+        assertEquals(expected, csvBodyFormatted)
     }
 }

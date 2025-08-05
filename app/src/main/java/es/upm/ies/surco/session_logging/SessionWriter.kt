@@ -96,6 +96,7 @@ object SessionWriter {
                 .encodeToString(beacon.descriptionValue.toByteArray(Charsets.UTF_8))
             bufferedOutputStreamWriter.append("\"id\":\"${beacon.id}\",")
             bufferedOutputStreamWriter.append("\"tilt\":${beacon.tiltValue},")
+            bufferedOutputStreamWriter.append("\"position\":\"${beacon.positionValue}\",")
             bufferedOutputStreamWriter.append("\"description\":\"$base64encodedDescription\"")
 
             bufferedOutputStreamWriter.append("}")  // Close the unique beacon object.
