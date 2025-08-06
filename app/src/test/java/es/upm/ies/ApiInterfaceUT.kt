@@ -6,7 +6,7 @@ import es.upm.ies.surco.api.APIService
 import es.upm.ies.surco.api.ApiActions
 import es.upm.ies.surco.api.ApiModels
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Disabled
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.BeforeClass
 import retrofit2.HttpException
@@ -19,7 +19,7 @@ import retrofit2.converter.gson.GsonConverterFactory
  * SHOULD BE EASY TO FIX, BUT IT IS NOT A PRIORITY RIGHT NOW (sry, June 2025)
  */
 
-@Disabled("Disabled for CI/CD to work, as it requires a running API server.")
+@Ignore("Disabled for CI/CD to work, as it requires a running API server.")
 class ApiInterfaceUT {
     companion object {
         const val ENDPOINT = "http://127.0.0.1:5000/"

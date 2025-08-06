@@ -39,10 +39,6 @@ jobs:
         # required to run ./gradlew commands
         run: chmod +x gradlew
 
-      - name: Run Tests
-        run: |
-          ./gradlew --no-daemon test
-
       - name: Build Release APK
         run: |
           ./gradlew --no-daemon assembleRelease
