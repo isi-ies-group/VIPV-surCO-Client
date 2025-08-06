@@ -2,7 +2,6 @@ package es.upm.ies.surco.session_logging
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import org.altbeacon.beacon.Identifier
 import java.time.Instant
 
 /**
@@ -32,7 +31,7 @@ enum class BeaconSimplifiedStatus {
  * @param id The identifier of the beacon.
  * @property sensorData The data received from the beacon.
  */
-class BeaconSimplified(val id: Identifier) {
+class BeaconSimplified(val id: String) {
     /**
      * The data received from the analog channel of the beacon. From the NanoBeacon Config Tool User Guide EN.pdf:
      * "The ADC data is of 16-bit in 2’s complement format."

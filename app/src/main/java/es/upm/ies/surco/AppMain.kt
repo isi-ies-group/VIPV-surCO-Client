@@ -160,7 +160,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      */
     fun addSensorDataEntry(
         timestamp: Instant,
-        id: Identifier,
+        id: String,
         data: Short,
         latitude: Float,
         longitude: Float,
