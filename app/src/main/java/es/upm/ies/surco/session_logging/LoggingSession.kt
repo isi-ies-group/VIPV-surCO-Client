@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import es.upm.ies.surco.formatAsPathSafeString
 import es.upm.ies.surco.notifyObservers
-import org.altbeacon.beacon.Identifier
 import java.io.File
 import java.time.Instant
 import java.time.ZonedDateTime
@@ -59,7 +58,7 @@ object LoggingSession {
      * BLE beacons data during the session.
      */
     // Use a Map for O(1) lookups by beacon ID
-    private val beaconMap = mutableMapOf<Identifier, BeaconSimplified>()
+    private val beaconMap = mutableMapOf<String, BeaconSimplified>()
     val beacons: LiveData<ArrayList<BeaconSimplified>> =
         MutableLiveData<ArrayList<BeaconSimplified>>().apply {
             value = ArrayList(beaconMap.values)
@@ -69,7 +68,7 @@ object LoggingSession {
     /**
      * Number of online beacons tracking in the session.
      */
-    private val beaconStatusMap = mutableMapOf<Identifier, BeaconSimplifiedStatus>()
+    private val beaconStatusMap = mutableMapOf<String, BeaconSimplifiedStatus>()
     private val _nBeaconsOnline: MutableLiveData<Int> = MutableLiveData(0)
     val nBeaconsOnline: LiveData<Int> get() = _nBeaconsOnline
 
@@ -104,7 +103,7 @@ object LoggingSession {
      */
     fun addBLESensorEntry(
         timestamp: Instant,
-        id: Identifier,
+        id: String,
         data: Short,
         latitude: Float,
         longitude: Float,
@@ -144,7 +143,7 @@ object LoggingSession {
      * @param id The identifier of the beacon.
      * @return The beacon with the given identifier.
      */
-    fun getBeacon(id: Identifier): BeaconSimplified? {
+    fun getBeacon(id: String): BeaconSimplified? {
         return beaconMap[id]
     }
 
@@ -164,7 +163,7 @@ object LoggingSession {
      * Removes the beacon with the given identifier from the list.
      * @param id The identifier of the beacon.
      */
-    fun removeBeacon(id: Identifier) {
+    fun removeBeacon(id: String) {
         beaconMap.remove(id)
         (beacons as MutableLiveData).value = ArrayList(beaconMap.values)
         beacons.notifyObservers()

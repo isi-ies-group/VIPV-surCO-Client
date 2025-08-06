@@ -12,13 +12,12 @@ import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.session_logging.BeaconSimplified
 import es.upm.ies.surco.session_logging.BeaconSimplifiedStatus
 import es.upm.ies.surco.session_logging.SensorEntry
-import org.altbeacon.beacon.Identifier
 import kotlin.math.atan
 import kotlin.math.sqrt
 
 class FragBeaconDetailsViewModel(application: Application) : AndroidViewModel(application) {
     private val appMain by lazy { getApplication<AppMain>() }
-    private var beaconId: Identifier? = null
+    private var beaconId: String? = null
 
     private var _beacon = MutableLiveData<BeaconSimplified?>()
     val beacon: LiveData<BeaconSimplified?> get() = _beacon
@@ -38,8 +37,7 @@ class FragBeaconDetailsViewModel(application: Application) : AndroidViewModel(ap
 
             // Calculate tilt angle (-90° to +90° range)
             // 0° when device is flat, 90° when vertical
-            var tilt =
-                Math.toDegrees(atan(sqrt((x * x + y * y)) / z).toDouble()).toFloat()
+            var tilt = Math.toDegrees(atan(sqrt((x * x + y * y)) / z).toDouble()).toFloat()
             if (tilt < 0.0f) {
                 tilt += 180.0f // Adjust to ensure tilt is in the range of 0° to 180°
             }
@@ -62,7 +60,7 @@ class FragBeaconDetailsViewModel(application: Application) : AndroidViewModel(ap
      * Sets the beacon with the given identifier.
      * @param id The identifier of the beacon.
      */
-    fun setBeaconId(id: Identifier) {
+    fun setBeaconId(id: String) {
         if (id != beaconId) {
             beaconId = id
             _beacon.value = appMain.loggingSession.getBeacon(id)
@@ -73,10 +71,8 @@ class FragBeaconDetailsViewModel(application: Application) : AndroidViewModel(ap
     /**
      * Loads the beacon with the given identifier.
      */
-    fun loadBeacon(id: String?) {
-        if (id != null) {
-            setBeaconId(Identifier.parse(id))
-        }
+    fun loadBeacon(id: String) {
+        setBeaconId(id)
     }
 
     /**
