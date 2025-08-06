@@ -50,9 +50,12 @@ object LoggingSession {
     /**
      * Time span of the session.
      */
-    private var zone: TimeZone = TimeZone.getDefault()
-    private var startZonedDateTime: ZonedDateTime? = null
-    private var stopZonedDateTime: ZonedDateTime? = null
+    var zone: TimeZone = TimeZone.getDefault()
+        private set
+    var startZonedDateTime: ZonedDateTime? = null
+        private set
+    var stopZonedDateTime: ZonedDateTime? = null
+        private set
 
     /**
      * BLE beacons data during the session.

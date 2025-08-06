@@ -26,7 +26,6 @@ import es.upm.ies.surco.workers.SessionFilesUploadWorker
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
-import org.altbeacon.beacon.Identifier
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Instant
@@ -147,14 +146,14 @@ class AppMain : Application(), ComponentCallbacks2 {
             val data = beacon.dataFields
             // analogReading is the CH1 analog value, as two bytes in little endian
             val analogReading = data[0].toShort()
-            addSensorDataEntry(timestamp, id, analogReading, latitude, longitude, azimuth)
+            addSensorDataEntry(timestamp, id.toString(), analogReading, latitude, longitude, azimuth)
         }
     }
 
     /**
      * Add sensor data entry to the loggingSession
      * @param timestamp: Instant, timestamp of the data
-     * @param id: Identifier, identifier of the beacon
+     * @param id: String, identifier of the beacon
      * @param data: Short, data to be added to the beacon
      *
      */

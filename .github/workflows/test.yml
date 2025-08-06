@@ -36,4 +36,4 @@ jobs:
 
       - name: Run Tests
         run: |
-          ./gradlew --no-daemon test
+          ./gradlew --no-daemon --warning-mode all test

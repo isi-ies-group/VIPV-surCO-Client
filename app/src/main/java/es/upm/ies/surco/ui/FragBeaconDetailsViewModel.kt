@@ -86,9 +86,12 @@ class FragBeaconDetailsViewModel(application: Application) : AndroidViewModel(ap
     }
 
     private fun initializeSensors() {
-        sensorManager = getApplication<Application>().getSystemService(Application.SENSOR_SERVICE) as? SensorManager
+        sensorManager =
+            getApplication<Application>().getSystemService(Application.SENSOR_SERVICE) as? SensorManager
         accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-        sensorManager?.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
+        sensorManager?.registerListener(
+            sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME
+        )
     }
 }
