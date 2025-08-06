@@ -23,9 +23,6 @@ import es.upm.ies.surco.session_logging.LoggingSession
 import es.upm.ies.surco.session_logging.LoggingSessionStatus
 import es.upm.ies.surco.ui.ActMain
 import es.upm.ies.surco.workers.SessionFilesUploadWorker
-import org.altbeacon.beacon.Beacon
-import org.altbeacon.beacon.BeaconManager
-import org.altbeacon.beacon.BeaconParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Instant
@@ -40,7 +37,6 @@ class AppMain : Application(), ComponentCallbacks2 {
 
     // Beacons abstractions
     var loggingSession = LoggingSession
-    lateinit var beaconManager: BeaconManager
 
     // -- for public use by UI --
     val wasUploadedSuccessfully = MutableLiveData<Boolean>(false)  // set by the worker
@@ -95,19 +91,6 @@ class AppMain : Application(), ComponentCallbacks2 {
             Log.e(TAG, "Invalid scan interval")
             scanInterval = DEFAULT_SCAN_WINDOW_INTERVAL
         }
-
-        beaconManager = BeaconManager.getInstanceForApplication(this)
-        // By default, the library will detect AltBeacon protocol beacons
-        beaconManager.beaconParsers.clear()
-        // m:0-1=0505 stands for InPlay's Company Identifier Code (0x0505),
-        // see https://www.bluetooth.com/specifications/assigned-numbers/
-        // i:2-7 stands for the identifier, UUID (MAC) [little endian]
-        // d:8-9 stands for the data, CH1 analog value [little endian]
-        val customParser = BeaconParser().setBeaconLayout("m:0-1=0505,i:2-7,d:8-9")
-        beaconManager.beaconParsers.add(customParser)
-
-        // Activate debug mode only if build variant is debug
-        BeaconManager.setDebug(BuildConfig.DEBUG)
     }
 
     @Suppress("OVERRIDE_DEPRECATION")
@@ -127,27 +110,6 @@ class AppMain : Application(), ComponentCallbacks2 {
     override fun onTerminate() {
         stopBeaconScanning()
         super.onTerminate()
-    }
-
-    /**
-     * Add sensor data entries to the loggingSession from the beacon data returned by the ranging
-     * @param beacons: Collection<Beacon>, list of beacons detected by the ranging
-     * @param timestamp: Instant, timestamp of the data
-     */
-    fun addBeaconCollectionData(
-        beacons: Collection<Beacon>,
-        timestamp: Instant,
-        latitude: Float,
-        longitude: Float,
-        azimuth: Float
-    ) {
-        for (beacon in beacons) {
-            val id = beacon.id1
-            val data = beacon.dataFields
-            // analogReading is the CH1 analog value, as two bytes in little endian
-            val analogReading = data[0].toShort()
-            addSensorDataEntry(timestamp, id.toString(), analogReading, latitude, longitude, azimuth)
-        }
     }
 
     /**

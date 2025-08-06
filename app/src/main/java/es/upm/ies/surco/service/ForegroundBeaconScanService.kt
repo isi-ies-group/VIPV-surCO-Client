@@ -1,35 +1,41 @@
 package es.upm.ies.surco.service
 
-import android.app.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.bluetooth.BluetoothManager
-import android.content.Context
+import android.bluetooth.le.BluetoothLeScanner
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
+import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.LocationManager
-import android.os.Build
-import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.AppMain.Companion.ACTION_STOP_SESSION
+import es.upm.ies.surco.R
 import es.upm.ies.surco.broadcastReceivers.StopBroadcastReceiver
 import es.upm.ies.surco.ui.ActMain
-import es.upm.ies.surco.R
-import com.google.android.gms.location.*
-import org.altbeacon.beacon.Beacon
-import org.altbeacon.beacon.BeaconManager
-import org.altbeacon.beacon.BeaconParser
-import org.altbeacon.beacon.Region
-import org.altbeacon.beacon.service.BeaconService
-import org.altbeacon.beacon.service.Callback
 import java.time.Instant
 import kotlin.concurrent.thread
 
-class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
+
+class ForegroundBeaconScanService : Service(), SensorEventListener {
     private lateinit var appMain: AppMain
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -39,38 +45,15 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var locationManager: LocationManager
 
-    private val beaconManager: BeaconManager by lazy {
-        BeaconManager.getInstanceForApplication(this)
-    }
-    val region = Region(
-        "all-beacons", null, null, null
-    )  // criteria for identifying beacons
+    private lateinit var bluetoothLeScanner: BluetoothLeScanner
+    private lateinit var scanCallback: ScanCallback
 
-    val rangingCallback: Callback = object : Callback("es.upm.ies.surco") {
-        override fun call(context: Context?, dataName: String?, data: Bundle?): Boolean {
-            val timestamp = Instant.now()
-            // get the beacons from the bundle
-            // if the SDK version is 32 or higher, use the new method to get the beacons
-            // as the old method is deprecated as type-unsafe
-            val beacons = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                data?.getParcelableArrayList("beacons", Beacon::class.java) ?: return false
-            } else {
-                @Suppress("DEPRECATION")  // Deprecated in API 32
-                data?.getParcelableArrayList<Beacon>("beacons") ?: return false
-            }
-            // add the beacons to the AppMain singleton
-            appMain.addBeaconCollectionData(
-                beacons, timestamp, latitude, longitude, getCompassAzimuth()
-            )
-            return true
-        }
-    }
-    val monitoringCallback: Callback = object : Callback("es.upm.ies.surco") {
-        override fun call(context: Context?, dataName: String?, data: Bundle?): Boolean {
-            Log.i(TAG, "Monitoring callback called with dataName: $dataName")
-            return true
-        }
-    }
+    val scanFilters = listOf(
+        ScanFilter.Builder().setManufacturerData(0x0505, "ies.upm.es".encodeToByteArray()).build()
+    )
+
+    val scanSettings: ScanSettings =
+        ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
 
     /**
      * Latitude and longitude of the user's location.
@@ -132,16 +115,44 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
             }
         }
 
-        // By default, the library will detect AltBeacon protocol beacons
-        beaconManager.beaconParsers.clear()
-        // m:0-1=0505 stands for InPlay's Company Identifier Code (0x0505),
-        // see https://www.bluetooth.com/specifications/assigned-numbers/
-        // i:2-7 stands for the identifier, UUID (MAC) [little endian]
-        // d:8-9 stands for the data, CH1 analog value [little endian]
-        val customParser = BeaconParser().setBeaconLayout("m:0-1=0505,i:2-7,d:8-9")
-        beaconManager.beaconParsers.add(customParser)
-        // Set the scan periods
-        setScanPeriods(appMain.scanInterval, 0L, false)
+        scanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult?) {
+                result?.let {
+                    val timestamp = Instant.now()
+                    val compassAzimuth = getCompassAzimuth()
+                    val scanRecord = it.scanRecord
+
+                    val address = it.device.address
+
+                    // AltBeacon: val customParser = BeaconParser().setBeaconLayout("m:0-1=0505,i:2-7,d:8-9")
+                    val manufacturerData = scanRecord?.getManufacturerSpecificData(0x0505)
+                    // See beacon config v3
+                    val value = manufacturerData?.takeIf { it.size == 12 }?.copyOfRange(10, 12)
+                    if (address != null && value != null) {
+                        val valueShort =  // value is little-endian, convert to short
+                            (value[1].toInt() shl 8 or (value[0].toInt() and 0xFF)).toShort()
+                        appMain.addSensorDataEntry(
+                            timestamp,
+                            address,
+                            valueShort,
+                            latitude,
+                            longitude,
+                            compassAzimuth
+                        )
+                    } else {
+                        Log.w(
+                            TAG,
+                            "Manufacturer data is not valid or does not contain enough information"
+                        )
+                    }
+                }
+            }
+
+            override fun onScanFailed(errorCode: Int) {
+                Log.e(TAG, "Scan failed with error: $errorCode")
+            }
+        }
+
 
         // Create all notification channels
         createNotificationChannels()
@@ -155,8 +166,12 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
         startBluetoothAndGpsWatchdog()
 
         // Start ranging and monitoring beacons
-        startRangingBeaconsInRegion(region, rangingCallback)
-        startMonitoringBeaconsInRegion(region, monitoringCallback)
+        bluetoothLeScanner = bluetoothManager.adapter.bluetoothLeScanner
+        // Check permissions before starting the scan
+        if (checkSelfPermission("android.permission.BLUETOOTH_SCAN") != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "Bluetooth scan start error: permission not granted")
+        }
+        bluetoothLeScanner.startScan(scanFilters, scanSettings, scanCallback)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -169,8 +184,11 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
         stopBluetoothAndGpsWatchdog()
         stopLocationUpdates()
         // Stop ranging and monitoring beacons
-        stopRangingBeaconsInRegion(region)
-        stopMonitoringBeaconsInRegion(region)
+        if (checkSelfPermission("android.permission.BLUETOOTH_SCAN") == PackageManager.PERMISSION_GRANTED) {
+            bluetoothLeScanner.stopScan(scanCallback)
+        } else {
+            Log.e(TAG, "Bluetooth scan stop error: permission not granted")
+        }
         // Remove notifications
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(AppMain.NOTIFICATION_ONGOING_SESSION_ID)
@@ -240,15 +258,7 @@ class ForegroundBeaconScanService : BeaconService(), SensorEventListener {
             )
         ).build()
 
-        Log.i(
-            "ForegroundBeaconScanService",
-            "Scan intervals: ${beaconManager.foregroundScanPeriod} (${beaconManager.foregroundBetweenScanPeriod}) / ${beaconManager.backgroundScanPeriod} (${beaconManager.backgroundBetweenScanPeriod}) [ms]",
-        )
-
         // Start the service in the foreground
-        beaconManager.enableForegroundServiceScanning(
-            notification, AppMain.NOTIFICATION_ONGOING_SESSION_ID
-        )
         startForeground(AppMain.NOTIFICATION_ONGOING_SESSION_ID, notification)
     }
 

@@ -1,11 +1,9 @@
 package es.upm.ies.surco.ui
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -76,28 +74,6 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
                 Toast.makeText(this, getString(R.string.upload_successful), Toast.LENGTH_SHORT)
                     .show()
             } // do nothing on else
-        }
-
-        // Observe the session state to keep the screen on during a session on Android 14 and higher
-        // until we fix this issue in the future
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            appMain.loggingSession.status.observe(this) { status ->
-                when (status) {
-                    LoggingSessionStatus.SESSION_ONGOING -> {
-                        // Set screen to never turn off
-                        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                    }
-
-                    LoggingSessionStatus.SESSION_TRIGGERABLE -> {
-                        // Unset screen to never turn off
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                    }
-
-                    else -> {
-                        // Do nothing
-                    }
-                }
-            }
         }
 
         appMain.loggingSession.status.observe(this) {
