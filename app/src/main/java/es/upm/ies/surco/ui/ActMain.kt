@@ -31,6 +31,9 @@ import es.upm.ies.surco.session_logging.LoggingSessionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Duration
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
@@ -100,9 +103,11 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         appMain.loggingSession.status.observe(this) {
             when (it) {
                 LoggingSessionStatus.SESSION_ONGOING -> {
-                    Toast.makeText(
-                        this, getString(R.string.session_started), Toast.LENGTH_SHORT
-                    ).show()
+                    if (Duration.between(ZonedDateTime.now(), appMain.loggingSession.startZonedDateTime) < Duration.of(5, ChronoUnit.SECONDS)) {
+                        Toast.makeText(
+                            this, getString(R.string.session_started), Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
 
                 LoggingSessionStatus.SESSION_STOPPING -> {
