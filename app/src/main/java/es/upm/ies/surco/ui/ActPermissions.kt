@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import android.view.View.OnClickListener
 import android.widget.TableRow
 import android.widget.Toast
@@ -104,7 +105,8 @@ class ActPermissions : AppCompatActivity() {
         )
 
         val powerManager = this.getSystemService(POWER_SERVICE) as PowerManager
-        isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(this.packageName)
+        isIgnoringBatteryOptimizations =
+            powerManager.isIgnoringBatteryOptimizations(this.packageName)
         rowDisableBatteryOptimization = PermissionsRowAtomicHandler(
             show = !isIgnoringBatteryOptimizations,
             rowUI = binding.rowDisableBatteryOptimization,
@@ -127,17 +129,17 @@ class ActPermissions : AppCompatActivity() {
         rowDisableBatteryOptimization.setOnCheckedChangeListener(
             OnClickListener {
                 try {
-                    @SuppressLint("BatteryLife")
-                    val intent =
+                    @SuppressLint("BatteryLife") val intent =
                         Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                             data = Uri.fromParts("package", packageName, null)
                         }
                     startActivity(intent)
                 } catch (_: ActivityNotFoundException) {
                     try {
-                        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
-                            data = Uri.fromParts("package", packageName, null)
-                        }
+                        val intent =
+                            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                                data = Uri.fromParts("package", packageName, null)
+                            }
                         startActivity(intent)
                     } catch (_: ActivityNotFoundException) {
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -181,6 +183,7 @@ class ActPermissions : AppCompatActivity() {
     }
 
     fun promptForPermissions(permissionsGroup: String) {
+        Log.d(TAG, "Prompting for permissions group: $permissionsGroup")
         if (!groupPermissionsGranted(this, permissionsGroup)) {
             val permissions = permissionsByGroupMap[permissionsGroup]
 
@@ -193,19 +196,6 @@ class ActPermissions : AppCompatActivity() {
     }
 
     companion object {
-        // Main entry point for checking if all permissions are granted
-        fun allPermissionsGranted(context: Context): Boolean {
-            /** Check if all permissions are granted
-             * @param context: Context
-             * @return Boolean: True if all permissions are granted, False otherwise
-             */
-            val permissionsOk = permissionsByGroupMap.keys.all { permissionGroupKey ->
-                groupPermissionsGranted(context, permissionGroupKey)
-            }
-            val environmentOk = isIgnoringBatteryOptimizations(context) != false
-            return permissionsOk && environmentOk
-        }
-
         private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
             val powerManager = context.getSystemService(POWER_SERVICE) as PowerManager
             return powerManager.isIgnoringBatteryOptimizations(context.packageName)
@@ -225,20 +215,68 @@ class ActPermissions : AppCompatActivity() {
          * Determine whether the current [Context] has been granted the relevant [Manifest.permission].
          */
         fun permissionGranted(context: Context, permission: String): Boolean {
-            return ContextCompat.checkSelfPermission(
+            Log.d(TAG, "Checking permission: $permission")
+            val result = ContextCompat.checkSelfPermission(
                 context, permission
             ) == PackageManager.PERMISSION_GRANTED
+            Log.d(TAG, "Permission $permission granted: $result")
+            return result
         }
 
+        // Update permissions map to handle version differences
         val permissionsByGroupMap: Map<String, Array<String>?> = mapOf(
-            "Location" to arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            // BLUETOOTH_CONNECT to obtain additional information
-            "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) arrayOf(
-                Manifest.permission.BLUETOOTH_SCAN
-            ) else null),
-            "Notifications" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(
-                Manifest.permission.POST_NOTIFICATIONS
-            ) else null),
+            "Location" to arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION
+            ).let { perms ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q /* Android 10+ */ ) {
+                    perms + Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                } else {
+                    perms
+                }
+            }, "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S /* Android 12+ */ ) {
+                arrayOf(Manifest.permission.BLUETOOTH_SCAN)
+            } else /* Android 11- */ arrayOf(
+                Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN
+            )), "Notifications" to when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU /* Android 13+ */ -> arrayOf(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+
+                else -> null
+            }, "ForegroundService" to when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE /* Android 14+ */ -> arrayOf( /* Android 14+ */
+                    Manifest.permission.FOREGROUND_SERVICE,
+                    Manifest.permission.FOREGROUND_SERVICE_LOCATION
+                )
+
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> arrayOf( /* Android 9+ */
+                    Manifest.permission.FOREGROUND_SERVICE,
+                )
+
+                else -> null
+            }
         )
-    }  // companion object
+
+        // Updated allPermissionsGranted method
+        fun allPermissionsGranted(context: Context): Boolean {
+            Log.d(TAG, "Checking all permissions...")
+            val permissionsOk = permissionsByGroupMap.keys.all { permissionGroupKey ->
+                val result = groupPermissionsGranted(context, permissionGroupKey)
+                Log.d(TAG, "Checked group: $permissionGroupKey -> $result")
+                result
+            }
+            val foregroundOk = groupPermissionsGranted(context, "ForegroundService")
+            val environmentOk = isIgnoringBatteryOptimizations(context) != false
+            Log.d(
+                TAG,
+                "Permissions OK: $permissionsOk, Foreground Service OK: $foregroundOk, Battery Optimization Ignored: $environmentOk"
+            )
+
+            val final = permissionsOk && foregroundOk && environmentOk
+            Log.d(TAG, "All permissions granted: $final")
+            return final
+        }
+
+        val TAG: String = ActPermissions::class.java.simpleName
+    }
 }

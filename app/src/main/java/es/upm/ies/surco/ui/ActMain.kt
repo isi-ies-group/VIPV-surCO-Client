@@ -79,7 +79,11 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         appMain.loggingSession.status.observe(this) {
             when (it) {
                 LoggingSessionStatus.SESSION_ONGOING -> {
-                    if (Duration.between(ZonedDateTime.now(), appMain.loggingSession.startZonedDateTime) < Duration.of(5, ChronoUnit.SECONDS)) {
+                    if (Duration.between(
+                            ZonedDateTime.now(),
+                            appMain.loggingSession.startZonedDateTime
+                        ) < Duration.of(5, ChronoUnit.SECONDS)
+                    ) {
                         Toast.makeText(
                             this, getString(R.string.session_started), Toast.LENGTH_SHORT
                         ).show()
@@ -197,7 +201,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             Toast.makeText(this, "Could not open: $url", Toast.LENGTH_SHORT).show()
         }
     }
-    
+
     private fun checkPrivacyPolicy() {
         // Privacy policy management
         when (ApiActions.PrivacyPolicy.state.value) {

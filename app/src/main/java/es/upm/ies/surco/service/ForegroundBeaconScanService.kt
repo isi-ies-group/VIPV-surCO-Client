@@ -1,5 +1,7 @@
 package es.upm.ies.surco.service
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -31,6 +33,7 @@ import es.upm.ies.surco.AppMain.Companion.ACTION_STOP_SESSION
 import es.upm.ies.surco.R
 import es.upm.ies.surco.broadcastReceivers.StopBroadcastReceiver
 import es.upm.ies.surco.ui.ActMain
+import es.upm.ies.surco.ui.ActPermissions
 import java.time.Instant
 import kotlin.concurrent.thread
 
@@ -97,6 +100,9 @@ class ForegroundBeaconScanService : Service(), SensorEventListener {
         bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
 
+        // Start ranging and monitoring beacons
+        bluetoothLeScanner = bluetoothManager.adapter.bluetoothLeScanner
+
         // Initialize the location client
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -132,12 +138,7 @@ class ForegroundBeaconScanService : Service(), SensorEventListener {
                         val valueShort =  // value is little-endian, convert to short
                             (value[1].toInt() shl 8 or (value[0].toInt() and 0xFF)).toShort()
                         appMain.addSensorDataEntry(
-                            timestamp,
-                            address,
-                            valueShort,
-                            latitude,
-                            longitude,
-                            compassAzimuth
+                            timestamp, address, valueShort, latitude, longitude, compassAzimuth
                         )
                     } else {
                         Log.w(
@@ -153,7 +154,6 @@ class ForegroundBeaconScanService : Service(), SensorEventListener {
             }
         }
 
-
         // Create all notification channels
         createNotificationChannels()
 
@@ -165,12 +165,12 @@ class ForegroundBeaconScanService : Service(), SensorEventListener {
         startLocationUpdates()
         startBluetoothAndGpsWatchdog()
 
-        // Start ranging and monitoring beacons
-        bluetoothLeScanner = bluetoothManager.adapter.bluetoothLeScanner
         // Check permissions before starting the scan
-        if (checkSelfPermission("android.permission.BLUETOOTH_SCAN") != PackageManager.PERMISSION_GRANTED) {
+        if (!ActPermissions.Companion.groupPermissionsGranted(this, "Bluetooth")) {
             Log.e(TAG, "Bluetooth scan start error: permission not granted")
+            return
         }
+        @SuppressLint("MissingPermission")  // Linter does not detect the permission check above
         bluetoothLeScanner.startScan(scanFilters, scanSettings, scanCallback)
     }
 
@@ -184,7 +184,8 @@ class ForegroundBeaconScanService : Service(), SensorEventListener {
         stopBluetoothAndGpsWatchdog()
         stopLocationUpdates()
         // Stop ranging and monitoring beacons
-        if (checkSelfPermission("android.permission.BLUETOOTH_SCAN") == PackageManager.PERMISSION_GRANTED) {
+        if (ActPermissions.Companion.groupPermissionsGranted(this, "Bluetooth")) {
+            @SuppressLint("MissingPermission")  // Linter does not detect the permission check above
             bluetoothLeScanner.stopScan(scanCallback)
         } else {
             Log.e(TAG, "Bluetooth scan stop error: permission not granted")
@@ -267,6 +268,15 @@ class ForegroundBeaconScanService : Service(), SensorEventListener {
      */
     private fun startLocationUpdates() {
         try {
+            // Check permissions before starting location updates
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || checkSelfPermission(
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.e(TAG, "Location permissions not granted")
+                return
+            }
+
             fusedLocationClient.requestLocationUpdates(
                 locationRequest, locationCallback, null
             )

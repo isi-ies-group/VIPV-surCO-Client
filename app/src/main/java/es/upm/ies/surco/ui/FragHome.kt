@@ -1,6 +1,6 @@
 package es.upm.ies.surco.ui
 
-import android.Manifest.permission.BLUETOOTH_CONNECT
+import android.Manifest
 import android.app.Activity.RESULT_OK
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE
@@ -128,12 +128,10 @@ class FragHome : Fragment() {
         // Set click listeners for the buttons
         binding.startStopSessionButton.setOnClickListener {
             if (viewModel.loggingSessionStatus.value == LoggingSessionStatus.SESSION_TRIGGERABLE) {
-                // Check if Bluetooth is enabled and prompt the user to enable it if not
-                promptEnableBluetooth()
-                // Check compass precision
-                promptAlertOnLowCompassPrecision()
+                checkAndStartSession()
+            } else {
+                viewModel.toggleSession()
             }
-            viewModel.toggleSession()
         }
 
         binding.imBtnActionUploadSession.setOnClickListener {
@@ -261,7 +259,7 @@ class FragHome : Fragment() {
      */
     private fun promptEnableBluetooth() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !ActPermissions.Companion.permissionGranted(
-                requireContext(), BLUETOOTH_CONNECT
+                requireContext(), Manifest.permission.BLUETOOTH_SCAN
             )
         ) {
             // Insufficient permission to prompt for Bluetooth enabling
@@ -287,6 +285,69 @@ class FragHome : Fragment() {
                     dialog.dismiss()
                 }
                 builder.create().show()
+            }
+        }
+    }
+
+    private val requestPermissions = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        permissions.entries.forEach { (permissionName, isGranted) ->
+            if (!isGranted) {
+                val permissionHumanName = permissionName.split(".").last()
+                Toast.makeText(
+                    requireContext(), "Permission required: $permissionHumanName", Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
+        // After processing all permissions, check if we can start the session
+        if (viewModel.loggingSessionStatus.value == LoggingSessionStatus.SESSION_TRIGGERABLE) {
+            checkAndStartSession()
+        }
+    }
+
+    private fun checkAndStartSession() {
+        // Check all required permissions
+        val hasLocation = ActPermissions.groupPermissionsGranted(
+            requireContext(), "Location"
+        )
+
+        val hasBluetooth = ActPermissions.groupPermissionsGranted(
+            requireContext(), "Bluetooth"
+        )
+
+        val hasForeground =
+            ActPermissions.groupPermissionsGranted(requireContext(), "ForegroundService")
+
+        if (hasLocation && hasBluetooth && hasForeground) {
+            promptEnableBluetooth()
+            promptAlertOnLowCompassPrecision()
+            viewModel.toggleSession()
+        } else {
+            // Request missing permissions
+            val permissionsToRequest = mutableListOf<String>()
+
+            if (!hasLocation) {
+                if (ActPermissions.permissionsByGroupMap["Location"] != null) {
+                    permissionsToRequest.addAll(ActPermissions.permissionsByGroupMap["Location"]!!)
+                }
+            }
+
+            if (!hasBluetooth) {
+                if (ActPermissions.permissionsByGroupMap["Bluetooth"] != null) {
+                    permissionsToRequest.addAll(ActPermissions.permissionsByGroupMap["Bluetooth"]!!)
+                }
+            }
+
+            if (!hasForeground && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                if (ActPermissions.permissionsByGroupMap["ForegroundService"] != null) {
+                    permissionsToRequest.addAll(ActPermissions.permissionsByGroupMap["ForegroundService"]!!)
+                }
+            }
+
+            if (permissionsToRequest.isNotEmpty()) {
+                requestPermissions.launch(permissionsToRequest.toTypedArray())
             }
         }
     }
