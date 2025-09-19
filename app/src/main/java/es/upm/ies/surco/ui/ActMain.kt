@@ -49,7 +49,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         configureToolbar()
         configureNavigationDrawer()
 
-        // Or if all permissions were already granted, start the session
+        // Or if all permissions were already granted, open permissions activity
         val arePermissionsOk = ActPermissions.Companion.allPermissionsGranted(this)
         if (!arePermissionsOk) {  // If any permission is not granted, go to permissions activity and wait for user to grant permissions
             val getAllPermissionsGranted =

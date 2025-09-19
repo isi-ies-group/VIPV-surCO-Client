@@ -225,31 +225,34 @@ class ActPermissions : AppCompatActivity() {
 
         // Update permissions map to handle version differences
         val permissionsByGroupMap: Map<String, Array<String>?> = mapOf(
-            "Location" to arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION
-            ).let { perms ->
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q /* Android 10+ */ ) {
-                    perms + Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                } else {
-                    perms
-                }
-            }, "Bluetooth" to (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S /* Android 12+ */ ) {
+            "Location" to when {
+                Build.VERSION.SDK_INT >= 29 /* Android 10+ */ -> arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+
+                else -> arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            }, "Bluetooth" to (if (Build.VERSION.SDK_INT >= 31 /* Android 12+ */) {
                 arrayOf(Manifest.permission.BLUETOOTH_SCAN)
             } else /* Android 11- */ arrayOf(
                 Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN
             )), "Notifications" to when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU /* Android 13+ */ -> arrayOf(
+                Build.VERSION.SDK_INT >= 33 /* Android 13+ */ -> arrayOf(
                     Manifest.permission.POST_NOTIFICATIONS
                 )
 
                 else -> null
             }, "ForegroundService" to when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE /* Android 14+ */ -> arrayOf( /* Android 14+ */
+                Build.VERSION.SDK_INT >= 34 /* Android 14+ */ -> arrayOf( /* Android 14+ */
                     Manifest.permission.FOREGROUND_SERVICE,
                     Manifest.permission.FOREGROUND_SERVICE_LOCATION
                 )
 
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> arrayOf( /* Android 9+ */
+                Build.VERSION.SDK_INT >= 28 -> arrayOf(
+                    /* Android 9+ */
                     Manifest.permission.FOREGROUND_SERVICE,
                 )
 

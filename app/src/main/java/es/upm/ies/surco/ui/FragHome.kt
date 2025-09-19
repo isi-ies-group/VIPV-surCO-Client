@@ -258,7 +258,7 @@ class FragHome : Fragment() {
      * the [BluetoothAdapter.ACTION_REQUEST_ENABLE] intent.
      */
     private fun promptEnableBluetooth() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !ActPermissions.Companion.permissionGranted(
+        if (Build.VERSION.SDK_INT >= 31 /* Android 12+ */ && !ActPermissions.Companion.permissionGranted(
                 requireContext(), Manifest.permission.BLUETOOTH_SCAN
             )
         ) {
@@ -309,18 +309,18 @@ class FragHome : Fragment() {
 
     private fun checkAndStartSession() {
         // Check all required permissions
-        val hasLocation = ActPermissions.groupPermissionsGranted(
+        val hasLocationPerms = ActPermissions.groupPermissionsGranted(
             requireContext(), "Location"
         )
 
-        val hasBluetooth = ActPermissions.groupPermissionsGranted(
+        val hasBluetoothPerms = ActPermissions.groupPermissionsGranted(
             requireContext(), "Bluetooth"
         )
 
-        val hasForeground =
+        val hasForegroundPerms =
             ActPermissions.groupPermissionsGranted(requireContext(), "ForegroundService")
 
-        if (hasLocation && hasBluetooth && hasForeground) {
+        if (hasLocationPerms && hasBluetoothPerms && hasForegroundPerms) {
             promptEnableBluetooth()
             promptAlertOnLowCompassPrecision()
             viewModel.toggleSession()
@@ -328,19 +328,19 @@ class FragHome : Fragment() {
             // Request missing permissions
             val permissionsToRequest = mutableListOf<String>()
 
-            if (!hasLocation) {
+            if (!hasLocationPerms) {
                 if (ActPermissions.permissionsByGroupMap["Location"] != null) {
                     permissionsToRequest.addAll(ActPermissions.permissionsByGroupMap["Location"]!!)
                 }
             }
 
-            if (!hasBluetooth) {
+            if (!hasBluetoothPerms) {
                 if (ActPermissions.permissionsByGroupMap["Bluetooth"] != null) {
                     permissionsToRequest.addAll(ActPermissions.permissionsByGroupMap["Bluetooth"]!!)
                 }
             }
 
-            if (!hasForeground && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (!hasForegroundPerms && Build.VERSION.SDK_INT >= 28 /* Android 9+ */) {
                 if (ActPermissions.permissionsByGroupMap["ForegroundService"] != null) {
                     permissionsToRequest.addAll(ActPermissions.permissionsByGroupMap["ForegroundService"]!!)
                 }

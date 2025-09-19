@@ -8,7 +8,7 @@ class SessionFilesObserver(
 ) {
     private val fileObserver = object : FileObserver(
         directory.absolutePath, CREATE or DELETE
-    ) {  // update "directory.absolutePath" > "directory" when minSdk >= 29
+    ) {  // TODO: update "directory.absolutePath" to "directory" when minSdk >= 29
         override fun onEvent(event: Int, path: String?) {
             if (path != null) {
                 // Update the session files list when a file is created or deleted

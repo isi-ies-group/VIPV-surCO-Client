@@ -31,7 +31,7 @@ class FragAbout : Fragment() {
         val versionInfo =
             requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
         // Set the version name and version code in the text view as: "Version: 1.0.0 (1)"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {  // versionInfo.versionCode was deprecated in API level 28. Use versionCodeLong instead.
+        if (Build.VERSION.SDK_INT >= 28 /* Android 9+ */) {  // versionInfo.versionCode was deprecated in API level 28. Use versionCodeLong instead.
             binding.versionTextview.text =
                 getString(R.string.version, versionInfo.versionName, versionInfo.longVersionCode)
         } else {
