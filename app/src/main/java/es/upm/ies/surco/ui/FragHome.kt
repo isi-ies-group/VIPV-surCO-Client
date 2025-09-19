@@ -92,7 +92,7 @@ class FragHome : Fragment() {
                 // navigate to the details fragment, passing the beacon ID
                 findNavController().navigate(
                     R.id.action_homeFragment_to_fragBeaconDetails, Bundle().apply {
-                        putString("beaconId", beaconId.toString())
+                        putString("beaconId", beaconId)
                     })
             }
 
@@ -191,6 +191,10 @@ class FragHome : Fragment() {
             ApiPrivacyPolicyState.CONNECTION_ERROR -> {
                 // An error occurred while checking the privacy policy earlier, so let's not navigate anywhere, but refresh for OUTDATED state in case it has been fixed
                 // Handled by ActMain
+            }
+
+            null -> {
+                // Should not happen, but just in case, do nothing
             }
         }
     }

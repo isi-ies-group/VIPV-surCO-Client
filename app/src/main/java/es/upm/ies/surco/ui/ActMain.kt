@@ -248,6 +248,10 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
                 // An error occurred while checking the privacy policy earlier, so let's not navigate anywhere, but refresh for OUTDATED state in case it has been fixed
                 pingServerAndTakeActions()
             }
+
+            null -> {
+                // This should not happen
+            }
         }
     }
 
