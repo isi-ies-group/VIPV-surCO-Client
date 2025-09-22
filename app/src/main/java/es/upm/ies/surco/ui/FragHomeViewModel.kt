@@ -12,7 +12,7 @@ class FragHomeViewModel(application: Application) : AndroidViewModel(application
     private val appMain by lazy { getApplication<AppMain>() }
     val nBeaconsOnline: LiveData<Int> = appMain.loggingSession.nBeaconsOnline
     val rangedBeacons: LiveData<ArrayList<BeaconSimplified>> = appMain.loggingSession.beacons
-    val loggingSessionStatus: LiveData<LoggingSessionStatus> = appMain.loggingSession.status
+    val loggingSessionStatus: LiveData<LoggingSessionStatus> = appMain.loggingSession.statusLiveData
 
     fun toggleSession() {
         appMain.toggleSession()

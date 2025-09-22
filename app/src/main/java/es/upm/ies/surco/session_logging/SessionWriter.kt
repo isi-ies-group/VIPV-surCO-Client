@@ -9,7 +9,7 @@ import java.util.Base64
 import java.util.TimeZone
 
 object SessionWriter {
-    const val VERSION_SCHEME = 5
+    const val VERSION_SCHEME = 6
 
     /**
      * Creates the JSON line for the beacons static data (ID, tilt, orientation, description).
@@ -48,6 +48,7 @@ object SessionWriter {
         beacons: Collection<BeaconSimplified>,
         startZonedDateTime: ZonedDateTime,
         finishZonedDateTime: ZonedDateTime,
+        maxSessionTimeReached: Boolean,
     ) {
         val bufferedOutputStreamWriter = outputStreamWriter.buffered()
 
@@ -78,6 +79,7 @@ object SessionWriter {
         bufferedOutputStreamWriter.append("\"android_version\":\"${android.os.Build.VERSION.RELEASE}\",")
         bufferedOutputStreamWriter.append("\"sdk_int\":${android.os.Build.VERSION.SDK_INT}")
         bufferedOutputStreamWriter.append("},")
+        bufferedOutputStreamWriter.append("\"wasMaxSessionTimeReached\":$maxSessionTimeReached,")
         bufferedOutputStreamWriter.append("\"beacons\":[")  // Open "beacons"
         for ((index, beacon) in beacons.withIndex()) {
             // Skip non-configured beacons.

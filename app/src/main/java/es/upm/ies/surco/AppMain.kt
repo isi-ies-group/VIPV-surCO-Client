@@ -29,6 +29,9 @@ import org.altbeacon.beacon.BeaconParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Instant
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 
@@ -43,16 +46,16 @@ class AppMain : Application(), ComponentCallbacks2 {
     lateinit var beaconManager: BeaconManager
 
     // -- for public use by UI --
-    val wasUploadedSuccessfully = MutableLiveData<Boolean>(false)  // set by the worker
+    val wasUploadedSuccessfully = MutableLiveData(false)  // set by the worker
 
-    val minSensorAccuracy = MutableLiveData<Int>(SensorManager.SENSOR_STATUS_UNRELIABLE)
+    val minSensorAccuracy = MutableLiveData(SensorManager.SENSOR_STATUS_UNRELIABLE)
     val sensorAccuracyValue: LiveData<Int> get() = minSensorAccuracy
 
     // Data for the beacon session
     var scanInterval: Long = DEFAULT_SCAN_WINDOW_INTERVAL
 
     // Status update handler
-    // This handler is used to update the status of the beacons every STATUS_UPDATE_INTERVAL milliseconds
+    // This handler is used to update the statuses of the beacons every STATUS_UPDATE_INTERVAL milliseconds
     private val handler = Handler(Looper.getMainLooper())
     private val statusUpdateRunnable = object : Runnable {
         override fun run() {
@@ -64,6 +67,13 @@ class AppMain : Application(), ComponentCallbacks2 {
     val cachedSessionsDir by lazy {
         cacheDir.resolve(SESSIONS_SUBDIR_IN_CACHE)
     }
+
+    /**
+     * Time span watchdog, to automatically stop the session when it exceeds the maximum duration
+     * and re-start it again.
+     */
+    private var sessionTimer: ScheduledExecutorService? = null
+    private var maxSessionDuration: Long? = 480 // Default value in minutes
 
     override fun onCreate() {
         super.onCreate()
@@ -125,7 +135,7 @@ class AppMain : Application(), ComponentCallbacks2 {
     }
 
     override fun onTerminate() {
-        stopBeaconScanning()
+        stopMeasurementsSession()
         super.onTerminate()
     }
 
@@ -146,7 +156,9 @@ class AppMain : Application(), ComponentCallbacks2 {
             val data = beacon.dataFields
             // analogReading is the CH1 analog value, as two bytes in little endian
             val analogReading = data[0].toShort()
-            addSensorDataEntry(timestamp, id.toString(), analogReading, latitude, longitude, azimuth)
+            addSensorDataEntry(
+                timestamp, id.toString(), analogReading, latitude, longitude, azimuth
+            )
         }
     }
 
@@ -228,38 +240,164 @@ class AppMain : Application(), ComponentCallbacks2 {
         isServiceRunning(ForegroundBeaconScanService::class.java)
 
     /**
-     * Start monitoring and ranging for beacons
+     * Master function to start a beacon scanning session.
+     * It will make sure the session is in the correct state before starting the scanning service.
+     * @return LoggingSessionStatus, the status of the session after trying to start it
+     */
+    private fun startMeasurementsSession() {
+        if (loggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
+            Log.i(TAG, "Session is already ongoing")
+            return
+        }
+        if (loggingSession.status == LoggingSessionStatus.SESSION_STOPPING) {
+            Log.i(TAG, "Session is finalizing, cannot start a new one")
+            return
+        }
+        // Start a new session
+        loggingSession.beginSession()
+        // Start the foreground beacon scanning service
+        startForegroundBeaconScanningProcess()
+        // Start periodic updates of the beacon statuses
+        startStatusPollingOfBeacons()
+        // Start the session length timer
+        startSessionLengthTimer()
+        Log.i(TAG, "Session started")
+    }
+
+    /**
+     * Master function to stop a beacon scanning session.
+     * It will make sure the session is in the correct state before stopping the scanning service.
+     * @return LoggingSessionStatus, the status of the session after trying to stop it
+     */
+    private fun stopMeasurementsSession() {
+        stopSessionLengthTimer()
+        stopStatusPollingOfBeacons()
+        stopForegroundBeaconScanningProcess()
+        finishCurrentSessionAndScheduleUpload()
+    }
+
+    /**
+     * Public function to stop the current session if any
      * @return void
      */
-    private fun startBeaconScanning() {
-        if (isForegroundBeaconScanServiceRunning()) {
-            Log.i(TAG, "Beacon scan service is already running")
-            return
-        } else {
-            Log.i(TAG, "Starting beacon scan service")
-            // Start the beacon scanning service
-            thread {
-                loggingSession.startSession()
-
-                val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
-                startService(serviceIntent)
-            }
-            handler.post(statusUpdateRunnable) // Start periodic status updates of the beacon statuses
+    fun requestStopCurrentSession() {
+        if (loggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
+            stopMeasurementsSession()
         }
     }
 
     /**
-     * Stop monitoring and ranging for beacons
+     * Finish the current session if any
+     */
+    private fun finishCurrentSessionAndScheduleUpload(maxSessionTimeReached: Boolean = false) {
+        val successfulSession = loggingSession.finishSession(maxSessionTimeReached = maxSessionTimeReached)
+        if (successfulSession) {
+            Log.i(TAG, "Session stopped successfully")
+            // Schedule the file upload if the session was valid, in a concurrent thread
+            thread {
+                scheduleFileUploadWorkerWithPreferences()
+            }
+        } else {
+            Log.i(TAG, "Session stopped but it was not valid")
+        }
+    }
+
+    /**
+     * Start the foreground beacon scanning service
      * @return void
      */
-    fun stopBeaconScanning() {
-        thread {
-            val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
-            stopService(serviceIntent)
-        }
-        // Stop periodic status updates
-        handler.removeCallbacks(statusUpdateRunnable)
+    private fun startForegroundBeaconScanningProcess() {
+        if (isForegroundBeaconScanServiceRunning()) return
+        val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
+        startService(serviceIntent)
     }
+
+    /**
+     * Stop the foreground beacon scanning service
+     * @return void
+     */
+    private fun stopForegroundBeaconScanningProcess() {
+        val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
+        stopService(serviceIntent)
+    }
+
+    /**
+     * Starts a periodic refresh of the beacon statuses
+     * @return void
+     */
+    private fun startStatusPollingOfBeacons() {
+        handler.post(statusUpdateRunnable) // Start periodic statusLiveData updates of the beacon statuses
+    }
+
+    /**
+     * Stops a periodic refresh of the beacon statuses
+     * @return void
+     */
+    private fun stopStatusPollingOfBeacons() {
+        handler.removeCallbacks(statusUpdateRunnable)  // Stop periodic statusLiveData updates
+    }
+
+    /**
+     * Start session timer to automatically stop the session when it exceeds the maximum duration
+     * and re-start it again.
+     * @return void
+     */
+    private fun startSessionLengthTimer() {
+        Log.i(TAG, "Starting session timer")
+        // Cancel any existing timer
+        stopSessionLengthTimer()
+
+        // Get max duration from preferences if context is provided
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        maxSessionDuration = prefs.getInt("max_session_duration", 480).toLong()
+
+        if (maxSessionDuration == null || maxSessionDuration!! == 0L) {
+            return
+        }
+        val sessionMaxLengthMinutes = maxSessionDuration ?: 480L
+        val sessionMaxLengthSeconds = sessionMaxLengthMinutes * 60
+
+        sessionTimer = Executors.newSingleThreadScheduledExecutor()
+        sessionTimer?.schedule({
+            Log.i(TAG, "Session max duration reached, concluding session")
+            // Check if session is still ongoing before relaunching
+            if (LoggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
+                // Restart the session automatically
+                Log.i(TAG, "Restarting session automatically")
+                // Keep the beacons configuration
+                stopSessionLengthTimer()
+                startSessionLengthTimer()
+                finishCurrentSessionAndScheduleUpload(maxSessionTimeReached = true)
+                // Start a new session
+                loggingSession.beginSession()
+            }
+        }, sessionMaxLengthSeconds, TimeUnit.SECONDS)
+    }
+
+    /**
+     * Stop the session length timer
+     * @return void
+     */
+    private fun stopSessionLengthTimer() {
+        sessionTimer?.shutdownNow()
+    }
+
+    /**
+     * Schedule file upload worker
+     * @return void
+     */
+    private fun scheduleFileUploadWorkerWithPreferences() {
+        // if the sharedPreference is set to upload files on metered network, schedule the upload
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val autoUploadBehaviour =
+            sharedPreferences.getString("auto_upload_behaviour", "auto_un_metered")
+        when (autoUploadBehaviour) {
+            "auto_un_metered" -> scheduleFileUpload(now = false)
+            "auto_always" -> scheduleFileUpload(now = true)
+            // else, manual upload -> do nothing
+        }
+    }
+
 
     /**
      * Toggle the beacon scanning session from opened UI button. Shows a toast message.
@@ -268,31 +406,10 @@ class AppMain : Application(), ComponentCallbacks2 {
      * Observe sessionRunning LiveData to get the current state of the session
      */
     fun toggleSession() {
-        if (loggingSession.status.value == LoggingSessionStatus.SESSION_ONGOING) {
-            concludeSession()
-        } else if (loggingSession.status.value == LoggingSessionStatus.SESSION_TRIGGERABLE) {
-            startBeaconScanning()
-        }
-    }
-
-    /**
-     * Public facing conclude the session and save it to a file
-     */
-    fun concludeSession() {
-        thread {
-            stopBeaconScanning()
-            val file = loggingSession.concludeSession()
-            if (file != null) {  // null means it was not valid session
-                // if the sharedPreference is set to upload files on metered network, schedule the upload
-                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-                val autoUploadBehaviour =
-                    sharedPreferences.getString("auto_upload_behaviour", "auto_un_metered")
-                when (autoUploadBehaviour) {
-                    "auto_un_metered" -> scheduleFileUpload(now = false)
-                    "auto_always" -> scheduleFileUpload(now = true)
-                    // else, manual upload -> do nothing
-                }
-            }
+        if (loggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
+            stopMeasurementsSession()
+        } else if (loggingSession.status == LoggingSessionStatus.SESSION_TRIGGERABLE) {
+            startMeasurementsSession()
         }
     }
 

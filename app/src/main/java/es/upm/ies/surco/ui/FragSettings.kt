@@ -13,6 +13,7 @@ import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SeekBarPreference
 import es.upm.ies.surco.AppMain
 import es.upm.ies.surco.BuildConfig
 import es.upm.ies.surco.R
@@ -89,6 +90,34 @@ class FragSettings : PreferenceFragmentCompat() {
         colorThemePreference?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _, newValue ->
                 appMain.setupTheme(newValue as String)
+                true
+            }
+
+        // Get the max session duration preference
+        val maxSessionDurationPreference = findPreference<SeekBarPreference>("max_session_duration")
+        // Fix min and step not being able to be indicated in XML
+        // https://stackoverflow.com/questions/20762001/how-to-set-seekbar-min-and-max-value#25118544
+        val min = 10  // minutes
+        val max = 480  // minutes
+        val step = 10  // minutes
+        maxSessionDurationPreference?.let{
+            it.max = max
+            it.min = min
+            it.seekBarIncrement = step
+        }
+
+        // Set summary to show current value in minutes
+        maxSessionDurationPreference?.summary = getString(
+            R.string.settings_session_max_duration_summary,
+            maxSessionDurationPreference.value
+        )
+        // Set callback to update summary when value changes
+        maxSessionDurationPreference?.onPreferenceChangeListener =
+            Preference.OnPreferenceChangeListener { _, newValue ->
+                val minutes = newValue as Int
+                maxSessionDurationPreference.summary = getString(
+                    R.string.settings_session_max_duration_summary, minutes
+                )
                 true
             }
 

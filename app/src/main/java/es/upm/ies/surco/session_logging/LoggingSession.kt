@@ -1,5 +1,6 @@
 package es.upm.ies.surco.session_logging
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import es.upm.ies.surco.formatAsPathSafeString
@@ -80,7 +81,12 @@ object LoggingSession {
      */
     private var _status: MutableLiveData<LoggingSessionStatus> =
         MutableLiveData(LoggingSessionStatus.SESSION_TRIGGERABLE)
-    val status: LiveData<LoggingSessionStatus> get() = _status
+    val statusLiveData: LiveData<LoggingSessionStatus> get() = _status
+    var status = LoggingSessionStatus.SESSION_TRIGGERABLE
+        set(newValue) {
+            field = newValue
+            _status.postValue(newValue)
+        }
 
     /**
      * Cache directory to store the session files.
@@ -175,7 +181,7 @@ object LoggingSession {
     }
 
     /**
-     * Update the status of all beacons.
+     * Update the statuses of all beacons.
      */
     fun refreshBeaconStatuses() {
         beaconMap.forEach { (_, beacon) ->
@@ -223,21 +229,21 @@ object LoggingSession {
     /**
      * Conclude the session and save it to a file.
      * Gets the data from temporary dumps and the current readings.
+     * @param maxSessionTimeReached If true, the session has reached the maximum time and
+     * should be cleared but not the beacons configuration - this leaves a note in the JSON header.
      * @return The file with the session data.
      */
-    fun saveSession(): File? {
+    fun saveSession(maxSessionTimeReached: Boolean): File? {
         // deep copy all beacons and their data to a temporary variable, and empty them later
         val temporaryBeacons =
             beacons.value!!.filter { beacon -> beacon.isValidInfo() }.map { it.copy() }
-        beacons.value!!.map { it.clear() }
         // exit if there is no data to save
-        if ((temporaryBeacons.isEmpty() == true)  // no beacons
-            || (temporaryBeacons.all { beacon -> beacon.sensorData.value?.isEmpty() != false } == true)  // filtered beacons are empty
+        if (temporaryBeacons.isEmpty() || temporaryBeacons.all { beacon -> beacon.sensorData.value?.isEmpty() != false }  // filtered beacons are empty
         ) {
             return null
         }
 
-        var outFile = File(
+        val outFile = File(
             sessionsFolder,
             "${SESSION_FILE_PREFIX}${startZonedDateTime!!.formatAsPathSafeString()}-${stopZonedDateTime!!.formatAsPathSafeString()}${SESSION_FILE_EXTENSION}"
         )
@@ -249,7 +255,8 @@ object LoggingSession {
                 TimeZone.getDefault(),
                 temporaryBeacons,
                 startZonedDateTime!!,
-                stopZonedDateTime!!
+                stopZonedDateTime!!,
+                maxSessionTimeReached = maxSessionTimeReached,
             )
             it.write("\n\n")  // separate the header from the bodies
             // write the beacon CSV header
@@ -273,28 +280,34 @@ object LoggingSession {
     /**
      * Begins a new session.
      */
-    fun startSession() {
-        if (_status.value != LoggingSessionStatus.SESSION_TRIGGERABLE) {
+    fun beginSession() {
+        if (status != LoggingSessionStatus.SESSION_TRIGGERABLE) {
+            Log.i(TAG, "Session is not triggerable")
             return
         }
-        clear()
         startZonedDateTime = ZonedDateTime.now()
-        _status.postValue(LoggingSessionStatus.SESSION_ONGOING)
+        status = LoggingSessionStatus.SESSION_ONGOING
     }
 
     /**
      * Ends the current session by saving it to the cache dir.
-     * @return The file with the session data.
+     * @return True if the session was successfully concluded and saved, false if there was no data
+     * to save
      */
-    fun concludeSession(): File? {
-        if (_status.value != LoggingSessionStatus.SESSION_ONGOING) {
-            return null
+    fun finishSession(maxSessionTimeReached: Boolean = false): Boolean {
+        if (status != LoggingSessionStatus.SESSION_ONGOING) {
+            return false  // attempted to stop a non-ongoing session
         }
         stopZonedDateTime = ZonedDateTime.now()
-        _status.postValue(LoggingSessionStatus.SESSION_STOPPING)
-        val outFile = saveSession()
-        _status.postValue(LoggingSessionStatus.SESSION_TRIGGERABLE)
-        return outFile
+        status = LoggingSessionStatus.SESSION_STOPPING
+        val outFile = saveSession(maxSessionTimeReached = maxSessionTimeReached)
+        if (maxSessionTimeReached) {  // just clear the time series data, not the beacons config
+            beacons.value?.map { it.sensorData.value?.clear() }
+        } else {  // clear everything
+            clear()
+        }
+        status = LoggingSessionStatus.SESSION_TRIGGERABLE
+        return outFile != null
     }
 
     /**
@@ -308,4 +321,6 @@ object LoggingSession {
         }
         return files ?: emptyArray()
     }
+
+    private val TAG = this::class.java.simpleName
 }

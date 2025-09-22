@@ -51,7 +51,8 @@ class SessionWriterUT {
             TimeZone.getTimeZone("UTC"),
             beacons,
             startZonedDateTime,
-            stopZonedDateTime
+            stopZonedDateTime,
+            maxSessionTimeReached = false,
         )
         outputStreamWriter.flush()
 
@@ -69,6 +70,7 @@ class SessionWriterUT {
             "android_version": "9",
             "sdk_int": 28
           },
+          "wasMaxSessionTimeReached": false,
           "beacons": [
             {
               "id": "01:02:03:04:05:06",

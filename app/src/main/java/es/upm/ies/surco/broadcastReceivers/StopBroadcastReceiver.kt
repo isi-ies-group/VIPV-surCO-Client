@@ -15,6 +15,6 @@ class StopBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.i(TAG, "Received stop signal on broadcast receiver")
 
-        AppMain.getInstance().concludeSession()
+        AppMain.getInstance().requestStopCurrentSession()
     }
 }

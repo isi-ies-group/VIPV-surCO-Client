@@ -81,7 +81,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
         // Observe the session state to keep the screen on during a session on Android 14 and higher
         // until we fix this issue in the future
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            appMain.loggingSession.status.observe(this) { status ->
+            appMain.loggingSession.statusLiveData.observe(this) { status ->
                 when (status) {
                     LoggingSessionStatus.SESSION_ONGOING -> {
                         // Set screen to never turn off
@@ -100,7 +100,7 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
 
-        appMain.loggingSession.status.observe(this) {
+        appMain.loggingSession.statusLiveData.observe(this) {
             when (it) {
                 LoggingSessionStatus.SESSION_ONGOING -> {
                     if (Duration.between(ZonedDateTime.now(), appMain.loggingSession.startZonedDateTime) < Duration.of(5, ChronoUnit.SECONDS)) {

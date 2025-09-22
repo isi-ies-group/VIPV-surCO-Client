@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
         android:key="manage_sessions"
@@ -40,6 +41,12 @@
             android:summary="@string/settings_bluetooth_scan_interval_summary"
             android:inputType="number"
             android:defaultValue="50" />
+
+        <SeekBarPreference
+            android:key="max_session_duration"
+            android:title="@string/settings_session_max_duration"
+            android:summary="@string/settings_session_max_duration_summary"
+            android:defaultValue="480" />
 
     </PreferenceCategory>
 

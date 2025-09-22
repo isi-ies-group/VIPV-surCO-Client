@@ -74,11 +74,6 @@ class FragHome : Fragment() {
         adapter = ListAdapterBeacons(requireContext(), ArrayList(), viewLifecycleOwner)
         binding.beaconListView.adapter = adapter
 
-        // Set the start stop button text and icon according to the session state
-        updateStartStopButton(
-            viewModel.loggingSessionStatus.value ?: LoggingSessionStatus.SESSION_STOPPING
-        )
-
         // Assign observers and callbacks to the ViewModel's LiveData objects.
         viewModel.rangedBeacons.observe(viewLifecycleOwner) { beacons ->
             adapter.updateData(beacons)
@@ -164,6 +159,14 @@ class FragHome : Fragment() {
         }
 
         binding.beaconCountTextView.text = getString(R.string.beacons_detected_zero)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Set the start stop button text and icon according to the session state
+        updateStartStopButton(
+            viewModel.loggingSessionStatus.value ?: LoggingSessionStatus.SESSION_STOPPING
+        )
     }
 
     private fun privacyPolicyCheckAndNavigation() {
