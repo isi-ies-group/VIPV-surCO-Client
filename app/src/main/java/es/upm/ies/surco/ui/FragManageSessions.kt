@@ -172,7 +172,7 @@ class FragManageSessions : Fragment() {
 
 
         fun updateFiles(newFiles: List<File>) {
-            files = newFiles
+            files = newFiles.sortedBy { it.name }
             selectedFiles.clear()
             @Suppress("NotifyDataSetChanged") notifyDataSetChanged()
         }
