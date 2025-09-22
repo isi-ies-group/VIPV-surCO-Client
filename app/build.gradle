@@ -18,8 +18,8 @@ android {
 
         buildConfigField("String", "GITHUB_URL", "\"https://github.com/isi-ies-group/VIPV-surCO-Client\"")
         buildConfigField("String", "CONTACT_EMAIL", "\"ies+apps+surco@upm.es\"")
+        resourceConfigurations += ['en', 'es']
 
-        resConfigs "en", "es"
     }
 
     buildTypes {
