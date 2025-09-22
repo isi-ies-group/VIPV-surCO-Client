@@ -199,11 +199,34 @@ class FragManageSessions : Fragment() {
                     )
                 }
                 binding.btnDelete.setOnClickListener {
-                    file.delete()
-                    updateFiles(files - file)
-                    Toast.makeText(binding.root.context, R.string.was_deleted, Toast.LENGTH_SHORT)
-                        .show()
+                    showDeleteConfirmationDialog(file, binding.root.context)
                 }
+            }
+
+            private fun showDeleteConfirmationDialog(file: File, context: Context) {
+                AlertDialog.Builder(context)
+                    .setTitle(context.getString(R.string.manage_sessions_delete_session_file))
+                    .setMessage(
+                        context.getString(
+                            R.string.manage_sessions_confirm_delete_single_file, file.name
+                        )
+                    ).setPositiveButton(context.getString(R.string.yes)) { dialog, _ ->
+                        file.delete()
+                        updateFiles(files - file)
+                        Toast.makeText(context, R.string.was_deleted, Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }.setNegativeButton(context.getString(R.string.no)) { dialog, _ ->
+                        dialog.dismiss()
+                    }.create().apply {
+                        setOnShowListener {
+                            getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(
+                                ContextCompat.getColor(context, R.color.warning_red)
+                            )
+                            getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(
+                                ContextCompat.getColor(context, R.color.grey)
+                            )
+                        }
+                    }.show()
             }
         }
     }

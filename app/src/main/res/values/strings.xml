@@ -172,6 +172,8 @@
     <string name="confirm_undonable_action">Are you sure? This action cannot be undone.</string>
     <string name="all_sessions_deleted">Deleted all cached sessions</string>
     <string name="deletion_failed">Can\'t delete all sessions</string>
+    <string name="manage_sessions_delete_session_file">Delete Session File</string>
+    <string name="manage_sessions_confirm_delete_single_file">Are you sure you want to delete \"%s\"? This action cannot be undone.</string>
     // Privacy Policy view
     <string name="privacy_policy_accept">Accept</string>
     <string name="privacy_policy_reject">Reject (use offline)</string>

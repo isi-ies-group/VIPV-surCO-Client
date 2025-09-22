@@ -156,6 +156,7 @@
     <string name="confirm_undonable_action">¿Estás segur@? Esta acción no se puede deshacer.</string>
     <string name="all_sessions_deleted">Se eliminaron todas las sesiones guardadas</string>
     <string name="deletion_failed">No se pudieron eliminar todas las sesiones</string>
+    <string name="manage_sessions_confirm_delete_single_file">¿Seguro que quieres eliminar \"%s\"? Esta acción no se puede revertir.</string>
     <string name="privacy_policy_accept">Acepto</string>
     <string name="privacy_policy_reject">No acepto (usar offline)</string>
     <string name="privacy_policy_fetching">Obteniendo última Política de Privacidad…</string>
@@ -163,4 +164,5 @@
     <string name="privacy_policy_title">Política de Privacidad</string>
     <string name="settings_api_uri_change_title">Confirma acción</string>
     <string name="client_deprecated_warning_title">¡Es momento de actualizar!</string>
+    <string name="manage_sessions_delete_session_file">Eliminar Fichero Sesión</string>
 </resources>
