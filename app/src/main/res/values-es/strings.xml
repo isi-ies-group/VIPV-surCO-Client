@@ -22,6 +22,7 @@
     <string name="start_button">Iniciar sesión medidas</string>
     <string name="no">No</string>
     <string name="login">Iniciar sesión</string>
+    <string name="logged_in">Usuario registrado</string>
     <string name="login_description">Inicia sesión para compartir tus datos de ciencia ciudadana!</string>
     <string name="login_no_account_question">¿No tienes cuenta?</string>
     // Welcome view
@@ -167,4 +168,5 @@
     <string name="client_deprecated_warning_title">¡Es momento de actualizar!</string>
     <string name="settings_session_max_duration">Máxima duración de la sesión</string>
     <string name="manage_sessions_delete_session_file">Eliminar Fichero Sesión</string>
+    <string name="logged_in_as">Sesión iniciada como: %s</string>
 </resources>

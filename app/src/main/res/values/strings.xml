@@ -25,6 +25,8 @@
     <string name="start_button">Start session</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="logged_in_as">Logged in as: %s</string>
+    <string name="logged_in">Logged in</string>
     // Login view
     <string name="login_description">Log In to start sharing your solar resource data!</string>
     <string name="login_no_account_question">Don\'t have an account?</string>

@@ -202,12 +202,26 @@ class ActMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun updateDrawerOptionsMenu() {
         binding.navViewHost.post {
-            // Login and logout buttons in the drawer
-            val menuBtnLogin = binding.navViewHost.menu.findItem(R.id.nav_login)
-            val menuBtnLogout = binding.navViewHost.menu.findItem(R.id.nav_logout)
+            val menu = binding.navViewHost.menu
+            val userHeaderItem = menu.findItem(R.id.nav_user_header)
+            val menuBtnLogin = menu.findItem(R.id.nav_login)
+            val menuBtnLogout = menu.findItem(R.id.nav_logout)
+
             val isUserLoggedIn = ApiActions.User.state.value == ApiUserSessionState.LOGGED_IN
-            menuBtnLogin.isVisible = isUserLoggedIn != true
-            menuBtnLogout.isVisible = !menuBtnLogin.isVisible
+
+            // Show/hide login/logout buttons
+            menuBtnLogin.isVisible = !isUserLoggedIn
+            menuBtnLogout.isVisible = isUserLoggedIn
+
+            // Update user header
+            if (isUserLoggedIn) {
+                val username = ApiActions.User.username ?: getString(R.string.logged_in)
+                userHeaderItem.title = getString(R.string.logged_in_as, username)
+                userHeaderItem.isVisible = true
+            } else {
+                userHeaderItem.isVisible = false
+            }
+
             binding.navViewHost.invalidate()
         }
     }
