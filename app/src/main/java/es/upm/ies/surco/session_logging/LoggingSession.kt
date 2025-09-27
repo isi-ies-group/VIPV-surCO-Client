@@ -262,7 +262,7 @@ object LoggingSession {
             // write the beacon CSV header
             SessionWriter.appendCsvHeader(it)
             // write the beacon body from the cached file
-            if (dataCacheFile != null) {
+            if (dataCacheFile?.exists() == true) {
                 SessionWriter.appendCsvBodyFromTempFile(it, dataCacheFile!!)
             }
             // write the beacons body from the beacons list
@@ -272,6 +272,7 @@ object LoggingSession {
 
         // clear the temporary file
         dataCacheFile?.delete()
+        dataCacheFile = null
 
         // return the file to the caller
         return outFile
