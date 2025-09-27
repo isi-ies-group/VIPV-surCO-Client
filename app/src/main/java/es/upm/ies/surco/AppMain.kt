@@ -253,6 +253,7 @@ class AppMain : Application(), ComponentCallbacks2 {
             Log.i(TAG, "Session is finalizing, cannot start a new one")
             return
         }
+        Log.i(TAG, "Starting new session")
         // Start a new session
         loggingSession.beginSession()
         // Start the foreground beacon scanning service
@@ -270,6 +271,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return LoggingSessionStatus, the status of the session after trying to stop it
      */
     private fun stopMeasurementsSession() {
+        Log.i(TAG, "Stopping current session if any")
         stopSessionLengthTimer()
         stopStatusPollingOfBeacons()
         stopForegroundBeaconScanningProcess()
@@ -290,7 +292,8 @@ class AppMain : Application(), ComponentCallbacks2 {
      * Finish the current session if any
      */
     private fun finishCurrentSessionAndScheduleUpload(maxSessionTimeReached: Boolean = false) {
-        val successfulSession = loggingSession.finishSession(maxSessionTimeReached = maxSessionTimeReached)
+        val successfulSession =
+            loggingSession.finishSession(maxSessionTimeReached = maxSessionTimeReached)
         if (successfulSession) {
             Log.i(TAG, "Session stopped successfully")
             // Schedule the file upload if the session was valid, in a concurrent thread
@@ -307,6 +310,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     private fun startForegroundBeaconScanningProcess() {
+        Log.i(TAG, "Starting foreground beacon scanning service")
         if (isForegroundBeaconScanServiceRunning()) return
         val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
         startService(serviceIntent)
@@ -317,6 +321,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     private fun stopForegroundBeaconScanningProcess() {
+        Log.i(TAG, "Stopping foreground beacon scanning service")
         val serviceIntent = Intent(this, ForegroundBeaconScanService::class.java)
         stopService(serviceIntent)
     }
@@ -326,6 +331,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     private fun startStatusPollingOfBeacons() {
+        Log.i(TAG, "Starting status polling of beacons")
         handler.post(statusUpdateRunnable) // Start periodic statusLiveData updates of the beacon statuses
     }
 
@@ -334,6 +340,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     private fun stopStatusPollingOfBeacons() {
+        Log.i(TAG, "Stopping status polling of beacons")
         handler.removeCallbacks(statusUpdateRunnable)  // Stop periodic statusLiveData updates
     }
 
@@ -387,6 +394,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return void
      */
     private fun scheduleFileUploadWorkerWithPreferences() {
+        Log.i(TAG, "Scheduling file upload worker based on preferences")
         // if the sharedPreference is set to upload files on metered network, schedule the upload
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val autoUploadBehaviour =
@@ -406,6 +414,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      * Observe sessionRunning LiveData to get the current state of the session
      */
     fun toggleSession() {
+        Log.i(TAG, "Toggling session")
         if (loggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
             stopMeasurementsSession()
         } else if (loggingSession.status == LoggingSessionStatus.SESSION_TRIGGERABLE) {

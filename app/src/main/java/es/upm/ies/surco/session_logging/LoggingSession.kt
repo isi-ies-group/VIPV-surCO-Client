@@ -1,5 +1,6 @@
 package es.upm.ies.surco.session_logging
 
+import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -85,7 +86,11 @@ object LoggingSession {
     var status = LoggingSessionStatus.SESSION_TRIGGERABLE
         set(newValue) {
             field = newValue
-            _status.postValue(newValue)
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                _status.value = newValue
+            } else {
+                _status.postValue(newValue)
+            }
         }
 
     /**
@@ -240,8 +245,10 @@ object LoggingSession {
         // exit if there is no data to save
         if (temporaryBeacons.isEmpty() || temporaryBeacons.all { beacon -> beacon.sensorData.value?.isEmpty() != false }  // filtered beacons are empty
         ) {
+            Log.i(TAG, "No data to save")
             return null
         }
+        Log.i(TAG, "Saving session")
 
         val outFile = File(
             sessionsFolder,
@@ -274,6 +281,7 @@ object LoggingSession {
         dataCacheFile?.delete()
         dataCacheFile = null
 
+        Log.i(TAG, "Session saved to ${outFile.absolutePath}")
         // return the file to the caller
         return outFile
     }
@@ -283,8 +291,7 @@ object LoggingSession {
      */
     fun beginSession() {
         if (status != LoggingSessionStatus.SESSION_TRIGGERABLE) {
-            Log.i(TAG, "Session is not triggerable")
-            return
+            Log.w(TAG, "Session should not be triggered now")
         }
         startZonedDateTime = ZonedDateTime.now()
         status = LoggingSessionStatus.SESSION_ONGOING
@@ -296,6 +303,7 @@ object LoggingSession {
      * to save
      */
     fun finishSession(maxSessionTimeReached: Boolean = false): Boolean {
+        Log.i(TAG, "Finishing session, status is $status")
         if (status != LoggingSessionStatus.SESSION_ONGOING) {
             return false  // attempted to stop a non-ongoing session
         }
@@ -308,6 +316,7 @@ object LoggingSession {
             clear()
         }
         status = LoggingSessionStatus.SESSION_TRIGGERABLE
+        Log.i(TAG, "Session finished (status: $status), saved to ${outFile?.absolutePath}")
         return outFile != null
     }
 
