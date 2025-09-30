@@ -192,6 +192,7 @@ object LoggingSession {
         beaconMap.forEach { (_, beacon) ->
             beacon.refreshStatus()
         }
+        updateBeaconCount()
     }
 
     /**
