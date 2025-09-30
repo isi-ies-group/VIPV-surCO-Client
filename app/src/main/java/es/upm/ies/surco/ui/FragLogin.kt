@@ -49,19 +49,26 @@ class FragLogin : Fragment() {
                 findNavController().navigate(R.id.action_fragLogin_to_homeFragment)
             } else {
                 // show the user the error message
-                if (status == ApiUserSessionState.ERROR_BAD_IDENTITY) {
-                    binding.etEmail.error = getString(R.string.bad_email)
-                } else if (status == ApiUserSessionState.ERROR_BAD_PASSWORD) {
-                    binding.etPassword.error = getString(R.string.bad_password)
-                } else if (status == ApiUserSessionState.CONNECTION_ERROR) {
-                    // Create an informative alert dialog
-                    val builder = AlertDialog.Builder(requireContext())
-                    builder.setTitle(R.string.connection_error)
-                    builder.setMessage(R.string.connection_error_message)
-                    builder.setPositiveButton(R.string.ok) { dialog, which ->
+                when (status) {
+                    ApiUserSessionState.ERROR_BAD_IDENTITY -> {
+                        binding.etEmail.error = getString(R.string.bad_email)
+                    }
+                    ApiUserSessionState.ERROR_BAD_PASSWORD -> {
+                        binding.etPassword.error = getString(R.string.bad_password)
+                    }
+                    ApiUserSessionState.CONNECTION_ERROR -> {
+                        // Create an informative alert dialog
+                        val builder = AlertDialog.Builder(requireContext())
+                        builder.setTitle(R.string.connection_error)
+                        builder.setMessage(R.string.connection_error_message)
+                        builder.setPositiveButton(R.string.ok) { dialog, which ->
+                            // do nothing
+                        }
+                        builder.show()
+                    }
+                    else -> {
                         // do nothing
                     }
-                    builder.show()
                 }
             }
             binding.pbLogin.visibility = View.INVISIBLE
