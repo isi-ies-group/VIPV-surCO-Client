@@ -235,11 +235,13 @@ object LoggingSession {
     /**
      * Conclude the session and save it to a file.
      * Gets the data from temporary dumps and the current readings.
-     * @param maxSessionTimeReached If true, the session has reached the maximum time and
-     * should be cleared but not the beacons configuration - this leaves a note in the JSON header.
+     * @param endedByUnsupervisedMode If true, the session was ended by the unsupervised mode.
+     * Leaves the beacons configuration and clears only the time series data. This is also
+     * outputted in the session file. If false, the session was ended normally (by the user),
+     * and all data is cleared.
      * @return The file with the session data.
      */
-    fun saveSession(maxSessionTimeReached: Boolean): File? {
+    fun saveSession(endedByUnsupervisedMode: Boolean): File? {
         // deep copy all beacons and their data to a temporary variable, and empty them later
         val temporaryBeacons =
             beacons.value!!.filter { beacon -> beacon.isValidInfo() }.map { it.copy() }
@@ -264,7 +266,7 @@ object LoggingSession {
                 temporaryBeacons,
                 startZonedDateTime!!,
                 stopZonedDateTime!!,
-                maxSessionTimeReached = maxSessionTimeReached,
+                endedByUnsupervisedMode = endedByUnsupervisedMode,
             )
             it.write("\n\n")  // separate the header from the bodies
             // write the beacon CSV header
@@ -303,15 +305,15 @@ object LoggingSession {
      * @return True if the session was successfully concluded and saved, false if there was no data
      * to save
      */
-    fun finishSession(maxSessionTimeReached: Boolean = false): Boolean {
+    fun finishSession(endedByUnsupervisedMode: Boolean = false): Boolean {
         Log.i(TAG, "Finishing session, status is $status")
         if (status != LoggingSessionStatus.SESSION_ONGOING) {
             return false  // attempted to stop a non-ongoing session
         }
         stopZonedDateTime = ZonedDateTime.now()
         status = LoggingSessionStatus.SESSION_STOPPING
-        val outFile = saveSession(maxSessionTimeReached = maxSessionTimeReached)
-        if (maxSessionTimeReached) {  // just clear the time series data, not the beacons config
+        val outFile = saveSession(endedByUnsupervisedMode = endedByUnsupervisedMode)
+        if (endedByUnsupervisedMode) {  // just clear the time series data, not the beacons config
             beacons.value?.map { it.sensorData.value?.clear() }
         } else {  // clear everything
             clear()

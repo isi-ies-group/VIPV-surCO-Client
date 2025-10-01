@@ -29,10 +29,8 @@ import org.altbeacon.beacon.BeaconParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Instant
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
+import androidx.core.content.edit
 
 
 class AppMain : Application(), ComponentCallbacks2 {
@@ -64,16 +62,20 @@ class AppMain : Application(), ComponentCallbacks2 {
         }
     }
 
+    val midnightRunnable = object : Runnable {
+        override fun run() {
+            val now = System.currentTimeMillis()
+            val timeToMidnight =
+                calculateMillisFromTo(now, 0, 0, 0) - 100L // 100 ms before midnight
+            Log.i(TAG, "Scheduling unsupervised session stop at midnight in $timeToMidnight ms")
+            handler.postDelayed(this, timeToMidnight)
+            restartCurrentSession()
+        }
+    }
+
     val cachedSessionsDir by lazy {
         cacheDir.resolve(SESSIONS_SUBDIR_IN_CACHE)
     }
-
-    /**
-     * Time span watchdog, to automatically stop the session when it exceeds the maximum duration
-     * and re-start it again.
-     */
-    private var sessionTimer: ScheduledExecutorService? = null
-    private var maxSessionDuration: Long? = 480 // Default value in minutes
 
     override fun onCreate() {
         super.onCreate()
@@ -82,6 +84,7 @@ class AppMain : Application(), ComponentCallbacks2 {
         instance = this
 
         // Initialize the shared preferences
+        sharedPreferencesPortBetweenVersions()
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
 
         // Create the cached sessions directory if it does not exist
@@ -261,7 +264,7 @@ class AppMain : Application(), ComponentCallbacks2 {
         // Start periodic updates of the beacon statuses
         startStatusPollingOfBeacons()
         // Start the session length timer
-        startSessionLengthTimer()
+        startSessionFutureRelaunchIfUnsupervised()
         Log.i(TAG, "Session started")
     }
 
@@ -272,7 +275,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      */
     private fun stopMeasurementsSession() {
         Log.i(TAG, "Stopping current session if any")
-        stopSessionLengthTimer()
+        stopSessionFutureRelaunchIfUnsupervised()
         stopStatusPollingOfBeacons()
         stopForegroundBeaconScanningProcess()
         finishCurrentSessionAndScheduleUpload()
@@ -289,11 +292,29 @@ class AppMain : Application(), ComponentCallbacks2 {
     }
 
     /**
+     * Restart the current session if there is one ongoing
+     * @return void
+     */
+    private fun restartCurrentSession() {
+        Log.i(TAG, "Restarting current session")
+        // Check if session is still ongoing before relaunching
+        if (LoggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
+            // Keep the beacons configuration
+            stopSessionFutureRelaunchIfUnsupervised()
+            startSessionFutureRelaunchIfUnsupervised()
+            finishCurrentSessionAndScheduleUpload(endedByUnsupervisedMode = true)
+            // Start a new session
+            loggingSession.beginSession()
+            Log.i(TAG, "Session restarted")
+        }
+    }
+
+    /**
      * Finish the current session if any
      */
-    private fun finishCurrentSessionAndScheduleUpload(maxSessionTimeReached: Boolean = false) {
+    private fun finishCurrentSessionAndScheduleUpload(endedByUnsupervisedMode: Boolean = false) {
         val successfulSession =
-            loggingSession.finishSession(maxSessionTimeReached = maxSessionTimeReached)
+            loggingSession.finishSession(endedByUnsupervisedMode = endedByUnsupervisedMode)
         if (successfulSession) {
             Log.i(TAG, "Session stopped successfully")
             // Schedule the file upload if the session was valid, in a concurrent thread
@@ -345,48 +366,51 @@ class AppMain : Application(), ComponentCallbacks2 {
     }
 
     /**
-     * Start session timer to automatically stop the session when it exceeds the maximum duration
-     * and re-start it again.
+     * Start whether to automatically stop the session automatically (in unsupervised mode).
      * @return void
      */
-    private fun startSessionLengthTimer() {
+    private fun startSessionFutureRelaunchIfUnsupervised() {
         Log.i(TAG, "Starting session timer")
         // Cancel any existing timer
-        stopSessionLengthTimer()
+        stopSessionFutureRelaunchIfUnsupervised()
 
-        // Get max duration from preferences if context is provided
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        maxSessionDuration = prefs.getInt("max_session_duration", 480).toLong()
+        // Check if unsupervised mode is enabled
+        val unsupervisedMode = this.let {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(it)
+            prefs.getBoolean("unsupervised_mode", false)
+        }
 
-        if (maxSessionDuration == null || maxSessionDuration!! == 0L) {
+        // Only start timer if NOT in unsupervised mode
+        if (!unsupervisedMode) {
             return
         }
-        val sessionMaxLengthMinutes = maxSessionDuration ?: 480L
-        val sessionMaxLengthSeconds = sessionMaxLengthMinutes * 60
 
-        sessionTimer = Executors.newSingleThreadScheduledExecutor()
-        sessionTimer?.schedule({
-            Log.i(TAG, "Session max duration reached, concluding session")
-            // Check if session is still ongoing before relaunching
-            if (LoggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
-                // Restart the session automatically
-                Log.i(TAG, "Restarting session automatically")
-                // Keep the beacons configuration
-                stopSessionLengthTimer()
-                startSessionLengthTimer()
-                finishCurrentSessionAndScheduleUpload(maxSessionTimeReached = true)
-                // Start a new session
-                loggingSession.beginSession()
-            }
-        }, sessionMaxLengthSeconds, TimeUnit.SECONDS)
+        // Set a stop time at midnight for the same day
+        handler.post(midnightRunnable)
     }
 
     /**
-     * Stop the session length timer
+     * Stop whether to automatically stop the session automatically (in unsupervised mode).
      * @return void
      */
-    private fun stopSessionLengthTimer() {
-        sessionTimer?.shutdownNow()
+    private fun stopSessionFutureRelaunchIfUnsupervised() {
+        Log.i(TAG, "Stopping session timer")
+        handler.removeCallbacks(midnightRunnable)
+    }
+
+    /**
+     * Public callback function to launch the future relaunch if unsupervised.
+     * This is used when the user changes the unsupervised mode setting.
+     * @return void
+     */
+    fun onChangedSessionFutureRelaunchIfUnsupervised() {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val unsupervisedMode = sharedPreferences.getBoolean("unsupervised_mode", false)
+        if (unsupervisedMode) {
+            startSessionFutureRelaunchIfUnsupervised()
+        } else {
+            stopSessionFutureRelaunchIfUnsupervised()
+        }
     }
 
     /**
@@ -510,6 +534,18 @@ class AppMain : Application(), ComponentCallbacks2 {
         val intent = Intent(this, ActMain::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(intent)
+    }
+
+    /**
+     * Port configuration values from old versions to new ones if needed
+     * @return void
+     */
+    private fun sharedPreferencesPortBetweenVersions() {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        // remove max_session_duration if it exists
+        if (sharedPreferences.contains("max_session_duration")) {
+            sharedPreferences.edit { remove("max_session_duration") }
+        }
     }
 
     companion object {

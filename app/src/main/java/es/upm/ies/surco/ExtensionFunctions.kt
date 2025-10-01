@@ -49,3 +49,24 @@ val PATH_SAFE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-M
 fun ZonedDateTime.formatAsPathSafeString(): String {
     return PATH_SAFE_FORMATTER.format(this)
 }
+
+
+/**
+ * Calculate the milliseconds until some time of day (hour, minute, second).
+ * If that time has already passed today, calculates the time until that time tomorrow.
+ * @param now The current millis.
+ * @param hour The hour of the day (0-23).
+ * @param minute The minute of the hour (0-59).
+ * @param second The second of the minute (0-59).
+ * @return The milliseconds until that time of day.
+ */
+fun calculateMillisFromTo(now: Long, hour: Int, minute: Int, second: Int): Long {
+    val nowZdt = ZonedDateTime.now()
+    val targetZdtToday = nowZdt.withHour(hour).withMinute(minute).withSecond(second).withNano(0)
+    val targetZdt = if (nowZdt.isAfter(targetZdtToday)) {
+        targetZdtToday.plusDays(1)
+    } else {
+        targetZdtToday
+    }
+    return targetZdt.toInstant().toEpochMilli() - now
+}

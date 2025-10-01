@@ -42,11 +42,11 @@
             android:inputType="number"
             android:defaultValue="50" />
 
-        <SeekBarPreference
-            android:key="max_session_duration"
-            android:title="@string/settings_session_max_duration"
-            android:summary="@string/settings_session_max_duration_summary"
-            android:defaultValue="480" />
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="unsupervised_mode"
+            android:summary="@string/settings_unsupervised_mode_summary"
+            android:title="@string/settings_unsupervised_mode" />
 
     </PreferenceCategory>
 

@@ -13,7 +13,7 @@
     <string name="settings_bluetooth_scan_interval_invalid">Debe ser un número natural</string>
     <string name="settings_open_battery_optimization_settings">Abrir configuración del optimizador de batería</string>
     <string name="settings_api_uri_change_message">Cerrarás sesión y tu información personal se compartirá a otro servicio. La Política de Privacidad y otras afirmaciones legales no serán de aplicación.</string>
-    <string name="settings_session_max_duration_summary">%1$d minutos después de haber comenzado una sesión, se parará y otra será iniciada.</string>
+    <string name="settings_unsupervised_mode_disabled">Desactivado - sólo el usuario puede detener la sesión</string>
     <string name="version">Versión: %1$s (%2$d)</string>
     <string name="delete">Eliminar</string>
     <string name="was_deleted">Elemento eliminado</string>
@@ -166,7 +166,9 @@
     <string name="privacy_policy_title">Política de Privacidad</string>
     <string name="settings_api_uri_change_title">Confirma acción</string>
     <string name="client_deprecated_warning_title">¡Es momento de actualizar!</string>
-    <string name="settings_session_max_duration">Máxima duración de la sesión</string>
     <string name="manage_sessions_delete_session_file">Eliminar Fichero Sesión</string>
     <string name="logged_in_as">Sesión iniciada como: %s</string>
+    <string name="settings_unsupervised_mode">Modo Desatendido</string>
+    <string name="settings_unsupervised_mode_summary">Permitir duración de sesión extendida</string>
+    <string name="settings_unsupervised_mode_enabled">Activado - sesiones en curso se paran y reinician a medianoche (mantiene la configuración de las balizas)</string>
 </resources>

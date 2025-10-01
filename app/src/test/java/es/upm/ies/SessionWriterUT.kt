@@ -44,7 +44,7 @@ class SessionWriterUT {
         val startZonedDateTime = ZonedDateTime.parse("2021-10-01T12:00:00Z")
         val stopZonedDateTime = ZonedDateTime.parse("2021-10-01T12:30:00Z")
 
-        var body = File.createTempFile("VIPV_", ".txt")
+        val body = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = body.outputStream().writer()
         SessionWriter.createJSONHeader(
             outputStreamWriter,
@@ -52,7 +52,7 @@ class SessionWriterUT {
             beacons,
             startZonedDateTime,
             stopZonedDateTime,
-            maxSessionTimeReached = false,
+            endedByUnsupervisedMode = false,
         )
         outputStreamWriter.flush()
 
@@ -70,7 +70,7 @@ class SessionWriterUT {
             "android_version": "9",
             "sdk_int": 28
           },
-          "wasMaxSessionTimeReached": false,
+          "endedByUnsupervisedMode": false,
           "beacons": [
             {
               "id": "01:02:03:04:05:06",
@@ -170,7 +170,9 @@ class SessionWriterUT {
         val file = File.createTempFile("VIPV_", ".txt")
         val outputStreamWriter = file.outputStream().writer()
         SessionWriter.appendCsvHeader(outputStreamWriter)
-        SessionWriter.appendCsvBodyFromData(outputStreamWriter, TimeZone.getTimeZone("UTC"), beacons)
+        SessionWriter.appendCsvBodyFromData(
+            outputStreamWriter, TimeZone.getTimeZone("UTC"), beacons
+        )
         outputStreamWriter.flush()
 
         val expected = """
