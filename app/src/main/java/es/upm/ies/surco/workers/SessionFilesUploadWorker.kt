@@ -27,7 +27,9 @@ class SessionFilesUploadWorker(appContext: Context, workerParams: WorkerParamete
             // Check Privacy Policy is accepted before proceeding
             if (!ApiActions.PrivacyPolicy.isAccepted()) {
                 Log.w(TAG, "Privacy Policy not accepted, cannot upload session files")
-                return Result.failure(Data.Builder().putBoolean("privacy_policy_not_accepted", true).build())
+                return Result.failure(
+                    Data.Builder().putBoolean("privacy_policy_not_accepted", true).build()
+                )
             }
 
             // Ensure the user is logged in
