@@ -329,10 +329,19 @@ object LoggingSession {
      */
     fun getSessionFiles(): Array<File> {
         // filter out the cached body file
-        val files = sessionsFolder?.listFiles { _, name ->
-            name.startsWith(SESSION_FILE_PREFIX) && name.endsWith(SESSION_FILE_EXTENSION)
-        }
+        val files = sessionsFolder?.listFiles()?.let { filterSessionFiles(it) }
         return files ?: emptyArray()
+    }
+
+    /**
+     * Filter files in cache folder
+     * @param files List of files to filter
+     * @return List of files that are not temporary dump files
+     */
+    fun filterSessionFiles(files: Array<File>): Array<File> {
+        return files.filter { file ->
+            file.name.startsWith(SESSION_FILE_PREFIX) && file.name.endsWith(SESSION_FILE_EXTENSION)
+        }.toTypedArray()
     }
 
     private val TAG = this::class.java.simpleName

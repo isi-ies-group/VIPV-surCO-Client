@@ -46,7 +46,7 @@ class FragManageSessions : Fragment() {
             // Ensure UI updates happen on main thread
             activity?.runOnUiThread {
                 if (isAdded) { // Check fragment is still attached
-                    updateSessionFileList(files)
+                    updateSessionFileList(appMain.loggingSession.filterSessionFiles(files.toTypedArray()).toList())
                 }
             }
         }
