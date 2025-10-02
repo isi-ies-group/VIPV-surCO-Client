@@ -110,7 +110,7 @@ class FragSettings : PreferenceFragmentCompat() {
                 } else {
                     getString(R.string.settings_unsupervised_mode_disabled)
                 }
-                appMain.onChangedSessionFutureRelaunchIfUnsupervised()
+                appMain.onChangedSessionFutureRelaunch(newValue = isEnabled)
                 true
             }
 

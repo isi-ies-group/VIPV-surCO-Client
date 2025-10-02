@@ -242,6 +242,8 @@ class AppMain : Application(), ComponentCallbacks2 {
      * @return LoggingSessionStatus, the status of the session after trying to start it
      */
     private fun startMeasurementsSession() {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val unsupervisedMode = sharedPreferences.getBoolean("unsupervised_mode", false)
         if (loggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
             Log.i(TAG, "Session is already ongoing")
             return
@@ -258,7 +260,9 @@ class AppMain : Application(), ComponentCallbacks2 {
         // Start periodic updates of the beacon statuses
         startStatusPollingOfBeacons()
         // Start the session length timer
-        scheduleMidnightSessionRestartIfUnsupervised()
+        if (unsupervisedMode) {
+            scheduleMidnightSessionRestart()
+        }
         Log.i(TAG, "Session started")
     }
 
@@ -269,7 +273,7 @@ class AppMain : Application(), ComponentCallbacks2 {
      */
     private fun stopMeasurementsSession() {
         Log.i(TAG, "Stopping current session if any")
-        cancelMidnightSessionRestartIfUnsupervised()
+        cancelMidnightSessionRestart()
         stopStatusPollingOfBeacons()
         stopForegroundBeaconScanningProcess()
         finishCurrentSessionAndScheduleUpload()
@@ -294,8 +298,13 @@ class AppMain : Application(), ComponentCallbacks2 {
         Log.i(TAG, "Restarting current session")
         // Check if session is still ongoing before relaunching
         if (LoggingSession.status == LoggingSessionStatus.SESSION_ONGOING) {
+            // Schedule restart at next midnight, if unsupervised mode is still enabled
+            if (PreferenceManager.getDefaultSharedPreferences(this)
+                    .getBoolean("unsupervised_mode", false)
+            ) {
+                scheduleMidnightSessionRestart()
+            }
             // Keep the beacons configuration
-            scheduleMidnightSessionRestartIfUnsupervised()
             finishCurrentSessionAndScheduleUpload(endedByUnsupervisedMode = true)
             // Start a new session
             loggingSession.beginSession()
@@ -360,38 +369,28 @@ class AppMain : Application(), ComponentCallbacks2 {
     }
 
     /**
-     * Start whether to automatically stop the session automatically (in unsupervised mode).
+     * Schedule auto-restart the session at midnight (unsupervised mode feature).
      * @return void
      */
-    private fun scheduleMidnightSessionRestartIfUnsupervised() {
+    private fun scheduleMidnightSessionRestart() {
         Log.i(TAG, "Scheduling session restart if unsupervised")
         // Cancel any existing timer
-        cancelMidnightSessionRestartIfUnsupervised()
+        cancelMidnightSessionRestart()
 
-        // Check if unsupervised mode is enabled
-        val unsupervisedMode = this.let {
-            val prefs = PreferenceManager.getDefaultSharedPreferences(it)
-            prefs.getBoolean("unsupervised_mode", false)
-        }
+        val now = System.currentTimeMillis()
+        val timeToMidnight = calculateMillisFromTo(now, 0, 0, 0) - 100L // 100 ms before midnight
+        Log.i(TAG, "Scheduling unsupervised session stop at midnight in $timeToMidnight ms")
 
-        // Only start timer unsupervised mode is enabled
-        if (unsupervisedMode) {
-            val now = System.currentTimeMillis()
-            val timeToMidnight =
-                calculateMillisFromTo(now, 0, 0, 0) - 100L // 100 ms before midnight
-            Log.i(TAG, "Scheduling unsupervised session stop at midnight in $timeToMidnight ms")
-
-            handler.removeCallbacks(midnightRunnable)
-            handler.postDelayed(midnightRunnable, timeToMidnight)
-        }
+        handler.removeCallbacks(midnightRunnable)
+        handler.postDelayed(midnightRunnable, timeToMidnight)
     }
 
     /**
-     * Stop whether to automatically stop the session automatically (in unsupervised mode).
+     * Cancel the scheduled auto-restart of the session at midnight.
      * @return void
      */
-    private fun cancelMidnightSessionRestartIfUnsupervised() {
-        Log.i(TAG, "Canceling session restart if unsupervised")
+    private fun cancelMidnightSessionRestart() {
+        Log.i(TAG, "Canceling session restart at midnight")
         handler.removeCallbacks(midnightRunnable)
     }
 
@@ -400,14 +399,12 @@ class AppMain : Application(), ComponentCallbacks2 {
      * This is used when the user changes the unsupervised mode setting.
      * @return void
      */
-    fun onChangedSessionFutureRelaunchIfUnsupervised() {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val unsupervisedMode = sharedPreferences.getBoolean("unsupervised_mode", false)
-        Log.i(TAG, "Unsupervised mode changed to $unsupervisedMode")
-        if (unsupervisedMode) {
-            scheduleMidnightSessionRestartIfUnsupervised()
+    fun onChangedSessionFutureRelaunch(newValue: Boolean) {
+        Log.i(TAG, "Unsupervised mode changed to $newValue")
+        if (newValue) {
+            scheduleMidnightSessionRestart()
         } else {
-            cancelMidnightSessionRestartIfUnsupervised()
+            cancelMidnightSessionRestart()
         }
     }
 
